@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "yt2sp"
 version = "1.0.0"
-description = "Pindah playlist YouTube Music ke Spotify - Biaya Rp0"
+description = "Port YouTube Music playlists to Spotify with zero API costs & high precision"
 requires-python = ">=3.11"
 dependencies = [
     "ytmusicapi>=1.12",

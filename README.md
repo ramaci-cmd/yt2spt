@@ -1,73 +1,73 @@
 # YT2Spotify (yt2sp)
 
-> **Pindah Playlist YouTube Music ke Spotify — Biaya Rp0 & Tanpa Akun Developer Berbayar.**
+> **Seamlessly port YouTube Music playlists to Spotify — 100% Free, Zero API Costs, & Zero Missing Tracks.**
 
-YT2Spotify adalah alat bantu migrasi playlist musik lokal yang cepat, aman, dan dirancang khusus agar Anda dapat memindahkan ratusan lagu dari YouTube Music ke Spotify secara presisi tanpa kehilangan urutan trek.
-
----
-
-## Cuplikan Antarmuka (Screenshots)
-
-### 1. Dashboard Utama & Status Sinkronisasi
-Tampilan beranda yang bersih untuk memantau status pustaka musik, playlist terkini, dan akses cepat ke alur transfer baru.
-
-![Dashboard Utama](docs/screenshots/01-dashboard.png)
+**YT2Spotify** is a fast, privacy-focused, zero-cost desktop migration tool designed to accurately transfer music collections from YouTube Music to Spotify without paying for third-party subscription services or requiring expensive Spotify Developer API credentials.
 
 ---
 
-### 2. Review Studio, Skor Kecocokan, & Smart Genre Splitter
-Pemeriksaan akurasi kecocokan lagu dengan skor persentase, pemutar audio cuplikan reff 30 detik pada thumbnail, deteksi video UGC/non-musik, dan pemisah playlist otomatis berdasarkan genre.
+## Interface Previews
+
+### 1. Dashboard & Multi-Pass Sync Overview
+A clean, minimal home view displaying local library status, recently extracted playlists with vinyl-style cards, and quick actions to start new transfers.
+
+![Dashboard Overview](docs/screenshots/01-dashboard.png)
+
+---
+
+### 2. Review Studio, Match Scoring, & Smart Genre Splitter
+Audit match precision with percentage confidence scores, hover over any thumbnail to stream instant 30-second audio previews (chorus/reff), filter out non-music UGC videos, and split collections into standalone genre playlists with a single click.
 
 ![Review Studio](docs/screenshots/02-review-studio.png)
 
 ---
 
-### 3. Manajemen Pustaka Playlist & Batch Actions
-Kelola seluruh playlist YouTube Music yang pernah diekstrak, lakukan seleksi multi-lagu, atau hapus lagu yang tidak diinginkan secara langsung.
+### 3. Playlists Library & Batch Operations
+Manage all archived YouTube Music playlists, inspect track lists, select multiple tracks, and delete unwanted entries directly.
 
-![Koleksi Playlist](docs/screenshots/03-playlists-library.png)
-
----
-
-### 4. Panduan Terintegrasi (Bantuan & Panduan)
-Panduan ringkas 3 langkah dasar untuk pengguna awam, dilengkapi indikator panah interaktif untuk membuka panduan teknis mendalam (Tahap A–E).
-
-![Bantuan & Panduan](docs/screenshots/04-guide.png)
+![Playlists Library](docs/screenshots/03-playlists-library.png)
 
 ---
 
-## Fitur Unggulan
+### 4. Guided Workflow & Integrated Paste Guide
+A concise 3-step guide for everyday users, featuring an interactive chevron expander to reveal deep-dive technical steps (Phases A through E) and troubleshooting instructions.
 
-- **Zero-Cost Architecture (Rp0):** Menggunakan teknik pencarian langsung tanpa memerlukan Spotify Developer App atau token API berbayar.
-- **Pencocokan Multi-Pass Pintar:**
-  - Pembersihan judul cerdas (membersihkan tag `[Official Video]`, `ft.`, `Remix`, bracket Jepang `【...】`, dan nama uploader).
-  - Skoring kesamaan berbasis Levenshtein distance ([RapidFuzz](https://github.com/rapidfuzz/RapidFuzz)) pada judul dan artis.
-  - Toleransi durasi audio ($\pm 10\%$) untuk membedakan trek asli dari klip singkat atau remix panjang.
-- **Audio Preview Instan (Reff 30 Detik):** Dengar cuplikan reff lagu langsung di antarmuka web hanya dengan mengarahkan kursor ke thumbnail lagu (ditenagai dual-provider Deezer + iTunes API).
-- **Pengurutan Genre Otomatis:** Deteksi genre otomatis berbasis rule-based dan pemetaan artis/judul.
-- **Web UI & CLI:**
-  - Antarmuka web modern dengan 4 palet tema (*Modern Dark*, *Emerald Mint*, *Warm Amber*, *Slate Graphite*).
-  - Mode Hemat Daya / Laptop Kentang (*Potato Mode*) untuk performa mulus di perangkat spesifikasi rendah.
-  - Dukungan multi-bahasa (ID, EN, ES, JA, KO, ZH).
-- **Privasi 100% Terjaga:** Database SQLite dan riwayat lagu tersimpan murni di perangkat komputer lokal Anda. Tidak ada data pribadi atau riwayat lagu yang dikirim ke server pihak ketiga.
+![Help & Guide](docs/screenshots/04-guide.png)
 
 ---
 
-## Instalasi
+## Core Features
 
-### Prasyarat
-- Python 3.11 atau lebih baru
-- Browser modern (Chrome, Edge, Firefox, Brave)
+- **Zero-Cost Architecture ($0 / Rp0):** Direct catalog discovery without requiring Spotify Developer accounts, paid third-party tokens, or OAuth client secrets.
+- **Smart Multi-Pass Matching Engine:**
+  - **Aggressive Title Sanitization:** Automatically strips noise words like `[Official Video]`, `ft.`, `Remix`, `4K`, Japanese brackets `【...】`, and uploader channels.
+  - **Fuzzy Levenshtein Distance:** Evaluates title and artist similarity using [RapidFuzz](https://github.com/rapidfuzz/RapidFuzz).
+  - **Duration Tolerance Window ($\pm 10\%$):** Differentiates full-length original tracks from short video edits or extended remix compilations.
+- **Instant Audio Preview Engine (Chorus / Reff):** Stream 30-second audio samples directly in the browser by hovering over song thumbnails, backed by a resilient dual-provider fallback architecture (Deezer + iTunes Search API).
+- **Automated Smart Genre Tagging:** Rules-based and artist-matching genre categorizer to effortlessly organize diverse music libraries.
+- **Modern Web UI & Powerful CLI:**
+  - Responsive web dashboard with 4 handcrafted color schemes (*Modern Dark*, *Emerald Mint*, *Warm Amber*, *Slate Graphite*).
+  - Built-in **Potato Mode** (performance toggle) to disable blur and heavy animations on budget hardware.
+  - Multi-language support (English, Indonesian, Spanish, Japanese, Korean, Chinese).
+- **100% Local Privacy:** All playlist history and SQLite databases remain strictly on your local machine. No tracking, telemetry, or external database storage.
 
-### Langkah Pemasangan
+---
 
-1. **Clone repositori:**
+## Installation
+
+### Prerequisites
+- Python 3.11 or later
+- Any modern web browser (Chrome, Edge, Firefox, Brave)
+
+### Setup Steps
+
+1. **Clone the repository:**
    ```bash
-   git clone https://github.com/username/yt-spt.git
-   cd yt-spt
+   git clone https://github.com/ramaci-cmd/yt2spt.git
+   cd yt2spt
    ```
 
-2. **Buat virtual environment dan aktifkan:**
+2. **Create and activate a virtual environment:**
    ```bash
    # Windows (PowerShell)
    python -m venv .venv
@@ -78,54 +78,54 @@ Panduan ringkas 3 langkah dasar untuk pengguna awam, dilengkapi indikator panah 
    source .venv/bin/activate
    ```
 
-3. **Install dependensi:**
+3. **Install dependencies:**
    ```bash
    pip install -e .
    ```
 
 ---
 
-## Cara Menjalankan
+## Usage
 
-### Melalui Web UI (Direkomendasikan)
+### 1. Web Dashboard (Recommended)
 
-Jalankan perintah berikut di terminal:
+Start the local server:
 ```bash
 python -m yt2sp.ui.server
 ```
-Buka browser Anda dan kunjungi: **`http://127.0.0.1:5000`**
+Open your browser and navigate to: **`http://127.0.0.1:5000`**
 
-#### Alur Kerja di Web UI:
-1. **Langkah 1 (Ekstrak):** Masukkan link playlist YouTube Music (Public atau Unlisted), lalu klik **Ambil Metadata**.
-2. **Langkah 2 (Review):** Periksa hasil pencocokan lagu. Dengarkan audio preview reff pada thumbnail jika ragu, ganti versi alternatif, atau hapus lagu yang tidak diinginkan.
-3. **Langkah 3 (Salin & Tempel ke Spotify):** Salin batch URI lagu (50 URI per blok) dan tempel (`Ctrl + V`) langsung ke playlist baru di Spotify Web / Desktop Player.
+#### Standard Workflow:
+1. **Step 1 — Extract:** Paste a public or unlisted YouTube Music playlist URL, then click **Extract Metadata**.
+2. **Step 2 — Review:** Review match quality in the Review Studio. Hover over song thumbnails to hear the audio preview, pick alternative versions, or remove tracks.
+3. **Step 3 — Copy & Paste to Spotify:** Copy the generated Spotify track URI chunks (50 URIs per batch) and press `Ctrl + V` (`Cmd + V` on macOS) directly inside a new playlist in Spotify Desktop.
 
 ---
 
-### Melalui CLI (Terminal)
+### 2. Command-Line Interface (CLI)
 
 ```bash
-# Ekstrak playlist dari YouTube Music
+# Extract a playlist from YouTube Music
 yt2sp extract "https://music.youtube.com/playlist?list=..."
 
-# Jalankan pencocokan ke Spotify
+# Match tracks against the Spotify catalog
 yt2sp match <playlist_id>
 
-# Ekstrak daftar URI untuk ditempel ke Spotify
+# Export matched Spotify URIs ready for pasting
 yt2sp export <playlist_id>
 ```
 
 ---
 
-## Pengujian (Testing)
+## Testing
 
-Proyek ini dilengkapi dengan unit test otomatis:
+The test suite includes automated unit tests covering scoring, normalization, database persistence, and genre heuristics:
 ```bash
 pytest
 ```
 
 ---
 
-## Lisensi & Atribusi
+## License
 
-Proyek ini dirilis di bawah lisensi MIT. Dibuat untuk tujuan edukasi dan penggunaan pribadi.
+This project is licensed under the [MIT License](LICENSE). Built for educational and personal music migration purposes.

@@ -4527,7 +4527,7 @@
       setTheme(savedTheme);
       const savedPerf = localStorage.getItem('yt2sp_perf_mode') === 'true';
       setPerformanceMode(savedPerf, false);
-      const savedLang = localStorage.getItem('yt2sp_lang') || 'id';
+      const savedLang = localStorage.getItem('yt2sp_lang') || 'en';
       changeLanguage(savedLang);
       refreshStatus();
       loadPlaylists();
