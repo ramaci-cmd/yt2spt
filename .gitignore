@@ -1,0 +1,59 @@
+# ==============================================================================
+# yt2sp - Git Ignore Configuration (Keamanan & Privasi Data Pengguna)
+# ==============================================================================
+
+# Database & SQLite State (Privasi Data Riwayat Lagu)
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# Kredensial Autentikasi Sensitif (Google / YouTube Music Cookies)
+ytm_auth.json
+oauth.json
+browser.json
+client_secret*.json
+*.credential
+*.credentials
+.env
+.env.*
+
+# Log & Runtime Debug Files
+*.log
+yt2sp.log
+
+# Python Environments & Caches
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+ENV/
+build/
+dist/
+*.egg-info/
+.eggs/
+.pytest_cache/
+
+# Exported User Files (Daftar Lagu Pribadi)
+output/
+smoke_test_uris.txt
+
+# Editor & OS Metadata
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Agent & AI Skills / Private Guidelines (Tidak untuk di-upload)
+.agents/
+skills-lock.json
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+

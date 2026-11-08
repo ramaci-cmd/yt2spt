@@ -1,0 +1,20 @@
+[resolve]
+# Request per menit ke Spotify scraper (aman & cepat: 60)
+rate_per_minute = 60
+backoff_base = 2.0
+backoff_max = 120.0
+
+[match]
+# >= threshold ini → diterima otomatis
+auto_accept_threshold = 0.85
+# >= threshold ini dan < auto_accept → masuk review
+review_threshold = 0.60
+# bobot kalkulasi skor
+title_weight = 0.6
+artist_weight = 0.4
+# toleransi durasi dalam persen (0.10 = ±10%)
+duration_tolerance_pct = 0.10
+
+[export]
+# jumlah URI per blok paste
+chunk_size = 50
