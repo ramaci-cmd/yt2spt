@@ -363,7 +363,46 @@ const TRANSLATIONS = {
     modal_stats_open_studio: "Buka Review Studio & Pustaka",
     modal_theme_title: "Pilih Tema Antarmuka",
     modal_theme_sub: "Formasi 4 tema visual — sentuh ornamen warna untuk beralih tema.",
-  
+    hdr_potato_mode: "Kentang Mode",
+    hdr_potato_on: "Kentang ON",
+    hdr_theme: "Tema",
+    hdr_select_theme: "Pilih Tema",
+    hdr_processing: "Memproses...",
+    btn_open_tracks: "Buka Lagu",
+    btn_selection_mode: "Mode Pilih Lagu",
+    splitter_title: "Pemisah Genre (Smart Genre Splitter)",
+    splitter_sub: "Buat playlist Spotify terpisah berdasarkan genre dalam 1-klik",
+    splitter_open_menu: "Buka Menu",
+    splitter_close_menu: "Tutup Menu",
+    splitter_count: "{count} Genre",
+    splitter_prompt: "Pilih genre di bawah untuk melihat lagu atau salin seluruh URI Spotify:",
+    splitter_show_all: "Tampilkan Semua",
+    filter_all: "Semua",
+    filter_auto: "Cocok Otomatis",
+    filter_review: "Perlu Review",
+    filter_failed: "Belum Ketemu",
+    filter_accepted: "Diterima",
+    filter_skipped: "Dilewati (UGC)",
+    filter_skipped_title: "Lagu video/UGC YouTube yang dilewati",
+    filter_playlist_label: "Playlist:",
+    filter_genre_label: "Genre:",
+    opt_all_library_tracks: "Semua Lagu (Pustaka)",
+    opt_all_genres_label: "Semua Genre",
+    btn_view_list: "Lihat Daftar",
+    banner_skipped_notice: "{count} Lagu Dilewati Otomatis: Lagu-lagu ini berformat konten buatan pengguna (video/UGC) dari YouTube Music sehingga dilewati dari pencocokan otomatis. Anda dapat memasukkannya manual ke Spotify menggunakan tombol Edit Link Manual.",
+    banner_skipped_desc: "Lagu-lagu ini berformat konten buatan pengguna (video/UGC) dari YouTube Music sehingga dilewati dari pencocokan otomatis. Anda dapat memasukkannya manual ke Spotify menggunakan tombol Edit Link Manual.",
+    private_deleted_suffix: "privat/dihapus",
+    selected_count_suffix: "{count} dipilih",
+    count_selected_suffix: "dipilih",
+    count_genres_suffix: "Genre",
+    skipped_tracks_suffix: "Lagu Dilewati Otomatis",
+    th_select: "Pilih",
+    th_review_action: "Aksi",
+    btn_view_tracks_tip: "Lihat Lagu",
+    btn_delete_playlist_tip: "Hapus Playlist",
+    btn_select_all: "Pilih Semua",
+    btn_clear_selection: "Batalkan Pilihan",
+    yt_music_collection: "Koleksi YouTube Music",
   },
 
   en: {
@@ -719,7 +758,46 @@ const TRANSLATIONS = {
     modal_stats_open_studio: "Open Review Studio & Library",
     modal_theme_title: "Select Interface Theme",
     modal_theme_sub: "Interactive 4-theme palette — tap a color ornament to switch theme.",
-  
+    hdr_potato_mode: "Potato Mode",
+    hdr_potato_on: "Potato ON",
+    hdr_theme: "Theme",
+    hdr_select_theme: "Select Theme",
+    hdr_processing: "Processing...",
+    btn_open_tracks: "Open Tracks",
+    btn_selection_mode: "Selection Mode",
+    splitter_title: "Smart Genre Splitter",
+    splitter_sub: "Create standalone Spotify playlists by genre in 1 click",
+    splitter_open_menu: "Open Menu",
+    splitter_close_menu: "Close Menu",
+    splitter_count: "{count} Genres",
+    splitter_prompt: "Select a genre below to view tracks or copy Spotify URIs:",
+    splitter_show_all: "Show All",
+    filter_all: "All",
+    filter_auto: "Auto-Matched",
+    filter_review: "Needs Review",
+    filter_failed: "Not Found",
+    filter_accepted: "Accepted",
+    filter_skipped: "Skipped (UGC)",
+    filter_skipped_title: "User-generated content (video/UGC) skipped from auto-matching",
+    filter_playlist_label: "Playlist:",
+    filter_genre_label: "Genre:",
+    opt_all_library_tracks: "All Tracks (Library)",
+    opt_all_genres_label: "All Genres",
+    btn_view_list: "View List",
+    banner_skipped_notice: "{count} Tracks Auto-Skipped: These user-generated content (video/UGC) items from YouTube Music were skipped from automatic matching. You can manually match them to Spotify using the Edit Link button.",
+    banner_skipped_desc: "These user-generated content (video/UGC) items from YouTube Music were skipped from automatic matching. You can manually match them to Spotify using the Edit Link button.",
+    private_deleted_suffix: "private/removed",
+    selected_count_suffix: "{count} selected",
+    count_selected_suffix: "selected",
+    count_genres_suffix: "Genres",
+    skipped_tracks_suffix: "Tracks Auto-Skipped",
+    th_select: "Select",
+    th_review_action: "Review Action",
+    btn_view_tracks_tip: "View Tracks",
+    btn_delete_playlist_tip: "Delete Playlist",
+    btn_select_all: "Select All",
+    btn_clear_selection: "Clear Selection",
+    yt_music_collection: "YouTube Music Collection",
   },
 
   es: {
@@ -2091,22 +2169,22 @@ const TRANSLATIONS = {
   }
 };
 
-let currentLang = localStorage.getItem('yt2sp_lang') || 'id';
+let currentLang = (typeof localStorage !== 'undefined' && localStorage.getItem('yt2sp_lang')) || 'en';
 window.currentLang = currentLang;
 
 function t(key, fallback = "") {
-  const activeLang = window.currentLang || currentLang || 'id';
-  const dict = TRANSLATIONS[activeLang] || TRANSLATIONS['id'] || {};
+  const activeLang = window.currentLang || currentLang || 'en';
+  const dict = TRANSLATIONS[activeLang] || TRANSLATIONS['en'] || {};
   return dict[key] !== undefined ? dict[key] : (fallback || key);
 }
 
 function applyLanguage(lang) {
-  if (!TRANSLATIONS[lang]) lang = 'id';
+  if (!TRANSLATIONS[lang]) lang = 'en';
   currentLang = lang;
   window.currentLang = lang;
   document.documentElement.lang = lang;
 
-  const dict = TRANSLATIONS[lang] || TRANSLATIONS['id'] || {};
+  const dict = TRANSLATIONS[lang] || TRANSLATIONS['en'] || {};
 
   // Update elements with data-i18n
   document.querySelectorAll('[data-i18n]').forEach(el => {
@@ -2132,6 +2210,43 @@ function applyLanguage(lang) {
     }
   });
 
+  // Update header Potato Mode & Theme buttons
+  const headText = document.getElementById('header-perf-text');
+  if (headText && typeof _isPerfMode !== 'undefined') {
+    headText.innerText = _isPerfMode ? '⚡ ' + t('hdr_potato_on', 'Potato ON') : t('hdr_potato_mode', 'Potato Mode');
+  }
+  const headThemeText = document.querySelector('#header-theme-btn span');
+  if (headThemeText) {
+    headThemeText.innerText = t('hdr_theme', 'Theme');
+  }
+  // Update page header title
+  if (typeof _currentView !== 'undefined') {
+    const titleMap = {
+      overview: t('nav_overview', 'Overview'),
+      playlists: t('nav_playlists', 'My Playlists'),
+      transfer: t('guided_title', 'Guided Transfer'),
+      history: t('history_heading', 'Review & Transfer History'),
+      accounts: t('nav_accounts', 'Connected Accounts'),
+      guide: t('nav_guide', 'Help & Guide'),
+      settings: t('nav_settings', 'Settings')
+    };
+    const titleEl = document.getElementById('page-current-title');
+    if (titleEl && titleMap[_currentView]) titleEl.innerText = titleMap[_currentView];
+  }
+  // Update history select dropdown defaults
+  const plFilter = document.getElementById('history-playlist-filter');
+  if (plFilter && plFilter.options && plFilter.options[0]) {
+    plFilter.options[0].text = t('opt_all_library_tracks', 'All Tracks (Library)');
+  }
+  const genFilter = document.getElementById('history-genre-filter');
+  if (genFilter && genFilter.options && genFilter.options[0]) {
+    genFilter.options[0].text = t('opt_all_genres_label', 'All Genres');
+  }
+  const plCountEl = document.getElementById('playlist-selected-count');
+  if (plCountEl && typeof _selectedPlaylistIds !== 'undefined') {
+    plCountEl.innerText = `${_selectedPlaylistIds.size} ${t('count_selected_suffix', 'selected')}`;
+  }
+
   // Keep dropdowns synced
   const s1 = document.getElementById('lang-select');
   const s2 = document.getElementById('settings-lang-select');
@@ -2140,10 +2255,12 @@ function applyLanguage(lang) {
 }
 
 function changeLanguage(lang) {
-  if (!TRANSLATIONS[lang]) lang = 'id';
+  if (!TRANSLATIONS[lang]) lang = 'en';
   currentLang = lang;
   window.currentLang = lang;
-  localStorage.setItem('yt2sp_lang', lang);
+  try {
+    localStorage.setItem('yt2sp_lang', lang);
+  } catch (e) {}
 
   applyLanguage(lang);
 

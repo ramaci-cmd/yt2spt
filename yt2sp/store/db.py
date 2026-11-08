@@ -156,6 +156,22 @@ def get_playlist_by_ytid(yt_playlist_id: str) -> sqlite3.Row | None:
     ).fetchone()
 
 
+def get_playlist_sample_video_ids(playlist_id: int, limit: int = 4) -> list[str]:
+    """Return up to `limit` video_ids for a playlist to render a 2x2 collage artwork."""
+    rows = _get_conn().execute(
+        """
+        SELECT pt.video_id
+        FROM playlist_tracks pt
+        WHERE pt.playlist_id = ?
+        ORDER BY pt.position
+        LIMIT ?
+        """,
+        (playlist_id, limit),
+    ).fetchall()
+    return [r["video_id"] for r in rows if r["video_id"]]
+
+
+
 # ── Track ─────────────────────────────────────────────────────────────────────
 
 def upsert_track(

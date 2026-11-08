@@ -530,22 +530,22 @@
         </div>
 
         <!-- Potato / Low-Spec Mode Header Button -->
-        <button onclick="togglePerformanceMode()" id="header-perf-btn" class="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg bg-bgElevated hover:bg-borderColor border border-borderColor text-textSecondary hover:text-textPrimary text-xs font-medium nav-transition shadow-sm" title="Mode Optimalisasi Laptop Kentang (Super Ringan & 0% Lag)">
+        <button onclick="togglePerformanceMode()" id="header-perf-btn" class="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg bg-bgElevated hover:bg-borderColor border border-borderColor text-textSecondary hover:text-textPrimary text-xs font-medium nav-transition shadow-sm" data-i18n-title="hdr_potato_mode" title="Potato Mode">
           <i data-lucide="zap" id="header-perf-icon" class="w-3.5 h-3.5 text-textMuted"></i>
-          <span id="header-perf-text" class="hidden sm:inline font-medium">Kentang Mode</span>
+          <span id="header-perf-text" class="hidden sm:inline font-medium" data-i18n="hdr_potato_mode">Potato Mode</span>
         </button>
 
         <!-- Interactive Theme Switcher Button -->
         <div class="relative" id="header-theme-container">
-          <button onclick="toggleThemePopover(event, 'header')" id="header-theme-btn" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-bgElevated hover:bg-borderColor border border-borderColor text-textPrimary text-xs font-medium nav-transition shadow-sm" title="Pilih Tema">
+          <button onclick="toggleThemePopover(event, 'header')" id="header-theme-btn" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-bgElevated hover:bg-borderColor border border-borderColor text-textPrimary text-xs font-medium nav-transition shadow-sm" data-i18n-title="hdr_theme" title="Theme">
             <i data-lucide="palette" class="w-3.5 h-3.5 text-accent"></i>
-            <span class="hidden sm:inline font-medium">Tema</span>
+            <span class="hidden sm:inline font-medium" data-i18n="hdr_theme">Theme</span>
           </button>
           <div id="header-theme-popover" class="hidden absolute top-full mt-2 right-0 z-50 w-52 bg-bgCard border border-borderColor rounded-2xl shadow-2xl p-3 space-y-1 theme-popup-animate">
             <div class="flex items-center justify-between px-1 text-[11px] font-semibold text-textPrimary border-b border-borderColor/60 pb-1.5">
               <span class="flex items-center space-x-1.5">
                 <i data-lucide="palette" class="w-3.5 h-3.5 text-accent"></i>
-                <span>Pilih Tema</span>
+                <span data-i18n="hdr_select_theme">Select Theme</span>
               </span>
               <span id="hdr-theme-active-name" class="text-[10px] text-accent font-medium capitalize">Dark</span>
             </div>
@@ -780,7 +780,7 @@
               <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
               <span>Hapus Terpilih</span>
             </button>
-            <span id="playlist-selected-count" class="text-xs text-textMuted px-2">0 dipilih</span>
+            <span id="playlist-selected-count" class="text-xs text-textMuted px-2">0 selected</span>
           </div>
         </div>
 
@@ -1233,11 +1233,11 @@
           <div class="flex items-center space-x-2">
             <button onclick="tagGenreAuto()" class="px-3 py-1.5 rounded-lg bg-bgElevated hover:bg-borderColor border border-borderColor text-xs text-textSecondary hover:text-textPrimary flex items-center space-x-1.5 transition" title="Deteksi & Validasi Genre Multi-Sumber (iTunes + Deezer + Heuristik - 100% Gratis)">
               <i data-lucide="sparkles" class="w-3.5 h-3.5 text-accent"></i>
-              <span>Auto-Tag Genre</span>
+              <span data-i18n="btn_auto_tag_genre">Auto-Tag Genre</span>
             </button>
             <button onclick="toggleSelectionMode()" id="btn-toggle-selection" class="px-3 py-1.5 rounded-lg bg-bgElevated border border-borderColor text-xs text-textSecondary hover:text-textPrimary flex items-center space-x-1.5">
               <i data-lucide="check-square" class="w-3.5 h-3.5"></i>
-              <span>Mode Pilih Lagu</span>
+              <span data-i18n="btn_selection_mode">Selection Mode</span>
             </button>
           </div>
         </div>
@@ -1252,15 +1252,15 @@
               </div>
               <div class="min-w-0">
                 <div class="flex items-center space-x-2">
-                  <h4 class="text-xs font-bold text-textPrimary group-hover:text-spotifyGreen transition-colors">Pemisah Genre (Smart Genre Splitter)</h4>
-                  <span id="genre-splitter-count-badge" class="px-2 py-0.5 rounded-full text-[10px] font-mono font-medium bg-bgElevated border border-borderColor text-textSecondary">0 Genre</span>
+                  <h4 class="text-xs font-bold text-textPrimary group-hover:text-spotifyGreen transition-colors" data-i18n="splitter_title">Smart Genre Splitter</h4>
+                  <span id="genre-splitter-count-badge" class="px-2 py-0.5 rounded-full text-[10px] font-mono font-medium bg-bgElevated border border-borderColor text-textSecondary">0 Genres</span>
                 </div>
-                <p class="text-[11px] text-textMuted truncate">Buat playlist Spotify terpisah berdasarkan genre dalam 1-klik</p>
+                <p class="text-[11px] text-textMuted truncate" data-i18n="splitter_sub">Create standalone Spotify playlists by genre in 1 click</p>
               </div>
             </div>
             
             <div class="flex items-center space-x-2 flex-shrink-0 ml-3">
-              <span id="genre-splitter-toggle-hint" class="hidden sm:inline-block text-[11px] font-medium text-textMuted group-hover:text-textPrimary transition-colors">Buka Menu</span>
+              <span id="genre-splitter-toggle-hint" class="hidden sm:inline-block text-[11px] font-medium text-textMuted group-hover:text-textPrimary transition-colors" data-i18n="splitter_open_menu">Open Menu</span>
               <div class="w-7 h-7 rounded-lg bg-bgElevated group-hover:bg-borderColor border border-borderColor flex items-center justify-center transition-colors">
                 <i id="genre-splitter-arrow" data-lucide="chevron-down" class="w-4 h-4 text-textSecondary group-hover:text-textPrimary transition-transform duration-300"></i>
               </div>
@@ -1273,11 +1273,11 @@
             <div class="flex items-center justify-between gap-2 flex-wrap">
               <div class="flex items-center space-x-1.5 text-xs text-textMuted">
                 <i data-lucide="sparkles" class="w-3.5 h-3.5 text-spotifyGreen"></i>
-                <span class="text-[11px]">Pilih genre di bawah untuk melihat lagu atau salin seluruh URI Spotify:</span>
+                <span class="text-[11px]" data-i18n="splitter_prompt">Select a genre below to view tracks or copy Spotify URIs:</span>
               </div>
               <div class="flex items-center space-x-2 text-xs">
-                <button onclick="filterHistoryGenre('')" class="px-2.5 py-1 rounded-full text-[11px] font-medium bg-bgElevated hover:bg-borderColor text-textSecondary hover:text-textPrimary border border-borderColor transition">
-                  Tampilkan Semua
+                <button onclick="filterHistoryGenre('')" class="px-2.5 py-1 rounded-full text-[11px] font-medium bg-bgElevated hover:bg-borderColor text-textSecondary hover:text-textPrimary border border-borderColor transition" data-i18n="splitter_show_all">
+                  Show All
                 </button>
               </div>
             </div>
@@ -1294,13 +1294,13 @@
           <div class="flex flex-wrap items-center gap-2">
             <!-- Status Filter -->
             <div class="flex items-center space-x-1 bg-bgCard border border-borderColor p-1 rounded-lg text-xs">
-              <button onclick="filterHistoryStatus('')" id="filter-status-all" class="px-2.5 py-1 rounded bg-bgElevated text-textPrimary font-medium">Semua</button>
-              <button onclick="filterHistoryStatus('resolved_auto')" id="filter-status-auto" class="px-2.5 py-1 rounded text-textSecondary hover:text-textPrimary">Cocok Otomatis</button>
-              <button onclick="filterHistoryStatus('needs_review')" id="filter-status-review" class="px-2.5 py-1 rounded text-textSecondary hover:text-textPrimary">Perlu Review</button>
-              <button onclick="filterHistoryStatus('failed')" id="filter-status-failed" class="px-2.5 py-1 rounded text-textSecondary hover:text-textPrimary">Belum Ketemu</button>
-              <button onclick="filterHistoryStatus('accepted')" id="filter-status-accepted" class="px-2.5 py-1 rounded text-textSecondary hover:text-textPrimary">Diterima</button>
-              <button onclick="filterHistoryStatus('skipped')" id="filter-status-skipped" class="px-2.5 py-1 rounded text-textSecondary hover:text-textPrimary flex items-center space-x-1" title="Lagu video/UGC YouTube yang dilewati">
-                <span>Dilewati (UGC)</span>
+              <button onclick="filterHistoryStatus('')" id="filter-status-all" class="px-2.5 py-1 rounded bg-bgElevated text-textPrimary font-medium" data-i18n="filter_all">All</button>
+              <button onclick="filterHistoryStatus('resolved_auto')" id="filter-status-auto" class="px-2.5 py-1 rounded text-textSecondary hover:text-textPrimary" data-i18n="filter_auto">Auto-Matched</button>
+              <button onclick="filterHistoryStatus('needs_review')" id="filter-status-review" class="px-2.5 py-1 rounded text-textSecondary hover:text-textPrimary" data-i18n="filter_review">Needs Review</button>
+              <button onclick="filterHistoryStatus('failed')" id="filter-status-failed" class="px-2.5 py-1 rounded text-textSecondary hover:text-textPrimary" data-i18n="filter_failed">Not Found</button>
+              <button onclick="filterHistoryStatus('accepted')" id="filter-status-accepted" class="px-2.5 py-1 rounded text-textSecondary hover:text-textPrimary" data-i18n="filter_accepted">Accepted</button>
+              <button onclick="filterHistoryStatus('skipped')" id="filter-status-skipped" class="px-2.5 py-1 rounded text-textSecondary hover:text-textPrimary flex items-center space-x-1" data-i18n-title="filter_skipped_title" title="User-generated content (video/UGC) skipped from auto-matching">
+                <span data-i18n="filter_skipped">Skipped (UGC)</span>
                 <span id="badge-count-skipped" class="hidden px-1.5 py-0.2 rounded-full text-[10px] bg-purple-500/20 text-purple-400 font-mono">0</span>
               </button>
             </div>
@@ -1309,10 +1309,10 @@
             <div class="flex items-center space-x-1.5 bg-bgCard border border-borderColor px-2.5 py-1 rounded-lg text-xs">
               <span class="text-textMuted font-medium flex items-center space-x-1">
                 <i data-lucide="list-music" class="w-3 h-3 text-accent"></i>
-                <span>Playlist:</span>
+                <span data-i18n="filter_playlist_label">Playlist:</span>
               </span>
               <select id="history-playlist-filter" onchange="filterHistoryPlaylist(this.value)" class="bg-transparent text-textPrimary text-xs focus:outline-none cursor-pointer pr-1">
-                <option value="all" class="bg-bgCard text-textPrimary">Semua Lagu (Pustaka)</option>
+                <option value="all" class="bg-bgCard text-textPrimary" data-i18n="opt_all_library_tracks">All Tracks (Library)</option>
               </select>
             </div>
 
@@ -1320,10 +1320,10 @@
             <div class="flex items-center space-x-1.5 bg-bgCard border border-borderColor px-2.5 py-1 rounded-lg text-xs">
               <span class="text-textMuted font-medium flex items-center space-x-1">
                 <i data-lucide="tag" class="w-3 h-3 text-accent"></i>
-                <span>Genre:</span>
+                <span data-i18n="filter_genre_label">Genre:</span>
               </span>
               <select id="history-genre-filter" onchange="filterHistoryGenre(this.value)" class="bg-transparent text-textPrimary text-xs focus:outline-none cursor-pointer pr-1">
-                <option value="" class="bg-bgCard text-textPrimary">Semua Genre</option>
+                <option value="" class="bg-bgCard text-textPrimary" data-i18n="opt_all_genres_label">All Genres</option>
               </select>
             </div>
           </div>
@@ -1331,7 +1331,7 @@
           <!-- Search Input -->
           <div class="relative w-full md:w-64">
             <i data-lucide="search" class="w-3.5 h-3.5 absolute left-3 top-3 text-textMuted"></i>
-            <input type="text" id="history-search" oninput="onHistorySearchInput(this.value)" data-i18n-placeholder="ph_search_tracks" placeholder="Cari judul / artis..." class="w-full bg-bgCard border border-borderColor rounded-lg pl-9 pr-3 py-2 text-xs text-textPrimary focus:outline-none">
+            <input type="text" id="history-search" oninput="onHistorySearchInput(this.value)" data-i18n-placeholder="ph_search_tracks" placeholder="Search title / artist..." class="w-full bg-bgCard border border-borderColor rounded-lg pl-9 pr-3 py-2 text-xs text-textPrimary focus:outline-none">
           </div>
         </div>
 
@@ -1342,11 +1342,11 @@
               <i data-lucide="info" class="w-3.5 h-3.5"></i>
             </div>
             <div>
-              <span class="font-semibold text-textPrimary" id="skipped-banner-text">182 Lagu Dilewati</span>: Lagu-lagu ini berformat konten buatan pengguna (video/UGC) dari YouTube Music sehingga dilewati dari pencocokan otomatis. Anda dapat memasukkannya manual ke Spotify menggunakan tombol Edit Link Manual.
+              <span class="font-semibold text-textPrimary" id="skipped-banner-text">184 Tracks Auto-Skipped</span>: <span id="skipped-banner-desc" data-i18n="banner_skipped_desc">These user-generated content (video/UGC) items from YouTube Music were skipped from automatic matching. You can manually match them to Spotify using the Edit Link button.</span>
             </div>
           </div>
-          <button onclick="filterHistoryStatus('skipped')" class="px-3 py-1 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 font-medium text-xs transition flex-shrink-0 ml-2">
-            Lihat Daftar
+          <button onclick="filterHistoryStatus('skipped')" class="px-3 py-1 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 font-medium text-xs transition flex-shrink-0 ml-2" data-i18n="btn_view_list">
+            View List
           </button>
         </div>
 
@@ -2126,13 +2126,13 @@
 
       // Update header title
       const titleMap = {
-        overview: 'Overview',
-        playlists: 'My Playlists',
-        transfer: 'Guided Transfer',
-        history: 'Review Studio & Pustaka Lagu',
-        accounts: 'Connected Accounts',
-        guide: 'Help & Guide',
-        settings: 'Settings'
+        overview: t('nav_overview', 'Overview'),
+        playlists: t('nav_playlists', 'My Playlists'),
+        transfer: t('guided_title', 'Guided Transfer'),
+        history: t('history_heading', 'Review & Transfer History'),
+        accounts: t('nav_accounts', 'Connected Accounts'),
+        guide: t('nav_guide', 'Help & Guide'),
+        settings: t('nav_settings', 'Settings')
       };
       document.getElementById('page-current-title').innerText = titleMap[viewName] || 'YT2Spotify';
 
@@ -2370,8 +2370,9 @@
       }
     }
 
-    // ── Curated Procedural Vinyl Album Artwork Generator ──────────────────
+    // ── Curated Procedural Vinyl Album Artwork & 2x2 Collage Generator ───
     function getPlaylistArtworkHtml(p, size = 'md') {
+      const vids = Array.isArray(p.sample_video_ids) ? p.sample_video_ids.filter(Boolean) : [];
       const title = p.title || 'Playlist';
       const id = Number(p.id) || 1;
       let hash = 0;
@@ -2392,7 +2393,40 @@
       const theme = themes[paletteIndex];
       const initials = title.trim().split(/\s+/).slice(0, 2).map(w => w[0]?.toUpperCase()).join('') || 'PL';
 
+      let innerCoverHtml = '';
+      if (vids.length >= 2) {
+        const tiles = vids.length >= 4 
+          ? vids.slice(0, 4) 
+          : [vids[0], vids[1 % vids.length], vids[2 % vids.length], vids[3 % vids.length]];
+        innerCoverHtml = `
+          <div class="grid grid-cols-2 grid-rows-2 w-full h-full bg-bgCard">
+            ${tiles.map(vid => `
+              <div class="relative w-full h-full overflow-hidden bg-bgElevated">
+                <img src="https://i.ytimg.com/vi/${escapeHtml(vid)}/mqdefault.jpg" alt="" class="w-full h-full object-cover pointer-events-none" loading="lazy" onerror="this.src='https://i.ytimg.com/vi/${escapeHtml(vid)}/default.jpg'">
+              </div>
+            `).join('')}
+          </div>
+        `;
+      } else if (vids.length === 1) {
+        innerCoverHtml = `
+          <div class="relative w-full h-full overflow-hidden bg-bgElevated">
+            <img src="https://i.ytimg.com/vi/${escapeHtml(vids[0])}/mqdefault.jpg" alt="" class="w-full h-full object-cover pointer-events-none" loading="lazy" onerror="this.src='https://i.ytimg.com/vi/${escapeHtml(vids[0])}/default.jpg'">
+          </div>
+        `;
+      }
+
       if (size === 'lg') {
+        const coverBody = innerCoverHtml || `
+          <div class="flex justify-between items-center opacity-70">
+            <span class="text-[7px] font-mono font-bold tracking-widest text-white/80">VINYL</span>
+            <span class="w-1.5 h-1.5 rounded-full" style="background-color: ${theme.accent};"></span>
+          </div>
+          <span class="text-xs font-black tracking-tight text-white/90 drop-shadow">${escapeHtml(initials)}</span>
+        `;
+        const coverClasses = innerCoverHtml
+          ? 'relative w-14 h-14 rounded-xl border border-borderColor/80 shadow-md overflow-hidden z-10 bg-bgCard'
+          : `relative w-14 h-14 rounded-xl bg-gradient-to-br ${theme.bg} border ${theme.border} p-1.5 shadow-md flex flex-col justify-between overflow-hidden z-10`;
+
         return `
           <div class="relative w-14 h-14 flex-shrink-0 vinyl-sleeve cursor-pointer select-none">
             <!-- Vinyl disc peeking out -->
@@ -2401,18 +2435,22 @@
               <div class="w-1.5 h-1.5 rounded-full bg-black absolute"></div>
             </div>
             <!-- Sleeve Cover -->
-            <div class="relative w-14 h-14 rounded-xl bg-gradient-to-br ${theme.bg} border ${theme.border} p-1.5 shadow-md flex flex-col justify-between overflow-hidden z-10">
-              <div class="flex justify-between items-center opacity-70">
-                <span class="text-[7px] font-mono font-bold tracking-widest text-white/80">VINYL</span>
-                <span class="w-1.5 h-1.5 rounded-full" style="background-color: ${theme.accent};"></span>
-              </div>
-              <span class="text-xs font-black tracking-tight text-white/90 drop-shadow">${escapeHtml(initials)}</span>
+            <div class="${coverClasses}">
+              ${coverBody}
             </div>
           </div>
         `;
       }
 
       // Default md / sm size
+      if (innerCoverHtml) {
+        return `
+          <div class="w-9 h-9 rounded-lg border border-borderColor/80 shadow-sm overflow-hidden flex-shrink-0 select-none relative bg-bgCard">
+            ${innerCoverHtml}
+          </div>
+        `;
+      }
+
       return `
         <div class="w-9 h-9 rounded-lg bg-gradient-to-br ${theme.bg} border ${theme.border} p-1 shadow-sm flex flex-col justify-between flex-shrink-0 select-none overflow-hidden relative">
           <div class="flex justify-between items-center opacity-60">
@@ -2443,12 +2481,12 @@
               </div>
               <p class="text-xs text-textMuted mt-0.5 truncate">${(() => {
                 const glist = (p.genres || []).map(g => (typeof g === 'object' && g ? g.genre : g)).filter(Boolean);
-                return glist.length > 0 ? escapeHtml(glist.slice(0, 2).join(' • ')) : 'Koleksi YouTube Music';
+                return glist.length > 0 ? escapeHtml(glist.slice(0, 2).join(' • ')) : escapeHtml(t('yt_music_collection', 'YouTube Music Collection'));
               })()}</p>
             </div>
           </div>
           <button onclick="openPlaylistHistory('${p.id}')" class="px-3.5 py-1.5 rounded-lg bg-bgElevated hover:bg-borderColor text-textPrimary text-xs font-semibold border border-borderColor flex items-center space-x-1.5 shadow-sm nav-transition flex-shrink-0">
-            <span>Buka Lagu</span>
+            <span>${escapeHtml(t('btn_open_tracks', 'Open Tracks'))}</span>
             <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-textMuted group-hover:translate-x-0.5 transition-transform"></i>
           </button>
         </div>
@@ -2487,14 +2525,14 @@
             </div>
             <div class="col-span-3 text-center text-textSecondary font-medium font-mono">
               <div>${p.track_count || 0} ${t('count_songs_suffix', 'lagu')}</div>
-              ${p.unavailable_count > 0 ? `<div class="text-[10px] text-amber-400 font-sans mt-0.5 font-normal" title="${p.unavailable_count} video disembunyikan/dihapus di YouTube">(${p.unavailable_count} privat/dihapus)</div>` : ''}
+              ${p.unavailable_count > 0 ? `<div class="text-[10px] text-amber-400 font-sans mt-0.5 font-normal" title="${p.unavailable_count} ${escapeHtml(t('unavailable_video_tooltip', 'video removed or private'))}">(${p.unavailable_count} ${escapeHtml(t('private_deleted_suffix', 'private/removed'))})</div>` : ''}
             </div>
             <div class="col-span-2 hidden md:block text-textMuted font-mono text-[11px]">${dateStr}</div>
             <div class="col-span-2 text-right flex items-center justify-end space-x-1.5">
-              <button onclick="openPlaylistHistory('${p.id}')" title="Lihat Lagu" class="p-1.5 rounded hover:bg-bgElevated text-textSecondary hover:text-textPrimary">
+              <button onclick="openPlaylistHistory('${p.id}')" title="${escapeHtml(t('btn_view_tracks_tip', 'View Tracks'))}" class="p-1.5 rounded hover:bg-bgElevated text-textSecondary hover:text-textPrimary">
                 <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
               </button>
-              <button onclick="confirmDeletePlaylist(${p.id})" title="Hapus Playlist" class="p-1.5 rounded hover:bg-statusError/10 text-textMuted hover:text-statusError">
+              <button onclick="confirmDeletePlaylist(${p.id})" title="${escapeHtml(t('btn_delete_playlist_tip', 'Delete Playlist'))}" class="p-1.5 rounded hover:bg-statusError/10 text-textMuted hover:text-statusError">
                 <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
               </button>
             </div>
@@ -2508,13 +2546,13 @@
       const countEl = document.getElementById('playlist-selected-count');
       const delBtn = document.getElementById('btn-delete-selected-playlists');
       const count = _selectedPlaylistIds.size;
-      if (countEl) countEl.innerText = `${count} dipilih`;
+      if (countEl) countEl.innerText = `${count} ${t('count_selected_suffix', 'selected')}`;
       if (delBtn) {
         if (count > 0) {
           delBtn.classList.remove('hidden');
           delBtn.classList.add('inline-flex');
           const span = delBtn.querySelector('span');
-          if (span) span.innerText = `Hapus (${count}) Terpilih`;
+          if (span) span.innerText = `${t('btn_delete_selected', 'Delete')} (${count})`;
         } else {
           delBtn.classList.add('hidden');
           delBtn.classList.remove('inline-flex');
@@ -3507,7 +3545,7 @@
               banner.classList.remove('hidden');
               banner.classList.add('flex');
               const bText = document.getElementById('skipped-banner-text');
-              if (bText) bText.innerText = `${skippedCount} Lagu Dilewati Otomatis`;
+              if (bText) bText.innerText = `${skippedCount} ${t('skipped_tracks_suffix', 'Tracks Auto-Skipped')}`;
             } else {
               banner.classList.add('hidden');
               banner.classList.remove('flex');
@@ -4343,12 +4381,12 @@
       }).filter(g => g.genre);
 
       const badge = document.getElementById('genre-splitter-count-badge');
-      if (badge) badge.innerText = `${genres.length} Genre`;
+      if (badge) badge.innerText = `${genres.length} ${t('count_genres_suffix', 'Genres')}`;
 
       // 1. History Filter Dropdown (Milihin Genre)
       const filterEl = document.getElementById('history-genre-filter');
       if (filterEl) {
-        filterEl.innerHTML = '<option value="" class="bg-bgCard text-textPrimary">Semua Genre</option>' + genres.map(g => `
+        filterEl.innerHTML = `<option value="" class="bg-bgCard text-textPrimary">${escapeHtml(t('opt_all_genres_label', 'All Genres'))}</option>` + genres.map(g => `
           <option value="${escapeHtml(g.genre)}" class="bg-bgCard text-textPrimary" ${_genreFilter === g.genre ? 'selected' : ''}>
             ${escapeHtml(g.genre)} (${g.count})
           </option>
@@ -4358,7 +4396,7 @@
       // 2. History Playlist Filter Dropdown (Milihin Playlist)
       const plFilterEl = document.getElementById('history-playlist-filter');
       if (plFilterEl && _playlists && _playlists.length > 0) {
-        plFilterEl.innerHTML = '<option value="all" class="bg-bgCard text-textPrimary">Semua Lagu (Pustaka)</option>' + _playlists.map(p => `
+        plFilterEl.innerHTML = `<option value="all" class="bg-bgCard text-textPrimary">${escapeHtml(t('opt_all_library_tracks', 'All Tracks (Library)'))}</option>` + _playlists.map(p => `
           <option value="${p.id}" class="bg-bgCard text-textPrimary" ${String(_activePlaylistId) === String(p.id) ? 'selected' : ''}>
             ${escapeHtml(p.title)} (${p.track_count || 0})
           </option>

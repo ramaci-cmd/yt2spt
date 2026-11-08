@@ -28,6 +28,9 @@ def test_db_operations(tmp_path: Path):
     assert tracks[0]["video_id"] == "vid1"
     assert tracks[1]["video_id"] == "vid2"
 
+    sample_vids = db.get_playlist_sample_video_ids(pl_id, limit=4)
+    assert sample_vids == ["vid1", "vid2"]
+
     # 3. Match operations
     db.set_match(
         "vid1",

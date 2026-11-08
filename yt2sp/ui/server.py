@@ -234,6 +234,7 @@ class UIHandler(BaseHTTPRequestHandler):
                 genres = db.get_playlist_genres(p["id"])
                 p_keys = p.keys()
                 unavail = p["unavailable_count"] if "unavailable_count" in p_keys and p["unavailable_count"] else 0
+                sample_vids = db.get_playlist_sample_video_ids(p["id"], limit=4)
                 data.append({
                     "id": p["id"],
                     "yt_playlist_id": p["yt_playlist_id"],
@@ -242,6 +243,7 @@ class UIHandler(BaseHTTPRequestHandler):
                     "unavailable_count": unavail,
                     "extracted_at": p["extracted_at"],
                     "genres": [{"genre": g["genre"], "count": g["track_count"]} for g in genres],
+                    "sample_video_ids": sample_vids,
                 })
             lib_genres = db.get_all_library_genres()
             total_lib_tracks = len(db.get_all_library_tracks())
