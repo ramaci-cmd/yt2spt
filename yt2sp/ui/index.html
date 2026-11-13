@@ -5009,21 +5009,20 @@ Lagu yang terasa lebih hidup, punya dorongan ritme, atau lebih bikin kepala ikut
       const groups = [];
       let current = null;
 
-      const isHeader = (line) => {
-        const t = line.trim();
-        if (!t) return false;
-        if (/^#{1,4}\s+/.test(t)) return true;
-        // Emoji leading character
-        if (/^[\p{Emoji}\p{Extended_Pictographic}]/u.test(t)) return true;
-        // Group name ending with colon or no number prefix & short line
-        if (t.endsWith(':') && !/^\d+[\.\)]\s*/.test(t)) return true;
-        return false;
-      };
-
       const isTrack = (line) => {
         const t = line.trim();
         if (!t) return false;
         return /^\d+[\.\)]\s*/.test(t) || /^[-*•]\s*/.test(t);
+      };
+
+      const isHeader = (line) => {
+        const t = line.trim();
+        if (!t) return false;
+        if (isTrack(t)) return false;
+        if (/^#{1,6}\s+/.test(t)) return true;
+        if (/^\p{Extended_Pictographic}/u.test(t)) return true;
+        if (t.endsWith(':')) return true;
+        return false;
       };
 
       for (let i = 0; i < lines.length; i++) {
@@ -5031,7 +5030,7 @@ Lagu yang terasa lebih hidup, punya dorongan ritme, atau lebih bikin kepala ikut
         if (!line) continue;
 
         if (isHeader(line)) {
-          const cleanTitle = line.replace(/^#{1,4}\s+/, '').replace(/:$/, '').trim();
+          const cleanTitle = line.replace(/^#{1,6}\s+/, '').replace(/:$/, '').trim();
           current = {
             title: cleanTitle,
             description: '',
@@ -5045,9 +5044,9 @@ Lagu yang terasa lebih hidup, punya dorongan ritme, atau lebih bikin kepala ikut
           if (isTrack(line)) {
             const cleanTrack = line.replace(/^\d+[\.\)]\s*/, '').replace(/^[-*•]\s*/, '').trim();
             if (cleanTrack) current.rawTracks.push(cleanTrack);
-          } else if (current.rawTracks.length === 0) {
+          } else if (current.rawTracks.length === 0 && current.description === '' && !line.includes(' - ') && line.length > 40) {
             // Description directly under group header
-            current.description = current.description ? (current.description + ' ' + line) : line;
+            current.description = line;
           } else {
             current.rawTracks.push(line);
           }
@@ -5116,29 +5115,44 @@ Lagu yang terasa lebih hidup, punya dorongan ritme, atau lebih bikin kepala ikut
           const normRaw = _normalizeTrackString(rawName);
           const rawLower = rawName.toLowerCase();
 
-          // 1. Direct title exact or substring match
+          // 1. Direct title exact or lowercase match
           let found = library.find(t => {
             const tLower = (t.title || '').toLowerCase();
             const rLower = (t.result_title || '').toLowerCase();
             return tLower === rawLower || rLower === rawLower;
           });
 
-          // 2. Normalized match without (feat. ...) or brackets
+          // 2. Dash split (Artist - Title OR Title - Artist)
+          if (!found) {
+            const parts = rawName.split(/\s*[-–—:]\s*/).filter(Boolean);
+            if (parts.length >= 2) {
+              const p0 = _normalizeTrackString(parts[0]);
+              const p1 = _normalizeTrackString(parts.slice(1).join(' '));
+              found = library.find(t => {
+                const nt = _normalizeTrackString(t.title);
+                const nr = _normalizeTrackString(t.result_title);
+                return (nt && (nt === p0 || nt === p1)) || (nr && (nr === p0 || nr === p1));
+              });
+            }
+          }
+
+          // 3. Normalized match without (feat. ...) or brackets
           if (!found) {
             found = library.find(t => {
               const normTitle = _normalizeTrackString(t.title);
               const normRes = _normalizeTrackString(t.result_title);
-              return (normTitle && (normTitle === normRaw || normRaw.includes(normTitle) || normTitle.includes(normRaw))) ||
-                     (normRes && (normRes === normRaw || normRaw.includes(normRes) || normRes.includes(normRaw)));
+              return (normTitle && normTitle.length >= 3 && (normTitle === normRaw || normRaw.includes(normTitle))) ||
+                     (normRes && normRes.length >= 3 && (normRes === normRaw || normRaw.includes(normRes)));
             });
           }
 
-          // 3. Match against title + artist
+          // 4. Match against title + artist
           if (!found) {
             found = library.find(t => {
               const artStr = Array.isArray(t.artists) ? t.artists.join(' ') : (t.result_artist || '');
               const fullStr = _normalizeTrackString(`${t.title} ${artStr}`);
-              return fullStr && (fullStr.includes(normRaw) || normRaw.includes(_normalizeTrackString(t.title)));
+              const nTitle = _normalizeTrackString(t.title);
+              return fullStr && (fullStr.includes(normRaw) || (nTitle && normRaw.includes(nTitle)));
             });
           }
 
@@ -5328,18 +5342,18 @@ Lagu yang terasa lebih hidup, punya dorongan ritme, atau lebih bikin kepala ikut
         showToast('Tidak ada grup untuk disalin.');
         return;
       }
-      const blocks = [];
+      const allUris = [];
       _parsedGroups.forEach(g => {
         if (g.uris && g.uris.length > 0) {
-          blocks.push(`# ${g.title}\n${g.description ? '# ' + g.description + '\n' : ''}${g.uris.join('\n')}`);
+          allUris.push(...g.uris);
         }
       });
-      if (blocks.length === 0) {
+      if (allUris.length === 0) {
         showToast('Belum ada URI Spotify yang cocok untuk disalin.');
         return;
       }
-      await navigator.clipboard.writeText(blocks.join('\n\n'));
-      showToast('Semua grup & URI Spotify berhasil disalin ke clipboard!');
+      await navigator.clipboard.writeText(allUris.join('\n'));
+      showToast(`Total ${allUris.length} URI Spotify dari ${_parsedGroups.length} grup berhasil disalin! Siap Ctrl+V di Spotify Desktop.`);
     }
 
     // ── Review Actions ─────────────────────────────────────────────────────

@@ -5,6 +5,19 @@ Format ini mengacu pada [Keep a Changelog](https://keepachangelog.com/id/1.0.0/)
 
 ---
 
+## [1.3.1] - 2026-11-13
+
+### Diperbaiki (Fixed)
+- **Parser Deteksi Grup AI (Smart Group Playlist Builder)**:
+  - Memperbaiki bug regex Unicode di mana karakter angka nomor urut (`1.`, `2.`, `3.`) terdeteksi sebagai emoji header grup.
+  - Memastikan seluruh lagu di bawah kategori terkelompokkan dengan benar ke dalam `rawTracks` masing-masing grup.
+- **Salin Semua URI Spotify**:
+  - Tombol "Salin Semua URI Spotify" kini menyalin seluruh baris URI Spotify (`spotify:track:...`) dari semua grup secara bersih tanpa komentar markdown `# Header`. Hal ini menghilangkan masalah pada Spotify Desktop di mana aplikasi Spotify membatalkan paste atau hanya menempel 1 lagu teratas jika terdapat karakter `#`.
+- **Pencocokan Lagu Cerdas**:
+  - Menambahkan pembagian format tanda pisah (*dash split*) untuk mengenali format `Artis – Judul` maupun `Judul – Artis` terhadap database perpustakaan lagu lokal.
+
+---
+
 ## [1.3.0] - 2026-11-13
 
 ### Ditambahkan (Added)
