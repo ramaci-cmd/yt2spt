@@ -5004,32 +5004,116 @@ Lagu yang terasa lebih hidup, punya dorongan ritme, atau lebih bikin kepala ikut
       _groupDebounceTimer = setTimeout(processGroupedText, 250);
     }
 
-    function parseGroupedPlaylistText(rawText) {
-      const lines = rawText.split('\n');
+    function _cleanTrackLine(line) {
+      if (!line) return '';
+      return line.replace(/^\d+[\.\)\s\-\:\=\;\,\_]+\s*/, '').trim();
+    }
+
+    function _normalizeTrackString(str) {
+      return (str || '')
+        .toLowerCase()
+        .replace(/\[.*?\]|\(.*?\)/g, '')
+        .replace(/[^a-z0-9]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    function _extractTitleAndArtist(line) {
+      const clean = _cleanTrackLine(line);
+      if (!clean) return { title: '', artist: '' };
+      // Separators: —, –, -, =, :, ;, ,, .
+      const parts = clean.split(/\s*[\—\–\-\:\=\;\,]\s*|\s+\.\s+/).filter(Boolean);
+      if (parts.length >= 2) {
+        return {
+          title: parts[0].trim(),
+          artist: parts.slice(1).join(' ').trim()
+        };
+      }
+      return { title: clean, artist: '' };
+    }
+
+    function _findTrackInLibrary(rawName, library) {
+      if (!rawName || !library || library.length === 0) return null;
+      const clean = _cleanTrackLine(rawName);
+      const normRaw = _normalizeTrackString(clean);
+      const rawLower = clean.toLowerCase();
+
+      // 1. Direct exact or lowercase match
+      let found = library.find(t => {
+        const tLower = (t.title || '').toLowerCase();
+        const rLower = (t.result_title || '').toLowerCase();
+        return (tLower && tLower === rawLower) || (rLower && rLower === rawLower);
+      });
+      if (found) return found;
+
+      // 2. Title & Artist split with separators: —, –, -, =, :, ;, ,, .
+      const { title, artist } = _extractTitleAndArtist(rawName);
+      const pTitle = _normalizeTrackString(title);
+      const pArtist = _normalizeTrackString(artist);
+
+      if (pTitle) {
+        found = library.find(t => {
+          const nt = _normalizeTrackString(t.title);
+          const nr = _normalizeTrackString(t.result_title);
+          const na = _normalizeTrackString(t.ascii_title);
+          const nra = _normalizeTrackString(t.ascii_result);
+          if (nt === pTitle || nr === pTitle || na === pTitle || nra === pTitle) return true;
+          if (pTitle.length >= 3 && (nt.includes(pTitle) || pTitle.includes(nt))) return true;
+          if (nr && pTitle.length >= 3 && (nr.includes(pTitle) || pTitle.includes(nr))) return true;
+          if (na && pTitle.length >= 3 && (na.includes(pTitle) || pTitle.includes(na))) return true;
+          return false;
+        });
+        if (found) return found;
+      }
+
+      // 3. Normalized full title match (strip brackets, punctuation)
+      found = library.find(t => {
+        const nt = _normalizeTrackString(t.title);
+        const nr = _normalizeTrackString(t.result_title);
+        const na = _normalizeTrackString(t.ascii_title);
+        return (nt && nt.length >= 3 && (nt === normRaw || normRaw.includes(nt) || nt.includes(normRaw))) ||
+               (nr && nr.length >= 3 && (nr === normRaw || normRaw.includes(nr) || nr.includes(normRaw))) ||
+               (na && na.length >= 3 && (na === normRaw || normRaw.includes(na) || na.includes(normRaw)));
+      });
+      if (found) return found;
+
+      // 4. Token overlap (if at least 2 words match)
+      const rawTokens = normRaw.split(' ').filter(w => w.length >= 2);
+      if (rawTokens.length >= 2) {
+        let bestT = null;
+        let bestOverlap = 0;
+        library.forEach(t => {
+          const tTokens = new Set(_normalizeTrackString(t.title + ' ' + (t.ascii_title || '')).split(' ').filter(w => w.length >= 2));
+          let overlap = 0;
+          rawTokens.forEach(w => { if (tTokens.has(w)) overlap++; });
+          if (overlap >= 2 && overlap > bestOverlap) {
+            bestOverlap = overlap;
+            bestT = t;
+          }
+        });
+        if (bestT) return bestT;
+      }
+
+      return null;
+    }
+
+    function parseGroupedPlaylistText(rawText, library = []) {
+      const lines = rawText.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
       const groups = [];
       let current = null;
 
-      const isTrack = (line) => {
-        const t = line.trim();
-        if (!t) return false;
-        return /^\d+[\.\)]\s*/.test(t) || /^[-*•]\s*/.test(t);
-      };
-
-      const isHeader = (line) => {
-        const t = line.trim();
-        if (!t) return false;
-        if (isTrack(t)) return false;
-        if (/^#{1,6}\s+/.test(t)) return true;
-        if (/^\p{Extended_Pictographic}/u.test(t)) return true;
-        if (t.endsWith(':')) return true;
-        return false;
-      };
-
       for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim();
-        if (!line) continue;
+        const line = lines[i];
 
-        if (isHeader(line)) {
+        const isExplicitHeader = /^#{1,6}\s+/.test(line) ||
+          (line.endsWith(':') && !/^\d+[\.\)]/.test(line)) ||
+          (/^\p{Extended_Pictographic}/u.test(line) && !/^\d+[\.\)]/.test(line) && !line.includes(' - ') && !line.includes(' — '));
+
+        const hasNumberPrefix = /^\d+[\.\)\s\-\:\=\;\,]+\s*/.test(line);
+        const matchedTrack = _findTrackInLibrary(line, library);
+        const isTrack = Boolean(matchedTrack) || hasNumberPrefix;
+
+        if (isExplicitHeader || (!isTrack && i < lines.length - 1)) {
           const cleanTitle = line.replace(/^#{1,6}\s+/, '').replace(/:$/, '').trim();
           current = {
             title: cleanTitle,
@@ -5040,36 +5124,20 @@ Lagu yang terasa lebih hidup, punya dorongan ritme, atau lebih bikin kepala ikut
           continue;
         }
 
-        if (current) {
-          if (isTrack(line)) {
-            const cleanTrack = line.replace(/^\d+[\.\)]\s*/, '').replace(/^[-*•]\s*/, '').trim();
-            if (cleanTrack) current.rawTracks.push(cleanTrack);
-          } else if (current.rawTracks.length === 0 && current.description === '' && !line.includes(' - ') && line.length > 40) {
-            // Description directly under group header
-            current.description = line;
-          } else {
-            current.rawTracks.push(line);
-          }
-        } else {
-          // Track before any header
+        if (!current) {
           current = {
             title: '🎵 Playlist Kustom',
             description: '',
-            rawTracks: [line.replace(/^\d+[\.\)]\s*/, '').replace(/^[-*•]\s*/, '').trim()]
+            rawTracks: []
           };
           groups.push(current);
         }
-      }
-      return groups;
-    }
 
-    function _normalizeTrackString(str) {
-      return (str || '')
-        .toLowerCase()
-        .replace(/\[.*?\]|\(.*?\)/g, '')
-        .replace(/[^a-z0-9]/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
+        const cleanTrack = _cleanTrackLine(line);
+        current.rawTracks.push(cleanTrack || line);
+      }
+
+      return groups;
     }
 
     async function processGroupedText() {
@@ -5103,7 +5171,7 @@ Lagu yang terasa lebih hidup, punya dorongan ritme, atau lebih bikin kepala ikut
       }
 
       const library = (_allLibraryTracksCache && _allLibraryTracksCache.length > 0) ? _allLibraryTracksCache : (_tracks || []);
-      const parsed = parseGroupedPlaylistText(text);
+      const parsed = parseGroupedPlaylistText(text, library);
 
       let totalMatchedAll = 0;
       let totalTracksAll = 0;
@@ -5112,50 +5180,7 @@ Lagu yang terasa lebih hidup, punya dorongan ritme, atau lebih bikin kepala ikut
       _parsedGroups = parsed.map(g => {
         const matchedItems = g.rawTracks.map(rawName => {
           totalTracksAll++;
-          const normRaw = _normalizeTrackString(rawName);
-          const rawLower = rawName.toLowerCase();
-
-          // 1. Direct title exact or lowercase match
-          let found = library.find(t => {
-            const tLower = (t.title || '').toLowerCase();
-            const rLower = (t.result_title || '').toLowerCase();
-            return tLower === rawLower || rLower === rawLower;
-          });
-
-          // 2. Dash split (Artist - Title OR Title - Artist)
-          if (!found) {
-            const parts = rawName.split(/\s*[-–—:]\s*/).filter(Boolean);
-            if (parts.length >= 2) {
-              const p0 = _normalizeTrackString(parts[0]);
-              const p1 = _normalizeTrackString(parts.slice(1).join(' '));
-              found = library.find(t => {
-                const nt = _normalizeTrackString(t.title);
-                const nr = _normalizeTrackString(t.result_title);
-                return (nt && (nt === p0 || nt === p1)) || (nr && (nr === p0 || nr === p1));
-              });
-            }
-          }
-
-          // 3. Normalized match without (feat. ...) or brackets
-          if (!found) {
-            found = library.find(t => {
-              const normTitle = _normalizeTrackString(t.title);
-              const normRes = _normalizeTrackString(t.result_title);
-              return (normTitle && normTitle.length >= 3 && (normTitle === normRaw || normRaw.includes(normTitle))) ||
-                     (normRes && normRes.length >= 3 && (normRes === normRaw || normRaw.includes(normRes)));
-            });
-          }
-
-          // 4. Match against title + artist
-          if (!found) {
-            found = library.find(t => {
-              const artStr = Array.isArray(t.artists) ? t.artists.join(' ') : (t.result_artist || '');
-              const fullStr = _normalizeTrackString(`${t.title} ${artStr}`);
-              const nTitle = _normalizeTrackString(t.title);
-              return fullStr && (fullStr.includes(normRaw) || (nTitle && normRaw.includes(nTitle)));
-            });
-          }
-
+          const found = _findTrackInLibrary(rawName, library);
           const spotifyId = found?.spotify_id || '';
           const isMatched = Boolean(spotifyId);
           if (isMatched) totalMatchedAll++;
@@ -5164,8 +5189,8 @@ Lagu yang terasa lebih hidup, punya dorongan ritme, atau lebih bikin kepala ikut
             rawName,
             track: found || null,
             video_id: found?.video_id || null,
-            title: found?.title || found?.result_title || rawName,
-            artist: found ? (Array.isArray(found.artists) ? found.artists.join(', ') : (found.result_artist || '')) : '',
+            title: found?.title || found?.result_title || _extractTitleAndArtist(rawName).title || rawName,
+            artist: found ? (Array.isArray(found.artists) ? found.artists.join(', ') : (found.result_artist || '')) : _extractTitleAndArtist(rawName).artist,
             spotify_id: spotifyId,
             spotify_uri: spotifyId ? `spotify:track:${spotifyId}` : null
           };

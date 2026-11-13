@@ -317,9 +317,15 @@ class UIHandler(BaseHTTPRequestHandler):
                         q_search not in t_genre.lower()):
                         continue
 
+                import unidecode
+                t_ascii = unidecode.unidecode(t_title) if t_title else ""
+                r_title = t["result_title"] if "result_title" in t.keys() and t["result_title"] else ""
+                r_ascii = unidecode.unidecode(r_title) if r_title else ""
+
                 tracks.append({
                     "video_id": t["video_id"],
                     "title": t_title,
+                    "ascii_title": t_ascii,
                     "artists": artists,
                     "album": t_album,
                     "duration_s": round((t["duration_ms"] or 0) / 1000),
@@ -328,7 +334,8 @@ class UIHandler(BaseHTTPRequestHandler):
                     "score": t["score"],
                     "spotify_id": t["spotify_id"] or "",
                     "reason": t["reason"] or "",
-                    "result_title": t["result_title"] if "result_title" in t.keys() and t["result_title"] else "",
+                    "result_title": r_title,
+                    "ascii_result": r_ascii,
                     "genre_source": t["genre_source"] if "genre_source" in t.keys() and t["genre_source"] else "",
                     "in_playlists": in_playlists,
                 })

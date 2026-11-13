@@ -5,6 +5,18 @@ Format ini mengacu pada [Keep a Changelog](https://keepachangelog.com/id/1.0.0/)
 
 ---
 
+## [1.3.2] - 2026-11-14
+
+### Ditambahkan & Ditingkatkan (Added & Improved)
+- **Parser Teks Cerdas Bebas Format (Smart Group Playlist Builder)**:
+  - Kebal terhadap spasi berlebih dan jeda baris kosong ganda (*multi-line breaks*).
+  - Judul playlist dideteksi secara cerdas: jika baris pertama tidak cocok dengan lagu di pustaka, baris tersebut langsung dijadikan judul playlist. Jika langsung berupa lagu, otomatis masuk ke grup default.
+  - Mendukung input lagu vertikal (cukup Enter ke bawah) tanpa perlu nomor urut di depan.
+  - Mendukung berbagai simbol pemisah judul dan artis: `=`, `:`, `;`, `.`, `,`, `—`, `–`, `-`.
+  - Peningkatan pencocokan multibahasa/transliterasi (romaji katakana/kanji) via `ascii_title` dan `ascii_result` di endpoint `/api/tracks`.
+
+---
+
 ## [1.3.1] - 2026-11-13
 
 ### Diperbaiki (Fixed)
