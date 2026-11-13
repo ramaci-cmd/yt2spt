@@ -5,6 +5,18 @@ Format ini mengacu pada [Keep a Changelog](https://keepachangelog.com/id/1.0.0/)
 
 ---
 
+## [1.3.5] - 2026-11-14
+
+### Diperbaiki (Fixed)
+- **Pembersihan Prefiks Nomor Lagu Fleksibel (`No.`, `#`, `Track`)**:
+  - Mendukung input lagu dengan format `No. 7 — `, `No 1. `, `#1 - `, atau format nomor lainnya tanpa merusak pembacaan judul lagu.
+  - Aman dari kesalahan pemotongan judul lagu yang mengandung format jam/waktu seperti `1:15 AM`.
+- **Penghapusan Pemisahan Lagu Berbasis Simbol Liar**:
+  - Menghapus pemisahan judul/artis menggunakan simbol `=`, `:`, `;`, `,`, `.` yang sebelumnya merusak judul lagu dengan koma (misal: *Space, Circumstances, Time, and Events*), titik (*Entah...*), atau titik dua (*1:15 AM*). Pemisah judul lagu kini hanya menggunakan pemisah standar (`—`, `–`, `-`, `|`).
+  - Memperbaiki deteksi nama playlist agar tidak lagi menganggap setiap baris lagu sebagai nama playlist baru saat menempelkan daftar lagu massal.
+
+---
+
 ## [1.3.4] - 2026-11-14
 
 ### Diperbaiki (Fixed)

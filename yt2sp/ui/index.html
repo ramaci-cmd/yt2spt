@@ -636,13 +636,13 @@
           <div class="space-y-1.5">
             <div class="inline-flex items-center space-x-2 text-xs font-medium text-textSecondary">
               <span class="w-1.5 h-1.5 rounded-full bg-spotifyGreen animate-pulse"></span>
-              <span id="overview-version-pill" data-i18n="overview_version_badge">v1.3.4 &bull; Multi-Pass</span>
+              <span id="overview-version-pill" data-i18n="overview_version_badge">v1.3.5 &bull; Multi-Pass</span>
             </div>
             <h2 class="text-2xl md:text-3xl lg:text-4xl font-bold text-textPrimary tracking-tight" data-i18n="overview_welcome">Your music, unified & ported.</h2>
             <p class="text-xs md:text-sm text-textSecondary" data-i18n="overview_subtitle">Pindahkan seluruh playlist YouTube Music Anda ke Spotify secara presisi tanpa kehilangan urutan lagu.</p>
           </div>
           <div class="flex items-center space-x-2.5">
-            <span id="overview-version-badge" class="text-xs font-mono text-textMuted px-2.5 py-1 rounded-lg bg-bgElevated border border-borderColor">v1.3.4 &bull; Multi-Pass</span>
+            <span id="overview-version-badge" class="text-xs font-mono text-textMuted px-2.5 py-1 rounded-lg bg-bgElevated border border-borderColor">v1.3.5 &bull; Multi-Pass</span>
           </div>
         </div>
 
@@ -2809,7 +2809,7 @@
 
         // Dynamic System Version Sync
         if (data.version_badge) {
-          window.__appVersion = data.version || 'v1.3.4';
+          window.__appVersion = data.version || 'v1.3.5';
           window.__appVersionBadge = data.version_badge;
           const pill = document.getElementById('overview-version-pill');
           if (pill) pill.innerText = data.version_badge;
@@ -5004,9 +5004,11 @@ Lagu yang terasa lebih hidup, punya dorongan ritme, atau lebih bikin kepala ikut
       _groupDebounceTimer = setTimeout(processGroupedText, 250);
     }
 
+    const TRACK_PREFIX_REGEX = /^(?:no\.?|#|track)?\s*\d+(?:\.|\)|(?:\s*[\—\–\-]\s*)|\s+(?!\d{1,2}(?:am|pm|\:)))\s*/i;
+
     function _cleanTrackLine(line) {
       if (!line) return '';
-      return line.replace(/^\d+[\.\)\s\-\:\=\;\,\_]+\s*/, '').trim();
+      return line.replace(TRACK_PREFIX_REGEX, '').trim();
     }
 
     function _normalizeTrackString(str) {
@@ -5028,8 +5030,8 @@ Lagu yang terasa lebih hidup, punya dorongan ritme, atau lebih bikin kepala ikut
     function _extractTitleAndArtist(line) {
       const clean = _cleanTrackLine(line);
       if (!clean) return { title: '', artist: '' };
-      // Separators: —, –, -, =, :, ;, ,, .
-      const parts = clean.split(/\s*[\—\–\-\:\=\;\,]\s*|\s+\.\s+/).filter(Boolean);
+      // Hanya pemisah lagu standar: —, –, -, |
+      const parts = clean.split(/\s*[\—\–\-\|]\s*/).filter(Boolean);
       if (parts.length >= 2) {
         return {
           title: parts[0].trim(),
@@ -5124,15 +5126,21 @@ Lagu yang terasa lebih hidup, punya dorongan ritme, atau lebih bikin kepala ikut
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
 
-        const isExplicitHeader = /^#{1,6}\s+/.test(line) ||
-          (line.endsWith(':') && !/^\d+[\.\)]/.test(line)) ||
-          (/^\p{Extended_Pictographic}/u.test(line) && !/^\d+[\.\)]/.test(line) && !line.includes(' - ') && !line.includes(' — '));
+        const hasTrackSeparator = /[\—\–\-\|]/.test(line);
+        const hasNumberPrefix = TRACK_PREFIX_REGEX.test(line);
 
-        const hasNumberPrefix = /^\d+[\.\)\s\-\:\=\;\,]+\s*/.test(line);
+        const isExplicitHeader = (!hasTrackSeparator && !hasNumberPrefix) && (
+          /^#{1,6}\s+/.test(line) ||
+          line.endsWith(':') ||
+          /^\p{Extended_Pictographic}/u.test(line)
+        );
+
         const matchedTrack = _findTrackInLibrary(line, library);
-        const isTrack = Boolean(matchedTrack) || hasNumberPrefix;
+        const isTrack = Boolean(matchedTrack) || hasNumberPrefix || hasTrackSeparator;
 
-        if (isExplicitHeader || (!isTrack && i < lines.length - 1)) {
+        const isFirstLineTitle = (i === 0 && !isTrack && lines.length > 1);
+
+        if (isExplicitHeader || isFirstLineTitle) {
           const cleanTitle = line.replace(/^#{1,6}\s+/, '').replace(/:$/, '').trim();
           current = {
             title: cleanTitle,
