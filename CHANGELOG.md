@@ -5,6 +5,20 @@ Format ini mengacu pada [Keep a Changelog](https://keepachangelog.com/id/1.0.0/)
 
 ---
 
+## [1.3.6] - 2026-11-14
+
+### Ditambahkan & Ditingkatkan (Added & Improved)
+- **Tautkan Link Spotify Langsung di Smart Group Playlist Builder (Tanpa Bolak-Balik)**:
+  - Setiap lagu yang belum dicocokkan kini memiliki tombol `+ Tautkan Link` langsung di baris lagu.
+  - Membuka form input tautan Spotify instan; mendukung URL Spotify (`https://open.spotify.com/track/...`) maupun URI Spotify.
+  - Sekali disimpan, lagu langsung berstatus hijau (`Cocok Spotify`), URI langsung masuk ke daftar salin, dan otomatis disinkronkan ke database jika video ID terdaftar.
+- **Prioritas Tampilan Lagu yang Perlu Verifikasi di Tab Needs Review**:
+  - Lagu-lagu yang belum dicocokkan dari builder secara otomatis diprioritaskan di baris paling atas saat membuka tab *Needs Review*.
+  - Diberikan aksen visual khusus (latar belakang amber dengan garis batas tepi kiri menyala dan lencana `Prioritas Verifikasi`) agar pengguna dapat langsung mengenali dan memverifikasinya dengan cepat.
+  - Disediakan tombol jalan pintas `Buka di Tab Needs Review` pada banner notifikasi Smart Group Playlist Builder.
+
+---
+
 ## [1.3.5] - 2026-11-14
 
 ### Diperbaiki (Fixed)
