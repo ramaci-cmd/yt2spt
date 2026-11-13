@@ -120,6 +120,53 @@
       --accent-hover: #B899FF;
     }
 
+    /* iOS 26 Liquid Glass Design System */
+    [data-theme="glass"] {
+      --bg-main: #060913;
+      --bg-sidebar: rgba(10, 16, 30, 0.65);
+      --bg-card: rgba(15, 23, 42, 0.48);
+      --bg-elevated: rgba(30, 41, 68, 0.55);
+      --border-color: rgba(255, 255, 255, 0.12);
+      --border-highlight: rgba(255, 255, 255, 0.22);
+      --text-primary: #FFFFFF;
+      --text-secondary: #CBD5E1;
+      --text-muted: #8FA2BF;
+      --accent: #38BDF8;
+      --accent-hover: #7DD3FC;
+      --color-overlay-dark: rgba(4, 7, 15, 0.85);
+      --shadow-card-depth: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
+      --shadow-elevated-depth: 0 12px 40px 0 rgba(0, 0, 0, 0.55);
+    }
+
+    [data-theme="glass"] body {
+      background: radial-gradient(circle at 12% 18%, rgba(56, 189, 248, 0.10) 0%, transparent 40%),
+                  radial-gradient(circle at 88% 22%, rgba(168, 85, 247, 0.09) 0%, transparent 45%),
+                  radial-gradient(circle at 50% 85%, rgba(16, 185, 129, 0.08) 0%, transparent 50%),
+                  #060913;
+      background-attachment: fixed;
+    }
+
+    [data-theme="glass"] .bg-bgCard,
+    [data-theme="glass"] .bg-bgSidebar,
+    [data-theme="glass"] .bg-bgElevated,
+    [data-theme="glass"] #history-genre-splitter-card,
+    [data-theme="glass"] .playlist-card-item {
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.14), 0 8px 32px 0 rgba(0, 0, 0, 0.35);
+    }
+
+    [data-theme="glass"] #app-sidebar {
+      backdrop-filter: blur(24px) saturate(190%);
+      -webkit-backdrop-filter: blur(24px) saturate(190%);
+      border-right: 1px solid rgba(255, 255, 255, 0.10);
+    }
+
+    [data-theme="glass"] .playlist-card-item:hover {
+      border-color: rgba(56, 189, 248, 0.45);
+      box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.25), 0 12px 36px 0 rgba(0, 0, 0, 0.45);
+    }
+
     html, body {
       overflow-x: clip;
     }
@@ -265,6 +312,22 @@
       border: 1px solid var(--border-color);
       box-shadow: var(--shadow-elevated-depth), inset 0 1px 0 var(--border-highlight, var(--color-white-translucent-08));
     }
+    .playlist-card-item {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+    }
+    .playlist-card-item:hover {
+      background-color: var(--bg-elevated);
+      border-color: rgba(255, 255, 255, 0.22);
+      box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.35);
+    }
+    [data-theme="light"] .playlist-card-item:hover {
+      border-color: rgba(0, 0, 0, 0.2);
+    }
+    [data-theme="purple"] .playlist-card-item:hover {
+      border-color: rgba(168, 85, 247, 0.45);
+    }
     .vinyl-sleeve {
       perspective: 800px;
     }
@@ -315,6 +378,49 @@
       background-color: var(--color-dropzone-highlight) !important;
       box-shadow: inset 0 0 0 1px var(--accent) !important;
     }
+
+    /* Sidebar Auto-Collapse & Pinned states */
+    @media (min-width: 768px) {
+      #app-sidebar {
+        transition: width 240ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 240ms ease !important;
+        will-change: width;
+        overflow-x: hidden;
+      }
+      #app-sidebar.sidebar-collapsed {
+        width: 4.25rem !important; /* 68px */
+      }
+      #app-sidebar.sidebar-collapsed .sidebar-label {
+        display: none !important;
+      }
+      #app-sidebar.sidebar-collapsed .sidebar-divider {
+        display: block !important;
+      }
+      #app-sidebar.sidebar-collapsed .sidebar-header-box {
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+        justify-content: center !important;
+      }
+      #app-sidebar.sidebar-collapsed nav button,
+      #app-sidebar.sidebar-collapsed .sidebar-bottom-box > button,
+      #app-sidebar.sidebar-collapsed #sidebar-theme-btn {
+        justify-content: center !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+      }
+      #app-sidebar.sidebar-collapsed .sidebar-bottom-box {
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+      }
+      #app-sidebar.sidebar-collapsed .sidebar-compact-hide {
+        display: none !important;
+      }
+      #app-sidebar:not(.sidebar-collapsed) {
+        width: 15rem !important; /* 240px */
+      }
+      #app-sidebar.sidebar-hover-floating {
+        box-shadow: 4px 0 24px -2px rgba(0, 0, 0, 0.45);
+      }
+    }
   </style>
 </head>
 <body class="min-h-screen flex antialiased">
@@ -332,12 +438,12 @@
   <div id="mobile-backdrop" onclick="toggleMobileSidebar()" class="fixed inset-0 bg-black/60 z-30 hidden md:hidden"></div>
 
   <!-- PERSISTENT LEFT SIDEBAR -->
-  <aside id="app-sidebar" class="w-60 bg-bgSidebar border-r border-borderColor flex flex-col justify-between fixed md:sticky top-0 h-screen z-40 transition-transform -translate-x-full md:translate-x-0 select-none">
+  <aside id="app-sidebar" class="w-60 bg-bgSidebar border-r border-borderColor flex flex-col justify-between fixed md:sticky top-0 h-screen z-40 transition-transform -translate-x-full md:translate-x-0 select-none sidebar-collapsed">
     <div class="flex flex-col">
       <!-- Top Brand Logo -->
-      <div class="h-16 px-5 border-b border-borderColor flex items-center justify-between">
-        <div class="flex items-center space-x-2.5">
-          <div class="flex items-center -space-x-1.5">
+      <div class="h-16 px-5 border-b border-borderColor flex items-center justify-between sidebar-header-box">
+        <div class="flex items-center space-x-2.5 overflow-hidden">
+          <div class="flex items-center -space-x-1.5 flex-shrink-0">
             <div class="w-7 h-7 rounded-full bg-red-600 flex items-center justify-center ring-2 ring-bgSidebar z-10 shadow-sm">
               <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                 <circle cx="12" cy="12" r="7" fill="none" stroke="currentColor" stroke-width="1.8"/>
@@ -350,9 +456,9 @@
               </svg>
             </div>
           </div>
-          <div>
-            <h1 class="text-sm font-semibold tracking-tight text-textPrimary leading-none">YT2Spotify</h1>
-            <p class="text-[11px] text-textMuted mt-1 font-normal" data-i18n="app_cost_badge">Smart Sync</p>
+          <div class="sidebar-label min-w-0">
+            <h1 class="text-sm font-semibold tracking-tight text-textPrimary leading-none truncate">YT2Spotify</h1>
+            <p class="text-[11px] text-textMuted mt-1 font-normal truncate" data-i18n="app_cost_badge">Smart Sync</p>
           </div>
         </div>
         <button onclick="toggleMobileSidebar()" class="md:hidden text-textMuted hover:text-textPrimary p-1">
@@ -362,150 +468,56 @@
 
       <!-- Main Navigation -->
       <nav class="p-3 space-y-1">
-        <p class="px-3 pt-2 pb-1.5 text-[11px] font-medium text-textMuted" data-i18n="nav_menu">Menu</p>
+        <p class="sidebar-label px-3 pt-2 pb-1.5 text-[11px] font-medium text-textMuted" data-i18n="nav_menu">Menu</p>
+        <div class="sidebar-divider hidden my-2 mx-auto w-6 h-[1px] bg-borderColor/60"></div>
 
-        <button onclick="switchView('overview')" id="nav-overview" class="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-[13px] font-medium nav-transition bg-bgElevated text-textPrimary">
-          <i data-lucide="layout-dashboard" class="w-4 h-4 text-accent"></i>
-          <span data-i18n="nav_overview">Overview</span>
+        <button onclick="switchView('overview')" id="nav-overview" class="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-[13px] font-medium nav-transition bg-bgElevated text-textPrimary" title="Overview">
+          <i data-lucide="layout-dashboard" class="w-4 h-4 text-accent flex-shrink-0"></i>
+          <span class="sidebar-label truncate" data-i18n="nav_overview">Overview</span>
         </button>
 
-        <button onclick="switchView('playlists')" id="nav-playlists" class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-[13px] font-medium nav-transition text-textSecondary hover:text-textPrimary hover:bg-bgElevated/50">
-          <div class="flex items-center space-x-3">
-            <i data-lucide="music-2" class="w-4 h-4"></i>
-            <span data-i18n="nav_playlists">My Playlists</span>
+        <button onclick="switchView('playlists')" id="nav-playlists" class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-[13px] font-medium nav-transition text-textSecondary hover:text-textPrimary hover:bg-bgElevated/50" title="My Playlists">
+          <div class="flex items-center space-x-3 min-w-0">
+            <i data-lucide="music-2" class="w-4 h-4 flex-shrink-0"></i>
+            <span class="sidebar-label truncate" data-i18n="nav_playlists">My Playlists</span>
           </div>
-          <span id="nav-badge-playlists" class="text-[11px] px-1.5 py-0.5 rounded bg-bgCard border border-borderColor text-textMuted">0</span>
+          <span id="nav-badge-playlists" class="sidebar-label text-[11px] px-1.5 py-0.5 rounded bg-bgCard border border-borderColor text-textMuted">0</span>
         </button>
 
-        <button onclick="startNewTransferFlow()" id="nav-transfer" class="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-[13px] font-medium nav-transition text-textSecondary hover:text-textPrimary hover:bg-bgElevated/50">
-          <i data-lucide="arrow-right-left" class="w-4 h-4"></i>
-          <span data-i18n="nav_transfer">New Transfer</span>
+        <button onclick="startNewTransferFlow()" id="nav-transfer" class="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-[13px] font-medium nav-transition text-textSecondary hover:text-textPrimary hover:bg-bgElevated/50" title="New Transfer">
+          <i data-lucide="arrow-right-left" class="w-4 h-4 flex-shrink-0"></i>
+          <span class="sidebar-label truncate" data-i18n="nav_transfer">New Transfer</span>
         </button>
 
-        <button onclick="switchView('history')" id="nav-history" class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-[13px] font-medium nav-transition text-textSecondary hover:text-textPrimary hover:bg-bgElevated/50">
-          <div class="flex items-center space-x-3">
-            <i data-lucide="history" class="w-4 h-4"></i>
-            <span data-i18n="nav_history">Review & History</span>
+        <button onclick="switchView('history')" id="nav-history" class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-[13px] font-medium nav-transition text-textSecondary hover:text-textPrimary hover:bg-bgElevated/50" title="Review & History">
+          <div class="flex items-center space-x-3 min-w-0">
+            <i data-lucide="history" class="w-4 h-4 flex-shrink-0"></i>
+            <span class="sidebar-label truncate" data-i18n="nav_history">Review & History</span>
           </div>
-          <span id="nav-badge-review" class="text-[11px] px-1.5 py-0.5 rounded bg-statusWarning/10 text-statusWarning border border-statusWarning/20 hidden">0</span>
+          <span id="nav-badge-review" class="sidebar-label text-[11px] px-1.5 py-0.5 rounded bg-statusWarning/10 text-statusWarning border border-statusWarning/20 hidden">0</span>
         </button>
 
-        <p class="px-3 pt-4 pb-1.5 text-[11px] font-medium text-textMuted" data-i18n="nav_connections">Connections</p>
+        <p class="sidebar-label px-3 pt-4 pb-1.5 text-[11px] font-medium text-textMuted" data-i18n="nav_connections">Connections</p>
+        <div class="sidebar-divider hidden my-2 mx-auto w-6 h-[1px] bg-borderColor/60"></div>
 
-        <button onclick="switchView('accounts')" id="nav-accounts" class="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-[13px] font-medium nav-transition text-textSecondary hover:text-textPrimary hover:bg-bgElevated/50">
-          <i data-lucide="link-2" class="w-4 h-4"></i>
-          <span data-i18n="nav_accounts">Connected Accounts</span>
+        <button onclick="switchView('accounts')" id="nav-accounts" class="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-[13px] font-medium nav-transition text-textSecondary hover:text-textPrimary hover:bg-bgElevated/50" title="Connected Accounts">
+          <i data-lucide="link-2" class="w-4 h-4 flex-shrink-0"></i>
+          <span class="sidebar-label truncate" data-i18n="nav_accounts">Connected Accounts</span>
         </button>
       </nav>
     </div>
 
     <!-- Bottom Sidebar Section -->
-    <div class="p-3 border-t border-borderColor space-y-1">
-      <button onclick="switchView('guide')" id="nav-guide" class="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-[13px] font-medium nav-transition text-textSecondary hover:text-textPrimary hover:bg-bgElevated/50">
-        <i data-lucide="circle-help" class="w-4 h-4"></i>
-        <span data-i18n="nav_guide">Help & Guide</span>
+    <div class="p-3 border-t border-borderColor space-y-1 sidebar-bottom-box">
+      <button onclick="switchView('guide')" id="nav-guide" class="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-[13px] font-medium nav-transition text-textSecondary hover:text-textPrimary hover:bg-bgElevated/50" title="Help & Guide">
+        <i data-lucide="circle-help" class="w-4 h-4 flex-shrink-0"></i>
+        <span class="sidebar-label truncate" data-i18n="nav_guide">Help & Guide</span>
       </button>
 
-      <button onclick="switchView('settings')" id="nav-settings" class="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-[13px] font-medium nav-transition text-textSecondary hover:text-textPrimary hover:bg-bgElevated/50">
-        <i data-lucide="settings" class="w-4 h-4"></i>
-        <span data-i18n="nav_settings">Settings</span>
+      <button onclick="switchView('settings')" id="nav-settings" class="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-[13px] font-medium nav-transition text-textSecondary hover:text-textPrimary hover:bg-bgElevated/50" title="Settings">
+        <i data-lucide="settings" class="w-4 h-4 flex-shrink-0"></i>
+        <span class="sidebar-label truncate" data-i18n="nav_settings">Settings</span>
       </button>
-
-      <!-- Theme & Language Selectors -->
-      <div class="pt-2 space-y-1.5 relative" id="sidebar-theme-container">
-        <!-- Compact Theme Popover right above the button ("di atas tombol nya") -->
-        <div id="theme-compact-popover" class="hidden absolute bottom-full mb-2 left-0 right-0 z-50 bg-bgCard border border-borderColor rounded-2xl shadow-2xl p-3 space-y-1 theme-popup-animate">
-          <div class="flex items-center justify-between px-1 text-[11px] font-semibold text-textPrimary border-b border-borderColor/60 pb-1.5">
-            <span class="flex items-center space-x-1.5">
-              <i data-lucide="palette" class="w-3.5 h-3.5 text-accent"></i>
-              <span>Pilih Tema</span>
-            </span>
-            <span id="theme-popover-active-name" class="text-[10px] text-accent font-medium capitalize">Dark</span>
-          </div>
-
-          <!-- Rotated Diamond / 4-Color Square Stage -->
-          <div class="relative w-44 h-44 mx-auto flex items-center justify-center my-1 select-none" onmouseleave="resetThemePreview()">
-            <!-- Rotated square frame (45 deg) -->
-            <div class="absolute w-28 h-28 rounded-xl border border-dashed border-borderColor/80 rotate-45 pointer-events-none transition-colors"></div>
-            <div class="absolute w-28 h-28 rounded-xl bg-bgElevated/25 rotate-45 pointer-events-none"></div>
-
-            <!-- Center Orb with Preview -->
-            <div class="relative z-10 w-16 h-16 rounded-full bg-bgElevated border border-borderColor/80 shadow-inner flex flex-col items-center justify-center p-1 text-center pointer-events-none transition-transform">
-              <span id="theme-hover-preview" class="text-[10px] font-bold text-textPrimary capitalize leading-tight">Dark</span>
-              <span id="theme-active-status" class="text-[8px] text-spotifyGreen font-semibold">Aktif</span>
-            </div>
-
-            <!-- Node 1: TOP (Dark Theme) -->
-            <button onclick="selectThemeCompact('dark')" onmouseenter="previewThemeHover('Dark Charcoal', 'dark')" id="node-theme-dark" class="theme-node absolute top-0.5 left-1/2 -translate-x-1/2 z-20 group flex flex-col items-center focus:outline-none cursor-pointer" title="Dark Charcoal">
-              <div class="theme-node-circle w-8 h-8 rounded-full bg-neutral-950 border-2 border-neutral-700 group-hover:border-accent shadow-md flex items-center justify-center p-0.5">
-                <span class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
-              </div>
-              <span class="mt-0.5 text-[9px] font-medium text-textSecondary group-hover:text-textPrimary transition-colors">Dark</span>
-            </button>
-
-            <!-- Node 2: RIGHT (Colorful Theme) -->
-            <button onclick="selectThemeCompact('colorful')" onmouseenter="previewThemeHover('Colorful Neon', 'colorful')" id="node-theme-colorful" class="theme-node absolute right-0.5 top-1/2 -translate-y-1/2 z-20 group flex flex-col items-center focus:outline-none cursor-pointer" title="Colorful Neon">
-              <div class="theme-node-circle w-8 h-8 rounded-full bg-indigo-950 border-2 border-indigo-700 group-hover:border-purple-400 shadow-md flex items-center justify-center p-0.5">
-                <span class="w-2.5 h-2.5 rounded-full bg-purple-400"></span>
-              </div>
-              <span class="mt-0.5 text-[9px] font-medium text-textSecondary group-hover:text-textPrimary transition-colors">Neon</span>
-            </button>
-
-            <!-- Node 3: BOTTOM (Light Theme) -->
-            <button onclick="selectThemeCompact('light')" onmouseenter="previewThemeHover('Light Minimal', 'light')" id="node-theme-light" class="theme-node absolute bottom-0.5 left-1/2 -translate-x-1/2 z-20 group flex flex-col items-center focus:outline-none cursor-pointer" title="Light Minimal">
-              <div class="theme-node-circle w-8 h-8 rounded-full bg-white border-2 border-slate-300 group-hover:border-blue-500 shadow-md flex items-center justify-center p-0.5">
-                <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
-              </div>
-              <span class="mt-0.5 text-[9px] font-medium text-textSecondary group-hover:text-textPrimary transition-colors">Light</span>
-            </button>
-
-            <!-- Node 4: LEFT (Slate Gray Theme) -->
-            <button onclick="selectThemeCompact('gray')" onmouseenter="previewThemeHover('Slate Graphite', 'gray')" id="node-theme-gray" class="theme-node absolute left-0.5 top-1/2 -translate-y-1/2 z-20 group flex flex-col items-center focus:outline-none cursor-pointer" title="Slate Gray">
-              <div class="theme-node-circle w-8 h-8 rounded-full bg-slate-900 border-2 border-slate-700 group-hover:border-sky-400 shadow-md flex items-center justify-center p-0.5">
-                <span class="w-2.5 h-2.5 rounded-full bg-blue-400"></span>
-              </div>
-              <span class="mt-0.5 text-[9px] font-medium text-textSecondary group-hover:text-textPrimary transition-colors">Slate</span>
-            </button>
-          </div>
-        </div>
-
-        <button onclick="toggleThemePopover(event, 'sidebar')" id="sidebar-theme-btn" class="w-full flex items-center justify-between px-3 py-2 bg-bgCard hover:bg-bgElevated border border-borderColor rounded-lg text-xs transition-colors group shadow-sm" title="Pilih Tema">
-          <div class="flex items-center space-x-2 text-textSecondary group-hover:text-textPrimary">
-            <i data-lucide="palette" class="w-3.5 h-3.5 text-accent"></i>
-            <span class="text-[11px] font-medium" data-i18n="sidebar_theme_label">Tema:</span>
-            <span id="sidebar-theme-label" class="text-[11px] font-semibold text-textPrimary capitalize">Dark</span>
-          </div>
-          <!-- 4-color mini diamond icon indicator -->
-          <div class="relative w-4 h-4 rotate-45 border border-borderColor/80 flex items-center justify-center rounded-sm bg-bgElevated">
-            <span id="sidebar-theme-dot" class="w-2 h-2 rounded-full bg-accent"></span>
-          </div>
-        </button>
-
-        <div class="flex items-center justify-between px-3 py-1.5 bg-bgCard border border-borderColor rounded-lg">
-          <div class="flex items-center space-x-2 text-textMuted">
-            <i data-lucide="globe" class="w-3.5 h-3.5"></i>
-            <span class="text-[11px] font-medium" data-i18n="sidebar_lang_label">Lang:</span>
-          </div>
-          <select id="lang-select" onchange="changeLanguage(this.value)" class="bg-transparent text-[11px] font-medium text-textPrimary focus:outline-none cursor-pointer">
-            <option value="id" class="bg-bgCard text-textPrimary">ID (Bahasa)</option>
-            <option value="en" class="bg-bgCard text-textPrimary">EN (English)</option>
-            <option value="es" class="bg-bgCard text-textPrimary">ES (Español)</option>
-            <option value="ja" class="bg-bgCard text-textPrimary">JA (日本語)</option>
-            <option value="ko" class="bg-bgCard text-textPrimary">KO (한국어)</option>
-            <option value="zh" class="bg-bgCard text-textPrimary">ZH (简体中文)</option>
-          </select>
-        </div>
-
-        <!-- Low-Spec / Performance Mode Quick Toggle -->
-        <button onclick="togglePerformanceMode()" id="sidebar-perf-btn" class="w-full flex items-center justify-between px-3 py-2 bg-bgCard hover:bg-bgElevated border border-borderColor rounded-lg text-xs transition group shadow-sm" title="Mode Optimalisasi Laptop Kentang (0% Lag)">
-          <div class="flex items-center space-x-2 text-textSecondary group-hover:text-textPrimary">
-            <i data-lucide="zap" id="sidebar-perf-icon" class="w-3.5 h-3.5 text-textMuted"></i>
-            <span class="text-[11px] font-medium" data-i18n="sidebar_perf_label">Mode Kentang:</span>
-            <span id="sidebar-perf-status" class="text-[11px] font-semibold text-textMuted">Off</span>
-          </div>
-          <span id="sidebar-perf-dot" class="w-2 h-2 rounded-full bg-borderColor"></span>
-        </button>
-      </div>
     </div>
   </aside>
 
@@ -594,6 +606,14 @@
                 <span class="mt-0.5 text-[9px] font-medium text-textSecondary group-hover:text-textPrimary transition-colors">Slate</span>
               </button>
             </div>
+
+            <!-- Liquid Glass Special Theme Option -->
+            <div class="pt-2 border-t border-borderColor/60">
+              <button onclick="selectThemeCompact('glass')" onmouseenter="previewThemeHover('Liquid Glass', 'glass')" id="hdr-node-theme-glass" class="w-full py-1.5 px-2.5 rounded-xl bg-cyan-950/40 hover:bg-cyan-900/50 border border-cyan-400/40 flex items-center justify-center space-x-2 transition text-xs text-cyan-200">
+                <div class="w-2.5 h-2.5 rounded-full bg-cyan-300"></div>
+                <span class="font-semibold text-[11px]">Liquid Glass (iOS 26)</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -616,13 +636,13 @@
           <div class="space-y-1.5">
             <div class="inline-flex items-center space-x-2 text-xs font-medium text-textSecondary">
               <span class="w-1.5 h-1.5 rounded-full bg-spotifyGreen animate-pulse"></span>
-              <span data-i18n="overview_version_badge">Music Portability Platform</span>
+              <span id="overview-version-pill" data-i18n="overview_version_badge">v1.3.0 &bull; Multi-Pass</span>
             </div>
             <h2 class="text-2xl md:text-3xl lg:text-4xl font-bold text-textPrimary tracking-tight" data-i18n="overview_welcome">Your music, unified & ported.</h2>
             <p class="text-xs md:text-sm text-textSecondary" data-i18n="overview_subtitle">Pindahkan seluruh playlist YouTube Music Anda ke Spotify secara presisi tanpa kehilangan urutan lagu.</p>
           </div>
           <div class="flex items-center space-x-2.5">
-            <span class="text-xs font-mono text-textMuted px-2.5 py-1 rounded-lg bg-bgElevated border border-borderColor">v1.2.0 &bull; Multi-Pass</span>
+            <span id="overview-version-badge" class="text-xs font-mono text-textMuted px-2.5 py-1 rounded-lg bg-bgElevated border border-borderColor">v1.3.0 &bull; Multi-Pass</span>
           </div>
         </div>
 
@@ -1136,11 +1156,17 @@
               <p id="step4-status-desc" data-i18n="step4_matching_sub" class="text-xs text-textSecondary">Menghubungi katalog Spotify & ISRC Deezer (Multi-pass matcher)</p>
             </div>
 
-            <!-- Live Track Ticker Pill -->
-            <div class="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-bgElevated border border-borderColor max-w-md mx-auto text-xs text-textSecondary shadow-sm">
-              <span class="w-2 h-2 rounded-full bg-statusSuccess animate-ping flex-shrink-0"></span>
-              <span class="font-mono text-[10px] text-textMuted font-semibold flex-shrink-0">PROSES:</span>
-              <span id="step4-live-track" class="truncate text-textPrimary font-medium max-w-[280px]">Menyiapkan antrian lagu...</span>
+            <!-- Live Track Ticker Pill & Cancel Action -->
+            <div class="flex items-center justify-center space-x-2 max-w-md mx-auto">
+              <div class="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-bgElevated border border-borderColor text-xs text-textSecondary shadow-sm flex-1 min-w-0">
+                <span class="w-2 h-2 rounded-full bg-statusSuccess animate-ping flex-shrink-0"></span>
+                <span class="font-mono text-[10px] text-textMuted font-semibold flex-shrink-0">PROSES:</span>
+                <span id="step4-live-track" class="truncate text-textPrimary font-medium max-w-[260px]">Menyiapkan antrian lagu...</span>
+              </div>
+              <button id="step4-btn-cancel" onclick="cancelMatchingProcess()" class="hidden px-3 py-1.5 rounded-full bg-red-500/15 hover:bg-red-500/25 text-red-400 hover:text-red-300 border border-red-500/30 text-xs font-medium items-center space-x-1.5 transition flex-shrink-0 cursor-pointer shadow-sm" title="Hentikan proses pencocokan yang sedang berjalan">
+                <i data-lucide="square" class="w-3 h-3 fill-current"></i>
+                <span>Batalkan</span>
+              </button>
             </div>
 
             <!-- Linear Shimmer Progress Bar -->
@@ -1154,6 +1180,24 @@
               </div>
             </div>
 
+          </div>
+
+          <!-- Step 4 Navigation Controls -->
+          <div class="flex justify-between items-center pt-2">
+            <button onclick="goToStep(3)" class="px-4 py-2 rounded-lg bg-bgElevated hover:bg-borderColor text-textSecondary hover:text-textPrimary text-xs font-medium border border-borderColor flex items-center space-x-1.5 transition">
+              <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+              <span>Kembali: Review Opsi</span>
+            </button>
+            <div class="flex items-center space-x-2">
+              <button onclick="startMatchingProcess(true)" class="px-3.5 py-2 rounded-lg bg-bgElevated hover:bg-borderColor text-textSecondary hover:text-textPrimary text-xs font-medium border border-borderColor flex items-center space-x-1.5 transition" title="Jalankan ulang pencocokan untuk seluruh lagu">
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                <span>Ulangi Pencocokan</span>
+              </button>
+              <button onclick="goToStep(5)" id="step4-btn-skip-result" class="px-4 py-2 rounded-lg bg-textPrimary text-bgMain hover:bg-white text-xs font-semibold flex items-center space-x-1.5 shadow-sm transition">
+                <span>Lanjut: Lihat Hasil</span>
+                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -1220,24 +1264,25 @@
       </section>
 
       <!-- ================================================================= -->
+      <!-- ================================================================= -->
       <!-- PAGE 04: TRANSFER HISTORY / REVIEW STUDIO -->
       <!-- ================================================================= -->
       <section id="view-history" class="space-y-6 hidden fade-enter">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div class="space-y-1">
-            <h2 class="text-xl md:text-2xl font-semibold text-textPrimary tracking-tight" data-i18n="history_heading">Review Studio & Pustaka Lagu</h2>
-            <p class="text-sm text-textSecondary" data-i18n="history_sub">Periksa kecocokan lagu, setujui/tolak saran, atau cari versi alternatif.</p>
+            <h2 class="text-xl md:text-2xl font-semibold text-textPrimary tracking-tight" data-i18n="history_heading">Review & Transfer History</h2>
+            <p id="history-playlist-subtitle" class="text-sm text-textSecondary" data-i18n="history_sub">Inspect track matches, resolve alternatives, and copy URIs to Spotify.</p>
           </div>
 
-          <!-- Auto-Tag Genre & Selection mode buttons -->
-          <div class="flex items-center space-x-2">
-            <button onclick="tagGenreAuto()" class="px-3 py-1.5 rounded-lg bg-bgElevated hover:bg-borderColor border border-borderColor text-xs text-textSecondary hover:text-textPrimary flex items-center space-x-1.5 transition" title="Deteksi & Validasi Genre Multi-Sumber (iTunes + Deezer + Heuristik - 100% Gratis)">
-              <i data-lucide="sparkles" class="w-3.5 h-3.5 text-accent"></i>
-              <span data-i18n="btn_auto_tag_genre">Auto-Tag Genre</span>
+          <!-- Header Actions: Settings & Start New Transfer -->
+          <div class="flex items-center space-x-2 flex-shrink-0">
+            <button onclick="switchView('settings')" class="px-3.5 py-1.5 rounded-lg bg-bgCard hover:bg-bgElevated border border-borderColor text-xs text-textPrimary font-medium flex items-center space-x-1.5 transition">
+              <i data-lucide="settings" class="w-3.5 h-3.5 text-textSecondary"></i>
+              <span data-i18n="nav_settings">Settings</span>
             </button>
-            <button onclick="toggleSelectionMode()" id="btn-toggle-selection" class="px-3 py-1.5 rounded-lg bg-bgElevated border border-borderColor text-xs text-textSecondary hover:text-textPrimary flex items-center space-x-1.5">
-              <i data-lucide="check-square" class="w-3.5 h-3.5"></i>
-              <span data-i18n="btn_selection_mode">Selection Mode</span>
+            <button onclick="startNewTransferFlow()" class="px-3.5 py-1.5 rounded-lg bg-white hover:bg-neutral-200 text-black text-xs font-semibold flex items-center space-x-1.5 transition shadow-sm">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+              <span data-i18n="btn_start_new_transfer">Start New Transfer</span>
             </button>
           </div>
         </div>
@@ -1247,32 +1292,55 @@
           <!-- Accordion Header Button with Arrow ("Panah") -->
           <div onclick="toggleGenreSplitter()" class="flex items-center justify-between cursor-pointer select-none group">
             <div class="flex items-center space-x-3 min-w-0">
-              <div class="w-8 h-8 rounded-xl bg-spotifyGreen/15 border border-spotifyGreen/30 flex items-center justify-center text-spotifyGreen flex-shrink-0 group-hover:scale-105 group-hover:bg-spotifyGreen group-hover:text-black transition-transform transition-colors">
-                <i data-lucide="layers" class="w-4 h-4"></i>
+              <div class="w-9 h-9 rounded-xl bg-spotifyGreen/15 border border-spotifyGreen/30 flex items-center justify-center text-spotifyGreen flex-shrink-0 group-hover:scale-105 group-hover:bg-spotifyGreen group-hover:text-black transition-transform transition-colors">
+                <svg class="w-5 h-5" aria-hidden="true" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.494 17.306c-.215.353-.676.466-1.028.252-2.82-1.722-6.368-2.112-10.55-1.156-.402.092-.803-.16-.895-.562-.092-.403.16-.803.562-.896 4.582-1.047 8.508-.598 11.66 1.334.352.214.465.675.251 1.028zm1.467-3.26c-.27.44-.848.58-1.288.31-3.227-1.983-8.146-2.557-11.96-1.398-.498.15-1.024-.132-1.175-.63-.15-.499.132-1.025.63-1.176 4.364-1.324 9.782-.685 13.483 1.596.44.27.58.848.31 1.288zm.126-3.414c-3.87-2.298-10.254-2.51-13.934-1.393-.593.18-1.22-.162-1.4-.755-.18-.593.163-1.22.756-1.4 4.23-1.284 11.278-1.034 15.75 1.62.533.316.707 1.01.392 1.543-.316.534-1.01.708-1.564.385z"/>
+                </svg>
               </div>
               <div class="min-w-0">
                 <div class="flex items-center space-x-2">
-                  <h4 class="text-xs font-bold text-textPrimary group-hover:text-spotifyGreen transition-colors" data-i18n="splitter_title">Smart Genre Splitter</h4>
-                  <span id="genre-splitter-count-badge" class="px-2 py-0.5 rounded-full text-[10px] font-mono font-medium bg-bgElevated border border-borderColor text-textSecondary">0 Genres</span>
+                  <h4 class="text-sm font-bold text-textPrimary group-hover:text-spotifyGreen transition-colors" data-i18n="splitter_title">Smart Genre Splitter</h4>
+                  <span id="genre-splitter-count-badge" class="px-2 py-0.5 rounded-full text-[11px] font-mono font-medium bg-bgElevated border border-borderColor text-textSecondary">0 genres</span>
                 </div>
-                <p class="text-[11px] text-textMuted truncate" data-i18n="splitter_sub">Create standalone Spotify playlists by genre in 1 click</p>
+                <p class="text-xs text-textMuted truncate" data-i18n="splitter_sub">Create standalone Spotify playlists by genre in 1 click</p>
               </div>
             </div>
             
             <div class="flex items-center space-x-2 flex-shrink-0 ml-3">
-              <span id="genre-splitter-toggle-hint" class="hidden sm:inline-block text-[11px] font-medium text-textMuted group-hover:text-textPrimary transition-colors" data-i18n="splitter_open_menu">Open Menu</span>
-              <div class="w-7 h-7 rounded-lg bg-bgElevated group-hover:bg-borderColor border border-borderColor flex items-center justify-center transition-colors">
-                <i id="genre-splitter-arrow" data-lucide="chevron-down" class="w-4 h-4 text-textSecondary group-hover:text-textPrimary transition-transform duration-300"></i>
+              <div class="px-3 py-1.5 rounded-lg bg-bgElevated group-hover:bg-borderColor border border-borderColor flex items-center space-x-1.5 transition-colors">
+                <span id="genre-splitter-toggle-hint" class="text-xs font-medium text-textPrimary" data-i18n="splitter_open_menu">Open Menu</span>
+                <i id="genre-splitter-arrow" data-lucide="chevron-down" class="w-3.5 h-3.5 text-textSecondary group-hover:text-textPrimary transition-transform duration-300"></i>
               </div>
             </div>
           </div>
 
-          <!-- Collapsible Content Body (Hidden by default so user is not overwhelmed) -->
-          <div id="history-genre-splitter-body" class="hidden pt-4 mt-3 border-t border-borderColor/60 space-y-3">
+          <!-- Collapsible Content Body (Hidden by default) -->
+          <div id="history-genre-splitter-body" class="hidden pt-4 mt-3 border-t border-borderColor/60 space-y-4">
+            <!-- Nested Features: Auto-Tag Genre & Smart Group Playlist -->
+            <div class="flex items-center justify-between gap-3 flex-wrap bg-bgElevated/40 p-3 rounded-xl border border-borderColor/60">
+              <div class="space-y-0.5">
+                <div class="text-xs font-semibold text-textPrimary flex items-center space-x-1.5">
+                  <i data-lucide="sparkles" class="w-3.5 h-3.5 text-accent"></i>
+                  <span>Fitur Otomatisasi Genre & Pembuatan Playlist</span>
+                </div>
+                <p class="text-[11px] text-textMuted">Deteksi genre otomatis atau kelompokkan daftar lagu ke playlist terpisah per genre/mood.</p>
+              </div>
+              <div class="flex items-center space-x-2 flex-wrap">
+                <button onclick="tagGenreAuto()" class="px-3 py-1.5 rounded-lg bg-bgElevated hover:bg-borderColor border border-borderColor text-xs text-textSecondary hover:text-textPrimary flex items-center space-x-1.5 transition" title="Deteksi & Validasi Genre Multi-Sumber (iTunes + Deezer + Heuristik - 100% Gratis)">
+                  <i data-lucide="sparkles" class="w-3.5 h-3.5 text-accent"></i>
+                  <span data-i18n="btn_auto_tag_genre">Auto-Tag Genre</span>
+                </button>
+                <button onclick="openGroupSplitterModal()" class="px-3 py-1.5 rounded-lg bg-spotifyGreen/15 hover:bg-spotifyGreen/25 border border-spotifyGreen/30 text-xs text-spotifyGreen font-medium flex items-center space-x-1.5 transition" title="Bagi & Buat Playlist Otomatis per Kategori / Genre / Mood">
+                  <i data-lucide="layers" class="w-3.5 h-3.5"></i>
+                  <span>Smart Group Playlist</span>
+                </button>
+              </div>
+            </div>
+
             <!-- Spotify-style quick filter pill rail -->
             <div class="flex items-center justify-between gap-2 flex-wrap">
               <div class="flex items-center space-x-1.5 text-xs text-textMuted">
-                <i data-lucide="sparkles" class="w-3.5 h-3.5 text-spotifyGreen"></i>
+                <i data-lucide="music-2" class="w-3.5 h-3.5 text-spotifyGreen"></i>
                 <span class="text-[11px]" data-i18n="splitter_prompt">Select a genre below to view tracks or copy Spotify URIs:</span>
               </div>
               <div class="flex items-center space-x-2 text-xs">
@@ -1289,26 +1357,42 @@
           </div>
         </div>
 
-        <!-- Filter Bar -->
-        <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
-          <div class="flex flex-wrap items-center gap-2">
-            <!-- Status Filter -->
-            <div class="flex items-center space-x-1 bg-bgCard border border-borderColor p-1 rounded-lg text-xs">
-              <button onclick="filterHistoryStatus('')" id="filter-status-all" class="px-2.5 py-1 rounded bg-bgElevated text-textPrimary font-medium" data-i18n="filter_all">All</button>
-              <button onclick="filterHistoryStatus('resolved_auto')" id="filter-status-auto" class="px-2.5 py-1 rounded text-textSecondary hover:text-textPrimary" data-i18n="filter_auto">Auto-Matched</button>
-              <button onclick="filterHistoryStatus('needs_review')" id="filter-status-review" class="px-2.5 py-1 rounded text-textSecondary hover:text-textPrimary" data-i18n="filter_review">Needs Review</button>
-              <button onclick="filterHistoryStatus('failed')" id="filter-status-failed" class="px-2.5 py-1 rounded text-textSecondary hover:text-textPrimary" data-i18n="filter_failed">Not Found</button>
-              <button onclick="filterHistoryStatus('accepted')" id="filter-status-accepted" class="px-2.5 py-1 rounded text-textSecondary hover:text-textPrimary" data-i18n="filter_accepted">Accepted</button>
-              <button onclick="filterHistoryStatus('skipped')" id="filter-status-skipped" class="px-2.5 py-1 rounded text-textSecondary hover:text-textPrimary flex items-center space-x-1" data-i18n-title="filter_skipped_title" title="User-generated content (video/UGC) skipped from auto-matching">
-                <span data-i18n="filter_skipped">Skipped (UGC)</span>
-                <span id="badge-count-skipped" class="hidden px-1.5 py-0.2 rounded-full text-[10px] bg-purple-500/20 text-purple-400 font-mono">0</span>
-              </button>
-            </div>
+        <!-- Filter Row (Horizontal Status Tabs on Left, Playlist & Genre Dropdown Pills on Right) -->
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pt-1">
+          <!-- Status Filter Tabs with Consistent Badges -->
+          <div class="flex items-center space-x-1 bg-bgCard border border-borderColor p-1 rounded-xl text-xs overflow-x-auto custom-scroll">
+            <button onclick="filterHistoryStatus('')" id="filter-status-all" class="px-3 py-1.5 rounded-lg bg-bgElevated text-textPrimary font-medium flex items-center space-x-1.5 transition" data-i18n="filter_all">
+              <span>All</span>
+              <span id="badge-count-all" class="px-1.5 py-0.5 rounded-full text-[10px] bg-bgElevated/80 border border-borderColor/60 text-textMuted font-mono">0</span>
+            </button>
+            <button onclick="filterHistoryStatus('resolved_auto')" id="filter-status-auto" class="px-3 py-1.5 rounded-lg text-textSecondary hover:text-textPrimary flex items-center space-x-1.5 transition" data-i18n="filter_auto">
+              <span>Auto-Matched</span>
+              <span id="badge-count-auto" class="px-1.5 py-0.5 rounded-full text-[10px] bg-bgElevated/80 border border-borderColor/60 text-textMuted font-mono">0</span>
+            </button>
+            <button onclick="filterHistoryStatus('needs_review')" id="filter-status-review" class="px-3 py-1.5 rounded-lg text-textSecondary hover:text-textPrimary flex items-center space-x-1.5 transition" data-i18n="filter_review">
+              <span>Needs Review</span>
+              <span id="badge-count-review" class="px-1.5 py-0.5 rounded-full text-[10px] bg-bgElevated/80 border border-borderColor/60 text-textMuted font-mono">0</span>
+            </button>
+            <button onclick="filterHistoryStatus('failed')" id="filter-status-failed" class="px-3 py-1.5 rounded-lg text-textSecondary hover:text-textPrimary flex items-center space-x-1.5 transition" data-i18n="filter_failed">
+              <span>Not Found</span>
+              <span id="badge-count-failed" class="px-1.5 py-0.5 rounded-full text-[10px] bg-bgElevated/80 border border-borderColor/60 text-textMuted font-mono">0</span>
+            </button>
+            <button onclick="filterHistoryStatus('accepted')" id="filter-status-accepted" class="px-3 py-1.5 rounded-lg text-textSecondary hover:text-textPrimary flex items-center space-x-1.5 transition" data-i18n="filter_accepted">
+              <span>Accepted</span>
+              <span id="badge-count-accepted" class="px-1.5 py-0.5 rounded-full text-[10px] bg-bgElevated/80 border border-borderColor/60 text-textMuted font-mono">0</span>
+            </button>
+            <button onclick="filterHistoryStatus('skipped')" id="filter-status-skipped" class="px-3 py-1.5 rounded-lg text-textSecondary hover:text-textPrimary flex items-center space-x-1.5 transition" data-i18n-title="filter_skipped_title" title="User-generated content (video/UGC) skipped from auto-matching">
+              <span data-i18n="filter_skipped">Skipped (UGC)</span>
+              <span id="badge-count-skipped" class="px-1.5 py-0.5 rounded-full text-[10px] bg-bgElevated/80 border border-borderColor/60 text-textMuted font-mono">0</span>
+            </button>
+          </div>
 
-            <!-- Playlist Filter Dropdown (Pilih Playlist yang ditinjau) -->
-            <div class="flex items-center space-x-1.5 bg-bgCard border border-borderColor px-2.5 py-1 rounded-lg text-xs">
+          <!-- Right: Playlist & Genre Filter Pills -->
+          <div class="flex items-center space-x-2 flex-wrap">
+            <!-- Playlist Filter Dropdown -->
+            <div class="flex items-center space-x-1.5 bg-bgCard border border-borderColor px-3 py-1.5 rounded-xl text-xs">
               <span class="text-textMuted font-medium flex items-center space-x-1">
-                <i data-lucide="list-music" class="w-3 h-3 text-accent"></i>
+                <i data-lucide="music" class="w-3.5 h-3.5 text-accent"></i>
                 <span data-i18n="filter_playlist_label">Playlist:</span>
               </span>
               <select id="history-playlist-filter" onchange="filterHistoryPlaylist(this.value)" class="bg-transparent text-textPrimary text-xs focus:outline-none cursor-pointer pr-1">
@@ -1316,10 +1400,10 @@
               </select>
             </div>
 
-            <!-- Genre Filter Dropdown (Milihin Genre) -->
-            <div class="flex items-center space-x-1.5 bg-bgCard border border-borderColor px-2.5 py-1 rounded-lg text-xs">
+            <!-- Genre Filter Dropdown -->
+            <div class="flex items-center space-x-1.5 bg-bgCard border border-borderColor px-3 py-1.5 rounded-xl text-xs">
               <span class="text-textMuted font-medium flex items-center space-x-1">
-                <i data-lucide="tag" class="w-3 h-3 text-accent"></i>
+                <i data-lucide="tag" class="w-3.5 h-3.5 text-accent"></i>
                 <span data-i18n="filter_genre_label">Genre:</span>
               </span>
               <select id="history-genre-filter" onchange="filterHistoryGenre(this.value)" class="bg-transparent text-textPrimary text-xs focus:outline-none cursor-pointer pr-1">
@@ -1327,38 +1411,92 @@
               </select>
             </div>
           </div>
+        </div>
 
-          <!-- Search Input -->
-          <div class="relative w-full md:w-64">
-            <i data-lucide="search" class="w-3.5 h-3.5 absolute left-3 top-3 text-textMuted"></i>
-            <input type="text" id="history-search" oninput="onHistorySearchInput(this.value)" data-i18n-placeholder="ph_search_tracks" placeholder="Search title / artist..." class="w-full bg-bgCard border border-borderColor rounded-lg pl-9 pr-3 py-2 text-xs text-textPrimary focus:outline-none">
+        <!-- Full-Width Search Input Bar -->
+        <div class="relative w-full">
+          <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-3 text-textMuted"></i>
+          <input type="text" id="history-search" oninput="onHistorySearchInput(this.value)" data-i18n-placeholder="ph_search_tracks" placeholder="Search title / artist..." class="w-full bg-bgCard border border-borderColor rounded-xl pl-10 pr-4 py-2.5 text-xs text-textPrimary focus:outline-none focus:border-accent/60 transition-colors">
+        </div>
+
+        <!-- Info Banners Container (Skipped UGC & Unavailable Tracks) -->
+        <div class="space-y-2 w-full max-w-full">
+          <!-- Info Banner for Skipped UGC Tracks (Enclosed pill style matching mockup) -->
+          <div id="skipped-tracks-banner" class="hidden w-full max-w-full items-center justify-between rounded-full bg-purple-950/25 border border-purple-500/35 px-3.5 py-1.5 text-xs select-none transition-all duration-150 overflow-hidden box-border">
+            <div class="flex items-center space-x-2.5 min-w-0 mr-2 flex-1 overflow-hidden">
+              <div class="w-5 h-5 rounded-full bg-purple-500/20 text-purple-300 flex items-center justify-center flex-shrink-0">
+                <i data-lucide="check" class="w-3 h-3"></i>
+              </div>
+              <div class="min-w-0 flex items-center space-x-1.5 text-[11px] truncate flex-1">
+                <span class="font-bold text-textPrimary whitespace-nowrap flex-shrink-0" id="skipped-banner-text">181 Tracks Auto-Skipped</span>
+                <span class="text-textMuted truncate min-w-0 flex-1 hidden sm:inline" id="skipped-banner-desc" data-i18n="banner_skipped_desc">These user-generated content (video/UGC) items from YouTube Music were skipped from automatic matching.</span>
+              </div>
+            </div>
+            <div class="flex items-center space-x-2 flex-shrink-0">
+              <button onclick="filterHistoryStatus('skipped')" class="px-2.5 py-1 rounded-md bg-purple-600/30 hover:bg-purple-600/50 text-purple-200 text-[11px] font-semibold transition whitespace-nowrap" data-i18n="btn_view_list">
+                View List
+              </button>
+              <button onclick="dismissSkippedBanner(event)" class="text-textMuted hover:text-textPrimary p-0.5 rounded transition" title="Dismiss">
+                <i data-lucide="x" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Info Banner for Unavailable / Deleted YouTube Videos -->
+          <div id="unavailable-tracks-banner" class="hidden w-full max-w-full items-center justify-between rounded-full bg-amber-950/25 border border-amber-500/35 px-3.5 py-1.5 text-xs select-none transition-all duration-150 overflow-hidden box-border">
+            <div class="flex items-center space-x-2.5 min-w-0 mr-2 flex-1 overflow-hidden">
+              <div class="w-5 h-5 rounded-full bg-amber-500/20 text-amber-300 flex items-center justify-center flex-shrink-0">
+                <i data-lucide="alert-circle" class="w-3 h-3"></i>
+              </div>
+              <div class="min-w-0 flex items-center space-x-1.5 text-[11px] truncate flex-1">
+                <span class="font-bold text-textPrimary whitespace-nowrap flex-shrink-0" id="unavailable-banner-text">Video Dihapus/Privat oleh YouTube</span>
+                <span class="text-textMuted truncate min-w-0 flex-1 hidden sm:inline" id="unavailable-banner-desc">Disembunyikan oleh YouTube karena berstatus Deleted/Private.</span>
+              </div>
+            </div>
+            <div class="flex items-center space-x-2 flex-shrink-0">
+              <button onclick="dismissUnavailableBanner(event)" class="text-textMuted hover:text-textPrimary p-0.5 rounded transition" title="Dismiss">
+                <i data-lucide="x" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
           </div>
         </div>
 
-        <!-- Info Banner for Skipped UGC Tracks -->
-        <div id="skipped-tracks-banner" class="hidden items-center justify-between p-3 rounded-xl bg-purple-500/10 border border-purple-500/25 text-xs text-textSecondary">
-          <div class="flex items-center space-x-2.5">
-            <div class="w-6 h-6 rounded-lg bg-purple-500/20 text-purple-400 flex items-center justify-center flex-shrink-0">
-              <i data-lucide="info" class="w-3.5 h-3.5"></i>
-            </div>
-            <div>
-              <span class="font-semibold text-textPrimary" id="skipped-banner-text">184 Tracks Auto-Skipped</span>: <span id="skipped-banner-desc" data-i18n="banner_skipped_desc">These user-generated content (video/UGC) items from YouTube Music were skipped from automatic matching. You can manually match them to Spotify using the Edit Link button.</span>
-            </div>
+        <!-- Track Results & Bulk Actions Toolbar -->
+        <div class="flex items-center justify-between pt-1">
+          <div class="flex items-center space-x-2">
+            <h3 class="text-sm font-bold text-textPrimary tracking-tight">Track Results</h3>
+            <span id="tracks-total-badge" class="px-2 py-0.5 rounded-full text-[10px] font-mono bg-bgElevated border border-borderColor text-textSecondary">0 Tracks</span>
           </div>
-          <button onclick="filterHistoryStatus('skipped')" class="px-3 py-1 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 font-medium text-xs transition flex-shrink-0 ml-2" data-i18n="btn_view_list">
-            View List
-          </button>
-        </div>
 
-        <!-- Info Banner for Unavailable / Deleted YouTube Videos -->
-        <div id="unavailable-tracks-banner" class="hidden items-center justify-between p-3 rounded-xl bg-amber-500/10 border border-amber-500/25 text-xs text-textSecondary">
-          <div class="flex items-center space-x-2.5">
-            <div class="w-6 h-6 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center flex-shrink-0">
-              <i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i>
-            </div>
-            <div>
-              <span class="font-semibold text-amber-300" id="unavailable-banner-text">1 Lagu Dihapus/Privat oleh YouTube</span>: 
-              <span id="unavailable-banner-desc">YouTube melaporkan total 16 lagu di judul/header, namun 1 video disembunyikan oleh YouTube karena dihapus atau dijadikan privat oleh uploader aslinya.</span>
+          <div class="flex items-center space-x-2">
+            <!-- Small Selection Mode toggle button -->
+            <button onclick="toggleSelectionMode()" id="btn-toggle-selection" class="px-2.5 py-1.5 rounded-lg bg-bgCard hover:bg-bgElevated border border-borderColor text-xs text-textSecondary hover:text-textPrimary flex items-center space-x-1.5 transition" title="Toggle checkbox selection mode">
+              <i data-lucide="check-square" class="w-3.5 h-3.5"></i>
+              <span data-i18n="btn_selection_mode">Selection Mode</span>
+            </button>
+
+            <!-- Bulk Actions Dropdown Menu -->
+            <div class="relative">
+              <button onclick="toggleBulkActionsDropdown()" id="btn-bulk-actions" class="px-2.5 py-1.5 rounded-lg bg-bgCard hover:bg-bgElevated border border-borderColor text-xs text-textPrimary font-medium flex items-center space-x-1.5 transition">
+                <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5 text-accent"></i>
+                <span>Bulk Actions</span>
+                <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-textMuted"></i>
+              </button>
+
+              <div id="bulk-actions-menu" class="hidden absolute right-0 mt-1.5 w-56 rounded-xl bg-bgElevated border border-borderColor shadow-2xl py-1.5 z-40 space-y-0.5">
+                <button onclick="openCopyTracksModal(); toggleBulkActionsDropdown(false);" class="w-full px-3 py-2 text-left text-xs text-textPrimary hover:bg-borderColor/50 flex items-center space-x-2 transition">
+                  <i data-lucide="copy" class="w-3.5 h-3.5 text-accent"></i>
+                  <span>Salin Judul & Artis (AI)</span>
+                </button>
+                <button onclick="copyAllFilteredUris(); toggleBulkActionsDropdown(false);" class="w-full px-3 py-2 text-left text-xs text-textPrimary hover:bg-borderColor/50 flex items-center space-x-2 transition">
+                  <svg class="w-3.5 h-3.5 text-spotifyGreen" aria-hidden="true" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.494 17.306c-.215.353-.676.466-1.028.252-2.82-1.722-6.368-2.112-10.55-1.156-.402.092-.803-.16-.895-.562-.092-.403.16-.803.562-.896 4.582-1.047 8.508-.598 11.66 1.334.352.214.465.675.251 1.028zm1.467-3.26c-.27.44-.848.58-1.288.31-3.227-1.983-8.146-2.557-11.96-1.398-.498.15-1.024-.132-1.175-.63-.15-.499.132-1.025.63-1.176 4.364-1.324 9.782-.685 13.483 1.596.44.27.58.848.31 1.288zm.126-3.414c-3.87-2.298-10.254-2.51-13.934-1.393-.593.18-1.22-.162-1.4-.755-.18-.593.163-1.22.756-1.4 4.23-1.284 11.278-1.034 15.75 1.62.533.316.707 1.01.392 1.543-.316.534-1.01.708-1.564.385z"/></svg>
+                  <span>Salin Semua URI Spotify</span>
+                </button>
+                <button onclick="tagGenreAuto(); toggleBulkActionsDropdown(false);" class="w-full px-3 py-2 text-left text-xs text-textPrimary hover:bg-borderColor/50 flex items-center space-x-2 transition">
+                  <i data-lucide="sparkles" class="w-3.5 h-3.5 text-accent"></i>
+                  <span>Auto-Tag Genre</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -1374,6 +1512,10 @@
                 <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.494 17.306c-.215.353-.676.466-1.028.252-2.82-1.722-6.368-2.112-10.55-1.156-.402.092-.803-.16-.895-.562-.092-.403.16-.803.562-.896 4.582-1.047 8.508-.598 11.66 1.334.352.214.465.675.251 1.028zm1.467-3.26c-.27.44-.848.58-1.288.31-3.227-1.983-8.146-2.557-11.96-1.398-.498.15-1.024-.132-1.175-.63-.15-.499.132-1.025.63-1.176 4.364-1.324 9.782-.685 13.483 1.596.44.27.58.848.31 1.288zm.126-3.414c-3.87-2.298-10.254-2.51-13.934-1.393-.593.18-1.22-.162-1.4-.755-.18-.593.163-1.22.756-1.4 4.23-1.284 11.278-1.034 15.75 1.62.533.316.707 1.01.392 1.543-.316.534-1.01.708-1.564.385z"/>
               </svg>
               <span>Salin URI Terpilih</span>
+            </button>
+            <button onclick="openCopyTracksModal(true)" class="px-3 py-1.5 rounded-lg bg-bgCard hover:bg-borderColor text-textPrimary text-xs font-semibold flex items-center space-x-1.5 border border-borderColor transition">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+              <span>Salin Judul Terpilih</span>
             </button>
             <button onclick="promptDeleteSelectedTracks()" class="px-3 py-1.5 rounded-lg bg-statusError/15 text-statusError border border-statusError/25 hover:bg-statusError hover:text-white text-xs font-semibold flex items-center space-x-1.5 transition-colors">
               <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
@@ -1754,7 +1896,7 @@
             <h4 class="text-sm font-semibold text-textPrimary" data-i18n="settings_appearance_title">Tampilan & Tema</h4>
             <div>
               <label class="block text-xs text-textMuted mb-2 font-medium" data-i18n="settings_theme_mode_label">Pilih Mode Tampilan</label>
-              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
                 <button onclick="setTheme('dark')" id="theme-btn-dark" class="p-3 rounded-xl border border-borderColor bg-bgElevated hover:border-accent text-left nav-transition">
                   <div class="flex items-center space-x-2 mb-1.5">
                     <div class="w-4 h-4 rounded-full bg-neutral-950 border border-neutral-700 flex items-center justify-center">
@@ -1791,6 +1933,15 @@
                   </div>
                   <p class="text-[11px] text-textMuted">Midnight Purple</p>
                 </button>
+                <button onclick="setTheme('glass')" id="theme-btn-glass" class="p-3 rounded-xl border border-borderColor bg-bgElevated hover:border-accent text-left nav-transition">
+                  <div class="flex items-center space-x-2 mb-1.5">
+                    <div class="w-4 h-4 rounded-full bg-cyan-950/80 border border-cyan-400/60 flex items-center justify-center">
+                      <div class="w-1.5 h-1.5 rounded-full bg-cyan-300"></div>
+                    </div>
+                    <span class="text-xs font-semibold text-textPrimary">Liquid Glass</span>
+                  </div>
+                  <p class="text-[11px] text-textMuted">iOS 26 Translucent</p>
+                </button>
               </div>
             </div>
 
@@ -1804,6 +1955,30 @@
                 <option value="ko">한국어</option>
                 <option value="zh">简体中文</option>
               </select>
+            </div>
+          </div>
+
+          <!-- Sidebar Layout & Navigation Preferences -->
+          <div class="space-y-4 pt-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div class="space-y-1">
+                <div class="flex items-center space-x-2">
+                  <div class="w-6 h-6 rounded-lg bg-accent/15 border border-accent/25 text-accent flex items-center justify-center">
+                    <i data-lucide="panel-left" class="w-3.5 h-3.5"></i>
+                  </div>
+                  <h4 class="text-sm font-semibold text-textPrimary">Tata Letak Sidebar (Navigasi Kiri)</h4>
+                  <span id="settings-sidebar-pin-badge" class="px-2 py-0.5 rounded text-[10px] font-mono bg-bgElevated text-textMuted border border-borderColor">Auto-Collapse (Bawaan)</span>
+                </div>
+                <p class="text-xs text-textMuted max-w-xl">
+                  Secara bawaan, sidebar kiri otomatis mengecil menjadi ikon saja dan hanya membentang saat mouse diarahkan ke kiri. Aktifkan opsi ini jika ingin sidebar selalu terkunci terbuka penuh.
+                </p>
+              </div>
+              <button onclick="toggleSidebarPin()" id="settings-sidebar-pin-btn" class="self-start sm:self-center px-4 py-2 rounded-xl border border-borderColor bg-bgElevated hover:border-accent text-xs font-semibold flex items-center space-x-2.5 transition shadow-sm">
+                <span id="settings-sidebar-pin-text">Kunci Sidebar Terbuka</span>
+                <div id="settings-sidebar-pin-switch" class="w-8 h-4 rounded-full bg-borderColor/80 relative transition p-0.5">
+                  <div id="settings-sidebar-pin-knob" class="w-3 h-3 rounded-full bg-textMuted transition translate-x-0"></div>
+                </div>
+              </button>
             </div>
           </div>
 
@@ -2055,6 +2230,284 @@
   </div>
 
   <!-- ================================================================= -->
+  <!-- MODAL: COPY TRACK LIST & AI PROMPT BUILDER (PEMISAH KATEGORI LAGU) -->
+  <!-- ================================================================= -->
+  <div id="modal-copy-tracks" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-4">
+    <div class="bg-[#131620] border border-[#1e2330] w-full max-w-2xl rounded-2xl shadow-2xl p-5 md:p-6 space-y-4 flex flex-col max-h-[92vh] overflow-hidden">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between pb-1">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-[#182030] border border-[#25324c] flex items-center justify-center text-[#5a94f5] flex-shrink-0 shadow-sm">
+            <i data-lucide="sparkles" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-sm md:text-base font-semibold text-[#f1f5f9]">Salin &amp; Pemisah Lagu dengan Prompt AI</h3>
+            <p class="text-xs text-[#8895a7]">Atur preferensi, lalu lihat pratinjau hasilnya.</p>
+          </div>
+        </div>
+        <button onclick="closeCopyTracksModal()" class="text-[#677589] hover:text-[#f1f5f9] p-1.5 rounded-lg hover:bg-[#1a2030] transition cursor-pointer" title="Tutup">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Controls & Options Bar: 3 Columns Seamless (Matches Screenshot) -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 py-1 text-xs">
+        <!-- Sumber Lagu -->
+        <div class="space-y-1 sm:pr-4 sm:border-r border-[#1e2330]">
+          <div class="flex items-center space-x-2 text-[#8895a7] text-[11px] font-medium">
+            <i data-lucide="music" class="w-3.5 h-3.5 text-[#677589] flex-shrink-0"></i>
+            <span>Sumber Lagu</span>
+          </div>
+          <select id="copy-tracks-scope" onchange="updateCopyTracksPreview()" class="w-full bg-transparent border-0 text-xs text-[#f1f5f9] font-medium focus:outline-none cursor-pointer py-0.5 pr-2">
+            <option value="selected" class="bg-[#131620] text-[#f1f5f9]">Hanya Lagu Terpilih</option>
+            <option value="current" class="bg-[#131620] text-[#f1f5f9]">Filter / Tampilan Saat Ini</option>
+            <option value="all" class="bg-[#131620] text-[#f1f5f9]">Semua Lagu di Library</option>
+          </select>
+        </div>
+
+        <!-- Format Teks -->
+        <div class="space-y-1 sm:px-4 sm:border-r border-[#1e2330]">
+          <div class="flex items-center space-x-2 text-[#8895a7] text-[11px] font-medium">
+            <i data-lucide="file-text" class="w-3.5 h-3.5 text-[#677589] flex-shrink-0"></i>
+            <span>Format Teks</span>
+          </div>
+          <select id="copy-tracks-format" onchange="updateCopyTracksPreview()" class="w-full bg-transparent border-0 text-xs text-[#f1f5f9] font-medium focus:outline-none cursor-pointer py-0.5 pr-2">
+            <option value="title_only" class="bg-[#131620] text-[#f1f5f9]">Hanya Judul Lagu</option>
+            <option value="artist_title" class="bg-[#131620] text-[#f1f5f9]">Artis – Judul</option>
+            <option value="title_artist" class="bg-[#131620] text-[#f1f5f9]">Judul – Artis</option>
+          </select>
+        </div>
+
+        <!-- Nomor Urut -->
+        <div class="space-y-1 sm:pl-4 flex flex-col justify-between">
+          <div class="flex items-center space-x-2 text-[#8895a7] text-[11px] font-medium">
+            <i data-lucide="list-ordered" class="w-3.5 h-3.5 text-[#677589] flex-shrink-0"></i>
+            <span>Nomor Urut</span>
+          </div>
+          <label class="flex items-center space-x-2 cursor-pointer py-0.5 text-xs text-[#f1f5f9] select-none">
+            <input type="checkbox" id="copy-tracks-numbered" checked onchange="updateCopyTracksPreview()" class="rounded bg-[#1a2130] border-[#2c374d] text-[#3b82f6] accent-[#3b82f6] w-4 h-4 cursor-pointer">
+            <span class="text-xs text-[#f1f5f9]">Nomor (1, 2, 3)</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Mode Selection Card (Active Blue Highlight) -->
+      <div class="space-y-2">
+        <div onclick="toggleAiPromptModeDropdown()" class="p-3.5 rounded-2xl bg-[#131929] border-2 border-[#2b64d9] hover:border-[#3b82f6] flex items-center justify-between transition-all cursor-pointer shadow-sm group">
+          <div class="flex items-center space-x-3.5 min-w-0">
+            <!-- Blue Selected Radio Dot -->
+            <div class="w-5 h-5 rounded-full border-2 border-[#3b82f6] flex items-center justify-center flex-shrink-0">
+              <div class="w-2.5 h-2.5 rounded-full bg-[#3b82f6]"></div>
+            </div>
+            <!-- Sparkles Icon -->
+            <i data-lucide="sparkles" class="w-4 h-4 text-[#5a94f5] flex-shrink-0"></i>
+            <div class="min-w-0">
+              <span id="ai-active-mode-title" class="font-semibold text-[#f8fafc] text-xs sm:text-sm block truncate">Normal (Mix MUSIK / Eksplorasi)</span>
+              <span id="ai-active-mode-desc" class="text-[11px] text-[#8491a2] block truncate">Pemisahan berdasarkan variasi umum.</span>
+            </div>
+          </div>
+          <div class="flex items-center space-x-2 flex-shrink-0">
+            <span class="px-3 py-1 rounded-full text-[11px] font-medium text-[#5b96f7] bg-[#17233e] border border-[#273f73] whitespace-nowrap">Mode Terpilih</span>
+            <i data-lucide="chevron-down" id="ai-mode-chevron" class="w-4 h-4 text-[#5b96f7]/70 transition-transform"></i>
+          </div>
+        </div>
+
+        <!-- Collapsible Mode Switcher Presets -->
+        <div id="ai-mode-picker-dropdown" class="hidden p-3 rounded-xl bg-[#10131d] border border-[#1d222e] space-y-2 text-xs">
+          <p class="text-[11px] text-[#8895a7] font-medium px-1">Pilih Mode Pemisahan AI:</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div onclick="selectAiPromptMode('preset_user')" class="p-2.5 rounded-xl border border-[#232a3b] hover:border-[#3b82f6]/60 bg-[#131620] cursor-pointer transition select-none flex items-start space-x-2.5">
+              <input type="radio" name="ai-prompt-mode" value="preset_user" checked class="mt-0.5 accent-[#3b82f6] pointer-events-none">
+              <div class="leading-tight">
+                <span class="font-medium text-[#f1f5f9] block">Normal (Mix MUSIK / Eksplorasi)</span>
+                <span class="text-[10px] text-[#8491a2]">Pemisahan berdasarkan variasi umum (mood, tempo, energi).</span>
+              </div>
+            </div>
+
+            <div onclick="selectAiPromptMode('custom_genres')" class="p-2.5 rounded-xl border border-[#232a3b] hover:border-[#3b82f6]/60 bg-[#131620] cursor-pointer transition select-none flex items-start space-x-2.5">
+              <input type="radio" name="ai-prompt-mode" value="custom_genres" class="mt-0.5 accent-[#3b82f6] pointer-events-none">
+              <div class="leading-tight">
+                <span class="font-medium text-[#f1f5f9] block">Kustom Genre Tertentu</span>
+                <span class="text-[10px] text-[#8491a2]">Tentukan daftar genre sendiri (Indie Pop, Rock, Lo-Fi, dll).</span>
+              </div>
+            </div>
+
+            <div onclick="selectAiPromptMode('niche_artist')" class="p-2.5 rounded-xl border border-[#232a3b] hover:border-[#3b82f6]/60 bg-[#131620] cursor-pointer transition select-none flex items-start space-x-2.5">
+              <input type="radio" name="ai-prompt-mode" value="niche_artist" class="mt-0.5 accent-[#3b82f6] pointer-events-none">
+              <div class="leading-tight">
+                <span class="font-medium text-[#f1f5f9] block">Kurasi Artis Niche / Eksplorasi</span>
+                <span class="text-[10px] text-[#8491a2]">Pisahkan musisi indie/niche dari mainstream, vokal, dsb.</span>
+              </div>
+            </div>
+
+            <div onclick="selectAiPromptMode('freeform')" class="p-2.5 rounded-xl border border-[#232a3b] hover:border-[#3b82f6]/60 bg-[#131620] cursor-pointer transition select-none flex items-start space-x-2.5">
+              <input type="radio" name="ai-prompt-mode" value="freeform" class="mt-0.5 accent-[#3b82f6] pointer-events-none">
+              <div class="leading-tight">
+                <span class="font-medium text-[#f1f5f9] block">Tulis Prompt Sendiri Bebas</span>
+                <span class="text-[10px] text-[#8491a2]">Ketik instruksi pemisahan apa pun sesuai imajinasi Anda.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dynamic Mode Fields if needed -->
+          <div id="box-custom-genres" class="hidden space-y-1 pt-2 border-t border-[#1d222e]">
+            <label class="text-[11px] font-medium text-[#8895a7] block">Daftar Genre Kustom (pisahkan dengan koma):</label>
+            <input type="text" id="input-custom-genres" oninput="updateCopyTracksPreview()" value="Indie Pop / Alternative, Indie Rock, Indie Soul / R&B, Lo-Fi / Chill" class="w-full bg-[#131620] border border-[#232a3b] rounded-lg px-2.5 py-1.5 text-xs text-[#f1f5f9] focus:outline-none focus:border-[#3b82f6]">
+          </div>
+          <div id="box-niche-artist" class="hidden space-y-1 pt-2 border-t border-[#1d222e]">
+            <label class="text-[11px] font-medium text-[#8895a7] block">Kriteria Khusus Artis Niche:</label>
+            <input type="text" id="input-niche-artist" oninput="updateCopyTracksPreview()" value="Pisahkan lagu berdasarkan musisi indie/niche vs mainstream, serta karakter unik dari vokal atau instrumennya" class="w-full bg-[#131620] border border-[#232a3b] rounded-lg px-2.5 py-1.5 text-xs text-[#f1f5f9] focus:outline-none focus:border-[#3b82f6]">
+          </div>
+          <div id="box-freeform-prompt" class="hidden space-y-1 pt-2 border-t border-[#1d222e]">
+            <label class="text-[11px] font-medium text-[#8895a7] block">Instruksi Bebas Anda untuk AI:</label>
+            <textarea id="input-freeform-prompt" oninput="updateCopyTracksPreview()" rows="2" placeholder="Tulis instruksi khusus..." class="w-full bg-[#131620] border border-[#232a3b] rounded-lg p-2 text-xs text-[#f1f5f9] focus:outline-none focus:border-[#3b82f6] custom-scroll resize-none"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Preview Hasil Box (Matches Screenshot) -->
+      <div class="rounded-2xl border border-[#1d222e] bg-[#10131d] overflow-hidden flex flex-col flex-1 min-h-[220px]">
+        <!-- Preview Header -->
+        <div class="flex items-center justify-between px-3.5 py-2.5 border-b border-[#1a1f2b] bg-[#121520]">
+          <div class="flex items-center space-x-2">
+            <i data-lucide="list" class="w-4 h-4 text-[#677589]"></i>
+            <span class="text-xs font-semibold text-[#f1f5f9]">Preview Hasil</span>
+            <span id="copy-tracks-count" class="px-2.5 py-0.5 rounded-full bg-[#171c28] border border-[#262e3d] text-[10px] text-[#8895a7] font-mono">5 Lagu Contoh</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button onclick="toggleRawTextPreview()" class="text-[11px] text-[#677589] hover:text-[#5a94f5] transition flex items-center space-x-1 cursor-pointer" title="Lihat Teks Prompt / Daftar Lagu Mentah">
+              <span id="raw-preview-toggle-text">Teks Mentah</span>
+              <i data-lucide="code" class="w-3 h-3"></i>
+            </button>
+            <button onclick="togglePreviewAccordion()" class="text-[#677589] hover:text-[#f1f5f9] p-0.5 transition cursor-pointer" title="Lipat / Buka Preview">
+              <i data-lucide="chevron-up" id="preview-chevron" class="w-4 h-4 transition-transform"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Visual Track List Preview (Matches Screenshot with Thumbnails & Badges) -->
+        <div id="copy-tracks-visual-list" class="p-2 space-y-1 overflow-y-auto max-h-56 custom-scroll flex-1">
+          <!-- Rendered dynamically -->
+        </div>
+
+        <!-- Raw Text Preview (Hidden by default, toggleable) -->
+        <div id="copy-tracks-raw-container" class="hidden p-2 flex-1 flex flex-col">
+          <textarea id="copy-tracks-preview" readonly class="w-full flex-1 p-2.5 rounded-lg bg-[#131620] font-mono text-xs text-[#f1f5f9] border border-[#1e2330] focus:outline-none resize-none custom-scroll h-48 select-all"></textarea>
+        </div>
+      </div>
+
+      <!-- Modal Footer Action Buttons (Matches Screenshot) -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-[#1e2330]">
+        <!-- Buka Smart Group Playlist Builder Link -->
+        <button onclick="closeCopyTracksModal(); openGroupSplitterModal();" class="text-xs text-[#10b981] hover:text-[#34d399] hover:underline flex items-center space-x-1.5 font-medium transition cursor-pointer">
+          <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+          <span>Buka Smart Group Playlist Builder ↗</span>
+        </button>
+
+        <!-- Right Buttons -->
+        <div class="flex items-center space-x-2">
+          <!-- Salin Lagu Saja -->
+          <button onclick="copyCleanTrackList()" class="px-3.5 py-2 rounded-xl bg-[#1d222e] hover:bg-[#252c3c] border border-[#2a3243] text-[#e2e8f0] text-xs font-semibold flex items-center space-x-1.5 transition cursor-pointer shadow-sm">
+            <i data-lucide="list" class="w-3.5 h-3.5 text-[#8895a7]"></i>
+            <span>Salin Lagu Saja</span>
+          </button>
+          <!-- Salin Prompt AI Siap Pakai -->
+          <button onclick="copyAiPromptTemplate()" class="px-4 py-2 rounded-xl bg-[#5a94f5] hover:bg-[#4a84e8] text-white text-xs font-semibold flex items-center space-x-1.5 shadow-md shadow-[#5a94f5]/25 transition cursor-pointer">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5 fill-current"></i>
+            <span>Salin Prompt AI Siap Pakai</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================= -->
+  <!-- MODAL: SMART GROUP PLAYLIST BUILDER (PEMISAH KATEGORI & MOOD) -->
+  <!-- ================================================================= -->
+  <div id="modal-group-splitter" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-bgCard border border-borderColor w-full max-w-3xl rounded-2xl shadow-2xl p-6 space-y-4 flex flex-col max-h-[92vh]">
+      <div class="flex items-center justify-between border-b border-borderColor/60 pb-3">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-8 h-8 rounded-xl bg-spotifyGreen/15 border border-spotifyGreen/30 flex items-center justify-center text-spotifyGreen">
+            <i data-lucide="layers" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-semibold text-textPrimary flex items-center space-x-1.5">
+              <span>Smart Group Playlist Builder</span>
+              <span class="text-[10px] font-mono text-spotifyGreen bg-spotifyGreen/15 px-2 py-0.5 rounded-full border border-spotifyGreen/30">Auto-Matcher</span>
+            </h3>
+            <p class="text-xs text-textMuted">Tempel teks pembagian genre / mood lagu di bawah. Sistem otomatis mendeteksi grup, mencocokkan URI Spotify, dan membuatkan playlist!</p>
+          </div>
+        </div>
+        <button onclick="closeGroupSplitterModal()" class="text-textMuted hover:text-textPrimary p-1.5 rounded-lg hover:bg-bgElevated transition">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Quick Fill Sample Buttons -->
+      <div class="flex items-center justify-between flex-wrap gap-2 text-xs">
+        <div class="flex items-center space-x-1.5 text-textMuted">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5 text-spotifyGreen"></i>
+          <span>Contoh Format Cepat:</span>
+        </div>
+        <div class="flex items-center space-x-2">
+          <button onclick="loadGroupExample('genre')" class="px-2.5 py-1 rounded-lg bg-bgElevated hover:bg-borderColor border border-borderColor text-textSecondary hover:text-textPrimary text-[11px] transition">
+            🎸 Contoh Genre (Indie Pop, Rock, dll)
+          </button>
+          <button onclick="loadGroupExample('mood')" class="px-2.5 py-1 rounded-lg bg-bgElevated hover:bg-borderColor border border-borderColor text-textSecondary hover:text-textPrimary text-[11px] transition">
+            🌙 Contoh Mood (Slow/Relaxed, Upbeat)
+          </button>
+          <button onclick="clearGroupInput()" class="px-2 py-1 rounded text-textMuted hover:text-textPrimary text-[11px]">
+            Hapus
+          </button>
+        </div>
+      </div>
+
+      <!-- Text Input Area -->
+      <div class="space-y-1">
+        <textarea id="group-splitter-input" oninput="debounceProcessGroups()" placeholder="🎸 Indie Pop / Alternative Pop&#10;1. Penelope&#10;2. Elvis (feat. Brendan Yates)&#10;3. Handsome&#10;&#10;🌙 Slow / Relaxed&#10;Lagu yang cenderung santai dan mellow.&#10;1. Penelope&#10;2. Grandma Song" class="w-full h-36 p-3 rounded-xl bg-bgElevated font-mono text-xs text-textPrimary border border-borderColor focus:outline-none focus:border-spotifyGreen/60 custom-scroll resize-none leading-relaxed"></textarea>
+      </div>
+
+      <!-- Live Results & Groups Cards Container -->
+      <div class="flex-1 overflow-y-auto custom-scroll space-y-3 pr-1 min-h-[160px]">
+        <div class="flex items-center justify-between px-1 text-xs">
+          <span class="font-semibold text-textPrimary flex items-center space-x-1.5">
+            <i data-lucide="list-music" class="w-3.5 h-3.5 text-accent"></i>
+            <span>Daftar Playlist yang Terdeteksi:</span>
+          </span>
+          <span id="group-splitter-summary-badge" class="font-mono text-textMuted">0 grup terdeteksi</span>
+        </div>
+
+        <div id="group-splitter-results-list" class="space-y-3">
+          <!-- Rendered dynamically -->
+          <div class="p-6 text-center text-xs text-textMuted border border-dashed border-borderColor rounded-xl space-y-1">
+            <i data-lucide="layers" class="w-5 h-5 mx-auto text-textMuted/60 mb-1"></i>
+            <p>Tempel daftar lagu per kategori di atas untuk melihat pratinjau playlist otomatis.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Batch Footer Action Bar -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-3 border-t border-borderColor">
+        <div class="flex items-center space-x-2 text-xs text-textMuted">
+          <i data-lucide="info" class="w-3.5 h-3.5 text-spotifyGreen flex-shrink-0"></i>
+          <span>Klik "Salin URI" untuk paste (Ctrl+V) di Spotify Desktop, atau "Buat di App" untuk menyimpan playlist.</span>
+        </div>
+        <div class="flex items-center space-x-2 flex-shrink-0">
+          <button id="btn-copy-all-groups-uris" onclick="copyAllGroupsFormatted()" class="px-3.5 py-2 rounded-lg bg-bgElevated hover:bg-borderColor border border-borderColor text-textPrimary text-xs font-semibold flex items-center space-x-1.5 transition">
+            <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+            <span>Salin Semua URI Spotify</span>
+          </button>
+          <button id="btn-save-all-groups" onclick="saveAllGroupPlaylists()" class="px-4 py-2 rounded-lg bg-spotifyGreen text-black hover:brightness-105 text-xs font-semibold flex items-center space-x-1.5 shadow-sm transition">
+            <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
+            <span>Buat Semua Playlist di App</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================= -->
   <!-- FLOATING MATCHING BACKGROUND MONITOR WIDGET -->
   <!-- ================================================================= -->
   <div id="floating-matching-widget" class="fixed bottom-6 right-6 z-40 max-w-xs w-80 bg-bgCard/95 backdrop-blur-md border border-borderColor shadow-2xl rounded-2xl p-4 hidden transition-transform duration-300 transform translate-y-0">
@@ -2075,10 +2528,15 @@
     <p class="text-[11px] text-textMuted truncate mb-3" id="float-widget-msg">Menyisir katalog Spotify...</p>
     <div class="flex items-center justify-between pt-2 border-t border-borderColor/60">
       <span class="text-[10px] text-textMuted font-mono" id="float-widget-counts">0 / 0 lagu</span>
-      <button onclick="switchView('transfer'); goToStep(4);" class="px-2.5 py-1 rounded-lg bg-textPrimary text-bgMain hover:bg-white text-[11px] font-semibold flex items-center space-x-1 transition shadow-sm">
-        <span>Lihat Proses</span>
-        <i data-lucide="arrow-right" class="w-3 h-3"></i>
-      </button>
+      <div class="flex items-center space-x-1.5">
+        <button onclick="cancelMatchingProcess()" class="px-2 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 text-[11px] font-medium border border-red-500/25 transition">
+          Batal
+        </button>
+        <button onclick="switchView('transfer'); goToStep(4);" class="px-2.5 py-1 rounded-lg bg-textPrimary text-bgMain hover:bg-white text-[11px] font-semibold flex items-center space-x-1 transition shadow-sm">
+          <span>Lihat Proses</span>
+          <i data-lucide="arrow-right" class="w-3 h-3"></i>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -2228,6 +2686,94 @@
       }
     }
 
+    // ── Desktop Sidebar Auto-Collapse & Pinning ──────────────────────────────
+    let _isSidebarPinned = false; // default bawaan: auto-collapse (false)
+
+    function initSidebarAutoCollapse() {
+      const saved = localStorage.getItem('yt2sp_sidebar_pinned');
+      // Default is false (auto-collapse bawaan)
+      _isSidebarPinned = (saved === 'true');
+      applySidebarState();
+
+      const sidebar = document.getElementById('app-sidebar');
+      if (sidebar) {
+        sidebar.addEventListener('mouseenter', () => {
+          if (!_isSidebarPinned && window.innerWidth >= 768) {
+            expandSidebar(true);
+          }
+        });
+
+        sidebar.addEventListener('mouseleave', () => {
+          if (!_isSidebarPinned && window.innerWidth >= 768) {
+            collapseSidebar();
+          }
+        });
+      }
+    }
+
+    function collapseSidebar() {
+      const sidebar = document.getElementById('app-sidebar');
+      if (!sidebar) return;
+      sidebar.classList.add('sidebar-collapsed');
+      sidebar.classList.remove('sidebar-hover-floating');
+    }
+
+    function expandSidebar(isHover = false) {
+      const sidebar = document.getElementById('app-sidebar');
+      if (!sidebar) return;
+      sidebar.classList.remove('sidebar-collapsed');
+      if (isHover && !_isSidebarPinned) {
+        sidebar.classList.add('sidebar-hover-floating');
+      } else {
+        sidebar.classList.remove('sidebar-hover-floating');
+      }
+    }
+
+    function applySidebarState() {
+      const sidebar = document.getElementById('app-sidebar');
+      if (!sidebar) return;
+
+      if (_isSidebarPinned) {
+        expandSidebar(false);
+      } else {
+        collapseSidebar();
+      }
+      updateSettingsSidebarUI();
+    }
+
+    function toggleSidebarPin() {
+      _isSidebarPinned = !_isSidebarPinned;
+      localStorage.setItem('yt2sp_sidebar_pinned', String(_isSidebarPinned));
+      applySidebarState();
+      showToast(_isSidebarPinned ? 'Sidebar dikunci selalu terbuka!' : 'Sidebar kembali ke mode auto-collapse (bawaan).');
+    }
+
+    function updateSettingsSidebarUI() {
+      const badge = document.getElementById('settings-sidebar-pin-badge');
+      const btnText = document.getElementById('settings-sidebar-pin-text');
+      const switchEl = document.getElementById('settings-sidebar-pin-switch');
+      const knob = document.getElementById('settings-sidebar-pin-knob');
+      if (!switchEl || !knob) return;
+
+      if (_isSidebarPinned) {
+        if (badge) {
+          badge.innerText = 'Terkunci Terbuka';
+          badge.className = 'px-2 py-0.5 rounded text-[10px] font-mono bg-spotifyGreen/15 text-spotifyGreen border border-spotifyGreen/30';
+        }
+        if (btnText) btnText.innerText = 'Buka Kunci (Kembali Auto-Collapse)';
+        switchEl.className = 'w-8 h-4 rounded-full bg-spotifyGreen relative transition p-0.5';
+        knob.className = 'w-3 h-3 rounded-full bg-black transition translate-x-4';
+      } else {
+        if (badge) {
+          badge.innerText = 'Auto-Collapse (Bawaan)';
+          badge.className = 'px-2 py-0.5 rounded text-[10px] font-mono bg-bgElevated text-textMuted border border-borderColor';
+        }
+        if (btnText) btnText.innerText = 'Kunci Sidebar Selalu Terbuka';
+        switchEl.className = 'w-8 h-4 rounded-full bg-borderColor/80 relative transition p-0.5';
+        knob.className = 'w-3 h-3 rounded-full bg-textMuted transition translate-x-0';
+      }
+    }
+
     function toggleMobileSidebar() {
       const sb = document.getElementById('app-sidebar');
       const bd = document.getElementById('mobile-backdrop');
@@ -2260,6 +2806,16 @@
       try {
         const res = await fetch('/api/status');
         const data = await res.json();
+
+        // Dynamic System Version Sync
+        if (data.version_badge) {
+          window.__appVersion = data.version || 'v1.3.0';
+          window.__appVersionBadge = data.version_badge;
+          const pill = document.getElementById('overview-version-pill');
+          if (pill) pill.innerText = data.version_badge;
+          const badge = document.getElementById('overview-version-badge');
+          if (badge) badge.innerText = data.version_badge;
+        }
 
         // Update KPI Counters
         const elTracks = document.getElementById('stat-total-tracks');
@@ -2471,7 +3027,7 @@
         return;
       }
       el.innerHTML = _playlists.slice(0, 5).map(p => `
-        <div class="p-3.5 flex items-center justify-between hover:bg-bgElevated/60 bg-bgCard rounded-xl border border-borderColor/80 hover:border-borderColor nav-transition group shadow-sm">
+        <div class="playlist-card-item p-3.5 flex items-center justify-between rounded-xl group shadow-sm">
           <div class="flex items-center space-x-3.5 min-w-0">
             ${getPlaylistArtworkHtml(p, 'lg')}
             <div class="min-w-0">
@@ -2610,15 +3166,26 @@
     function openPlaylistHistory(plId) {
       _activePlaylistId = plId;
       _genreFilter = '';
+      _statusFilter = '';
+      _searchQuery = '';
+      _isSkippedBannerDismissed = false;
+      _isUnavailableBannerDismissed = false;
+      const sInput = document.getElementById('history-search');
+      if (sInput) sInput.value = '';
       switchView('history');
-      renderGenreSplitters();
+      filterHistoryStatus('');
     }
 
     function filterHistoryPlaylist(plId) {
       _activePlaylistId = plId;
       _genreFilter = '';
-      loadTracks();
-      renderGenreSplitters();
+      _statusFilter = '';
+      _searchQuery = '';
+      _isSkippedBannerDismissed = false;
+      _isUnavailableBannerDismissed = false;
+      const sInput = document.getElementById('history-search');
+      if (sInput) sInput.value = '';
+      filterHistoryStatus('');
     }
 
     // ── Guided Transfer Step Flow ──────────────────────────────────────────
@@ -2842,7 +3409,7 @@
         `;
       } else {
         availZone.innerHTML = availablePlaylists.map(p => `
-          <div draggable="true" ondragstart="onPlaylistDragStart(event, ${p.id}, 'available')" class="draggable-card flex items-center justify-between p-2.5 rounded-xl bg-bgCard hover:bg-bgElevated border border-borderColor/80 cursor-grab active:cursor-grabbing group shadow-sm transition-all">
+          <div draggable="true" ondragstart="onPlaylistDragStart(event, ${p.id}, 'available')" class="draggable-card flex items-center justify-between p-2.5 rounded-xl bg-bgCard hover:bg-bgElevated border border-borderColor hover:border-accent/40 cursor-grab active:cursor-grabbing group shadow-sm transition-all">
             <div class="flex items-center space-x-3 min-w-0 pointer-events-none">
               <span class="text-textMuted group-hover:text-textPrimary flex-shrink-0 drag-handle">
                 <i data-lucide="grip-vertical" class="w-4 h-4"></i>
@@ -2875,7 +3442,7 @@
         `;
       } else {
         queueZone.innerHTML = queuePlaylists.map((p, idx) => `
-          <div draggable="true" ondragstart="onPlaylistDragStart(event, ${p.id}, 'queue')" ondragover="onQueueItemDragOver(event, ${p.id})" ondragleave="onQueueItemDragLeave(event)" ondrop="onQueueItemDrop(event, ${p.id})" class="draggable-card flex items-center justify-between p-2.5 rounded-xl bg-bgElevated border border-borderColor/80 cursor-grab active:cursor-grabbing group shadow-sm transition-all">
+          <div draggable="true" ondragstart="onPlaylistDragStart(event, ${p.id}, 'queue')" ondragover="onQueueItemDragOver(event, ${p.id})" ondragleave="onQueueItemDragLeave(event)" ondrop="onQueueItemDrop(event, ${p.id})" class="draggable-card flex items-center justify-between p-2.5 rounded-xl bg-bgElevated border border-borderColor hover:border-accent/40 cursor-grab active:cursor-grabbing group shadow-sm transition-all">
             <div class="flex items-center space-x-3 min-w-0 pointer-events-none">
               <span class="text-textMuted group-hover:text-textPrimary flex-shrink-0 drag-handle">
                 <i data-lucide="grip-vertical" class="w-4 h-4"></i>
@@ -3214,13 +3781,49 @@
       }
     }
 
+    async function cancelMatchingProcess() {
+      try {
+        const cancelBtn = document.getElementById('step4-btn-cancel');
+        if (cancelBtn) {
+          cancelBtn.disabled = true;
+          cancelBtn.innerHTML = '<span class="w-3 h-3 border-2 border-red-400 border-t-transparent rounded-full animate-spin"></span><span>Membatalkan...</span>';
+        }
+        showToast('Membatalkan proses pencocokan...');
+        await fetch('/api/cancel', { method: 'POST' });
+        refreshStatus();
+      } catch (e) {
+        console.error('Failed to cancel:', e);
+        showToast('Gagal membatalkan proses.', 'error');
+      } finally {
+        const cancelBtn = document.getElementById('step4-btn-cancel');
+        if (cancelBtn) {
+          cancelBtn.disabled = false;
+          cancelBtn.innerHTML = '<i data-lucide="square" class="w-3 h-3 fill-current"></i><span>Batalkan</span>';
+          if (window.lucide) lucide.createIcons();
+        }
+      }
+    }
+
     function updateGuidedStep4(job, statusData) {
       if (_currentGuidedStep !== 4) return;
 
-      const isComplete = !job.running && job.type === 'resolve' && (
+      const cancelBtn = document.getElementById('step4-btn-cancel');
+      if (cancelBtn) {
+        if (job.running) {
+          cancelBtn.classList.remove('hidden');
+          cancelBtn.classList.add('inline-flex');
+        } else {
+          cancelBtn.classList.add('hidden');
+          cancelBtn.classList.remove('inline-flex');
+        }
+      }
+
+      const isResolveDone = !job.running && job.type === 'resolve' && (
         (job.total > 0 && job.current >= job.total) ||
         (job.message && (job.message.includes('selesai') || job.message.includes('sudah cocok')))
       );
+      const isAllPendingZero = !job.running && statusData && statusData.total > 0 && statusData.pending === 0;
+      const isComplete = isResolveDone || isAllPendingZero;
 
       if (isComplete) {
         // Complete! Jump to Step 5
@@ -3245,15 +3848,32 @@
       const stage2 = document.getElementById('stage-badge-2');
       const stage3 = document.getElementById('stage-badge-3');
 
-      if (titleEl && job.message) {
-        descEl.innerText = job.message;
-        if (liveTrackEl) liveTrackEl.innerText = job.message;
-      }
+      let current = 0;
+      let total = 0;
+      let pct = 0;
 
-      const total = job.total || 0;
-      const current = job.current || 0;
-      let pct = total > 0 ? Math.round((current / total) * 100) : 0;
-      if (job.running && pct === 0) pct = 6;
+      if (job.type === 'resolve') {
+        total = job.total || (statusData ? statusData.total : 0);
+        current = job.current || 0;
+        pct = total > 0 ? Math.round((current / total) * 100) : 0;
+        if (job.running && pct === 0) pct = 6;
+
+        if (descEl && job.message) descEl.innerText = job.message;
+        if (liveTrackEl && job.message) liveTrackEl.innerText = job.message;
+      } else {
+        const totalTracks = statusData ? (statusData.total || 0) : 0;
+        const pendingTracks = statusData ? (statusData.pending ?? totalTracks) : 0;
+        const processed = Math.max(0, totalTracks - pendingTracks);
+        total = totalTracks;
+        current = processed;
+        pct = total > 0 ? Math.round((processed / total) * 100) : 0;
+
+        const fallbackMsg = (pct === 100)
+          ? 'Semua lagu sudah dicocokkan! Klik "Lanjut: Lihat Hasil" di bawah.'
+          : (job.running ? (job.message || 'Memproses background...') : 'Pencocokan belum berjalan. Klik tombol di bawah.');
+        if (descEl) descEl.innerText = fallbackMsg;
+        if (liveTrackEl) liveTrackEl.innerText = fallbackMsg;
+      }
 
       if (bar) {
         bar.style.width = `${pct}%`;
@@ -3516,6 +4136,30 @@
     }
 
     // ── Tracks API & Review Studio ─────────────────────────────────────────
+    let _isSkippedBannerPinned = false;
+    let _isSkippedBannerDismissed = false;
+    let _isUnavailableBannerDismissed = false;
+
+    function dismissSkippedBanner(event) {
+      if (event) event.stopPropagation();
+      _isSkippedBannerDismissed = true;
+      const banner = document.getElementById('skipped-tracks-banner');
+      if (banner) {
+        banner.classList.add('hidden');
+        banner.classList.remove('flex');
+      }
+    }
+
+    function dismissUnavailableBanner(event) {
+      if (event) event.stopPropagation();
+      _isUnavailableBannerDismissed = true;
+      const banner = document.getElementById('unavailable-tracks-banner');
+      if (banner) {
+        banner.classList.add('hidden');
+        banner.classList.remove('flex');
+      }
+    }
+
     function filterHistoryGenre(genre) {
       _genreFilter = genre || '';
       loadTracks();
@@ -3535,43 +4179,69 @@
         const data = await res.json();
         _tracks = data.tracks || [];
 
-        // Check for skipped / UGC tracks count to display alert banner & badge
+        // Check for skipped / UGC tracks count to display alert banner & update all status badges
         if (!_statusFilter) {
-          const skippedCount = _tracks.filter(t => t.status === 'skipped').length;
+          const countAll = _tracks.length;
+          const countAuto = _tracks.filter(t => t.status === 'resolved_auto').length;
+          const countReview = _tracks.filter(t => t.status === 'needs_review').length;
+          const countFailed = _tracks.filter(t => t.status === 'failed' || t.status === 'rejected' || t.status === 'pending').length;
+          const countAccepted = _tracks.filter(t => t.status === 'accepted').length;
+          const countSkipped = _tracks.filter(t => t.status === 'skipped').length;
+
+          const bAll = document.getElementById('badge-count-all');
+          if (bAll) bAll.innerText = countAll;
+          const bAuto = document.getElementById('badge-count-auto');
+          if (bAuto) bAuto.innerText = countAuto;
+          const bReview = document.getElementById('badge-count-review');
+          if (bReview) bReview.innerText = countReview;
+          const bFailed = document.getElementById('badge-count-failed');
+          if (bFailed) bFailed.innerText = countFailed;
+          const bAccepted = document.getElementById('badge-count-accepted');
+          if (bAccepted) bAccepted.innerText = countAccepted;
+          const bSkipped = document.getElementById('badge-count-skipped');
+          if (bSkipped) bSkipped.innerText = countSkipped;
+
           const banner = document.getElementById('skipped-tracks-banner');
-          const badge = document.getElementById('badge-count-skipped');
           if (banner) {
-            if (skippedCount > 0) {
+            if (countSkipped > 0 && !_isSkippedBannerDismissed) {
               banner.classList.remove('hidden');
               banner.classList.add('flex');
               const bText = document.getElementById('skipped-banner-text');
-              if (bText) bText.innerText = `${skippedCount} ${t('skipped_tracks_suffix', 'Tracks Auto-Skipped')}`;
+              if (bText) bText.innerText = `${countSkipped} ${t('skipped_tracks_suffix', 'Tracks Auto-Skipped')}`;
+              if (window.lucide) lucide.createIcons();
             } else {
               banner.classList.add('hidden');
               banner.classList.remove('flex');
             }
           }
-          if (badge) {
-            if (skippedCount > 0) {
-              badge.classList.remove('hidden');
-              badge.innerText = skippedCount;
-            } else {
-              badge.classList.add('hidden');
-            }
+        }
+
+        // Update header subtitle with active playlist name
+        const activePl = _playlists.find(p => p.id === Number(_activePlaylistId)) || _playlists.find(p => String(p.id) === String(_activePlaylistId));
+        const subTitleEl = document.getElementById('history-playlist-subtitle');
+        if (subTitleEl) {
+          if (activePl) {
+            subTitleEl.innerHTML = `Meninjau playlist: <strong class="text-textPrimary">${escapeHtml(activePl.title)}</strong> (${activePl.track_count || 0} lagu) • Periksa kecocokan lagu, setujui/tolak saran, atau salin URI ke Spotify.`;
+          } else {
+            subTitleEl.innerHTML = `Meninjau seluruh pustaka lagu (${_tracks.length} lagu) • Periksa kecocokan lagu, setujui/tolak saran, atau salin URI ke Spotify.`;
           }
         }
 
         // Check for unavailable / deleted YouTube tracks in active playlist
-        const activePl = _playlists.find(p => p.id === Number(_activePlaylistId)) || _playlists.find(p => String(p.id) === String(_activePlaylistId));
         const uBanner = document.getElementById('unavailable-tracks-banner');
         if (uBanner) {
-          if (activePl && activePl.unavailable_count > 0) {
+          if (activePl && activePl.unavailable_count > 0 && !_isUnavailableBannerDismissed) {
             uBanner.classList.remove('hidden');
             uBanner.classList.add('flex');
             const uText = document.getElementById('unavailable-banner-text');
             if (uText) uText.innerText = `${activePl.unavailable_count} Lagu Dihapus/Privat oleh YouTube`;
             const uDesc = document.getElementById('unavailable-banner-desc');
-            if (uDesc) uDesc.innerText = `YouTube mencantumkan total ${(activePl.track_count || 0) + activePl.unavailable_count} lagu di header playlist, namun ${activePl.unavailable_count} video disembunyikan oleh YouTube karena berstatus Deleted/Private sehingga hanya ${activePl.track_count} lagu yang dapat ditarik.`;
+            if (uDesc) {
+              const fullMsg = `YouTube mencantumkan total ${(activePl.track_count || 0) + activePl.unavailable_count} lagu di header playlist, namun ${activePl.unavailable_count} video disembunyikan oleh YouTube karena berstatus Deleted/Private sehingga hanya ${activePl.track_count} lagu yang dapat ditarik.`;
+              uDesc.innerText = fullMsg;
+              uDesc.title = fullMsg;
+            }
+            if (window.lucide) lucide.createIcons();
           } else {
             uBanner.classList.add('hidden');
             uBanner.classList.remove('flex');
@@ -3598,6 +4268,9 @@
       if (!tbody) return;
 
       const total = _tracks.length;
+      const countBadge = document.getElementById('tracks-total-badge');
+      if (countBadge) countBadge.innerText = `${total} Tracks`;
+
       if (total === 0) {
         tbody.innerHTML = '<tr><td colspan="8" class="p-8 text-center text-xs text-textMuted">Tidak ada lagu yang ditemukan.</td></tr>';
         document.getElementById('pagination-info').innerText = '0 lagu';
@@ -3745,10 +4418,10 @@
       ['all', 'auto', 'review', 'failed', 'accepted', 'skipped'].forEach(id => {
         const btn = document.getElementById(`filter-status-${id}`);
         if (!btn) return;
-        const active = (id === 'all' && !status) || (id === 'auto' && status === 'resolved_auto') || (id === status);
+        const active = (id === 'all' && !status) || (id === 'auto' && status === 'resolved_auto') || (id === 'review' && status === 'needs_review') || (id === status);
         btn.className = active
-          ? "px-2.5 py-1 rounded bg-bgElevated text-textPrimary font-medium flex items-center space-x-1"
-          : "px-2.5 py-1 rounded text-textSecondary hover:text-textPrimary flex items-center space-x-1";
+          ? "px-3 py-1.5 rounded-lg bg-bgElevated text-textPrimary font-medium flex items-center space-x-1.5 transition shadow-xs"
+          : "px-3 py-1.5 rounded-lg text-textSecondary hover:text-textPrimary flex items-center space-x-1.5 transition";
       });
       loadTracks();
     }
@@ -3823,6 +4496,850 @@
       }
       await navigator.clipboard.writeText(uris.join('\n'));
       showToast(`${uris.length} URI lagu tersalin ke clipboard! Siap Ctrl+V.`);
+    }
+
+    function toggleBulkActionsDropdown(forceState = null) {
+      const menu = document.getElementById('bulk-actions-menu');
+      if (!menu) return;
+      if (forceState !== null) {
+        if (forceState) menu.classList.remove('hidden');
+        else menu.classList.add('hidden');
+      } else {
+        menu.classList.toggle('hidden');
+      }
+    }
+
+    async function copyAllFilteredUris() {
+      const uris = [];
+      _tracks.forEach(t => {
+        if (t.spotify_id) {
+          uris.push(`spotify:track:${t.spotify_id}`);
+        }
+      });
+      if (uris.length === 0) {
+        showToast('Tidak ada URI Spotify yang ditemukan.');
+        return;
+      }
+      await navigator.clipboard.writeText(uris.join('\n'));
+      showToast(`${uris.length} URI Spotify tersalin ke clipboard! Siap di-paste ke playlist.`);
+    }
+
+    document.addEventListener('click', (e) => {
+      const menu = document.getElementById('bulk-actions-menu');
+      const btn = document.getElementById('btn-bulk-actions');
+      if (menu && !menu.classList.contains('hidden')) {
+        if (!menu.contains(e.target) && !btn?.contains(e.target)) {
+          menu.classList.add('hidden');
+        }
+      }
+    });
+
+    // ── Copy Track List & AI Prompt Builder ─────────────────────────────────────
+    let _allLibraryTracksCache = null;
+    let _copyPreviewTab = 'prompt';
+    let _currentCleanTrackList = '';
+    let _currentFullAiPrompt = '';
+
+    function switchCopyPreviewTab(tab) {
+      _copyPreviewTab = tab;
+      const btnPrompt = document.getElementById('tab-preview-prompt');
+      const btnClean = document.getElementById('tab-preview-clean');
+      if (btnPrompt && btnClean) {
+        if (tab === 'prompt') {
+          btnPrompt.className = 'px-2.5 py-1 rounded-lg text-xs font-semibold bg-accent/15 text-accent border border-accent/30 transition';
+          btnClean.className = 'px-2.5 py-1 rounded-lg text-xs font-medium text-textMuted hover:text-textPrimary hover:bg-bgElevated transition';
+        } else {
+          btnClean.className = 'px-2.5 py-1 rounded-lg text-xs font-semibold bg-accent/15 text-accent border border-accent/30 transition';
+          btnPrompt.className = 'px-2.5 py-1 rounded-lg text-xs font-medium text-textMuted hover:text-textPrimary hover:bg-bgElevated transition';
+        }
+      }
+      const previewEl = document.getElementById('copy-tracks-preview');
+      if (previewEl) {
+        previewEl.value = (_copyPreviewTab === 'prompt') ? _currentFullAiPrompt : _currentCleanTrackList;
+      }
+    }
+
+    function onAiPromptModeChange() {
+      const mode = document.querySelector('input[name="ai-prompt-mode"]:checked')?.value || 'preset_user';
+      document.getElementById('box-custom-genres')?.classList.toggle('hidden', mode !== 'custom_genres');
+      document.getElementById('box-niche-artist')?.classList.toggle('hidden', mode !== 'niche_artist');
+      document.getElementById('box-freeform-prompt')?.classList.toggle('hidden', mode !== 'freeform');
+      updateCopyTracksPreview();
+    }
+
+    function buildAiPrompt(cleanTrackList) {
+      const mode = document.querySelector('input[name="ai-prompt-mode"]:checked')?.value || 'preset_user';
+
+      if (mode === 'custom_genres') {
+        const customGenres = document.getElementById('input-custom-genres')?.value.trim() || 'Indie Pop, Indie Rock, Indie Soul, Alternative R&B, Dream Pop';
+        return `Kelompokkan daftar lagu berikut secara spesifik ke dalam kategori atau genre yang ditentukan:
+${customGenres}
+
+Gunakan penilaian berdasarkan genre, mood, suasana, tempo, energi, karakter vokal, atau elemen musikal lainnya.
+
+Ketentuan:
+- Tempatkan setiap lagu ke dalam kategori di atas yang paling sesuai.
+- Hindari kategori yang terlalu luas atau memiliki karakteristik yang tumpang tindih.
+- Jika ada lagu yang tidak cocok ke salah satu kategori di atas, buat kategori cadangan yang relevan.
+- Gunakan emoji pada setiap nama kategori.
+- Berikan deskripsi singkat untuk menjelaskan karakteristik setiap kategori.
+- Pertahankan judul lagu sesuai daftar asli.
+- Jangan menghilangkan lagu apa pun.
+
+Format output:
+
+[Emoji] [Nama Kategori]
+Deskripsi singkat karakteristik kategori.
+1. Judul Lagu
+2. Judul Lagu
+
+Daftar lagu:
+
+${cleanTrackList}`;
+      }
+
+      if (mode === 'niche_artist') {
+        const nicheSpec = document.getElementById('input-niche-artist')?.value.trim() || 'Pisahkan lagu berdasarkan musisi indie/niche vs mainstream, serta karakter unik dari vokal atau instrumennya';
+        return `Kelompokkan daftar lagu berikut dengan fokus kurasi penyanyi/musisi:
+${nicheSpec}
+
+Ketentuan:
+- Buat kategori yang relevan dan tidak terlalu banyak sesuai spesifikasi kurasi di atas.
+- Setiap lagu ditempatkan dalam kategori yang paling sesuai.
+- Hindari kategori yang terlalu luas atau memiliki karakteristik yang tumpang tindih.
+- Gunakan emoji pada setiap nama kategori.
+- Berikan deskripsi singkat untuk menjelaskan karakteristik setiap kategori.
+- Pertahankan judul lagu sesuai daftar asli.
+- Jangan menghilangkan lagu apa pun.
+
+Format output:
+
+[Emoji] [Nama Kategori]
+Deskripsi singkat karakteristik kategori.
+1. Judul Lagu
+2. Judul Lagu
+
+Daftar lagu:
+
+${cleanTrackList}`;
+      }
+
+      if (mode === 'freeform') {
+        const freeformInstructions = document.getElementById('input-freeform-prompt')?.value.trim() || 'Kelompokkan daftar lagu berikut sesuai karakteristik musik yang paling pas.';
+        return `${freeformInstructions}
+
+Ketentuan:
+- Buat kategori yang relevan dan tidak terlalu banyak.
+- Setiap lagu ditempatkan dalam kategori yang paling sesuai.
+- Gunakan emoji pada setiap nama kategori.
+- Berikan deskripsi singkat untuk menjelaskan karakteristik setiap kategori.
+- Pertahankan judul lagu sesuai daftar asli.
+- Jangan menghilangkan lagu apa pun.
+
+Format output:
+
+[Emoji] [Nama Kategori]
+Deskripsi singkat karakteristik kategori.
+1. Judul Lagu
+2. Judul Lagu
+
+Daftar lagu:
+
+${cleanTrackList}`;
+      }
+
+      // Default: Preset Fleksibel dari Pengguna (User's Exact Master Prompt)
+      return `Kelompokkan daftar lagu berikut berdasarkan karakteristik musik yang paling sesuai.
+
+Gunakan penilaian berdasarkan genre, mood, suasana, tempo, energi, karakter vokal, atau elemen musikal lainnya. Buat kategori secara fleksibel sesuai dengan karakter lagu yang ditemukan, bukan berdasarkan kategori yang sudah ditentukan sebelumnya.
+
+Ketentuan:
+- Buat kategori yang relevan dan tidak terlalu banyak.
+- Setiap lagu ditempatkan dalam kategori yang paling sesuai.
+- Hindari kategori yang terlalu luas atau memiliki karakteristik yang tumpang tindih.
+- Jangan memaksakan genre jika karakter lagu lebih cocok dikelompokkan berdasarkan mood atau suasana.
+- Gunakan emoji pada setiap nama kategori.
+- Berikan deskripsi singkat untuk menjelaskan karakteristik setiap kategori.
+- Pertahankan judul lagu sesuai daftar asli.
+- Jangan menghilangkan lagu apa pun.
+
+Format output:
+
+[Emoji] [Nama Kategori]
+Deskripsi singkat karakteristik kategori.
+1. Judul Lagu
+2. Judul Lagu
+
+Daftar lagu:
+
+${cleanTrackList}`;
+    }
+
+    let _isRawTextPreview = false;
+    let _isPreviewCollapsed = false;
+
+    function toggleAiPromptModeDropdown() {
+      const dropdown = document.getElementById('ai-mode-picker-dropdown');
+      const chevron = document.getElementById('ai-mode-chevron');
+      if (!dropdown) return;
+      dropdown.classList.toggle('hidden');
+      if (chevron) {
+        chevron.classList.toggle('rotate-180', !dropdown.classList.contains('hidden'));
+      }
+    }
+
+    function selectAiPromptMode(mode) {
+      const radios = document.querySelectorAll('input[name="ai-prompt-mode"]');
+      radios.forEach(r => {
+        r.checked = (r.value === mode);
+      });
+      const titleEl = document.getElementById('ai-active-mode-title');
+      const descEl = document.getElementById('ai-active-mode-desc');
+
+      const modeMeta = {
+        preset_user: {
+          title: 'Normal (Mix MUSIK / Eksplorasi)',
+          desc: 'Pemisahan berdasarkan variasi umum.'
+        },
+        custom_genres: {
+          title: 'Kustom Genre Tertentu',
+          desc: 'Tentukan daftar genre sendiri (Indie Pop, Rock, Lo-Fi, dll).'
+        },
+        niche_artist: {
+          title: 'Kurasi Artis Niche / Eksplorasi',
+          desc: 'Pisahkan musisi indie/niche dari mainstream, vokal, dsb.'
+        },
+        freeform: {
+          title: 'Tulis Prompt Sendiri Bebas',
+          desc: 'Ketik instruksi pemisahan apa pun sesuai imajinasi Anda.'
+        }
+      };
+
+      const meta = modeMeta[mode] || modeMeta.preset_user;
+      if (titleEl) titleEl.innerText = meta.title;
+      if (descEl) descEl.innerText = meta.desc;
+
+      document.getElementById('box-custom-genres')?.classList.toggle('hidden', mode !== 'custom_genres');
+      document.getElementById('box-niche-artist')?.classList.toggle('hidden', mode !== 'niche_artist');
+      document.getElementById('box-freeform-prompt')?.classList.toggle('hidden', mode !== 'freeform');
+
+      const dropdown = document.getElementById('ai-mode-picker-dropdown');
+      if (dropdown) dropdown.classList.add('hidden');
+      const chevron = document.getElementById('ai-mode-chevron');
+      if (chevron) chevron.classList.remove('rotate-180');
+
+      updateCopyTracksPreview();
+    }
+
+    function toggleRawTextPreview() {
+      _isRawTextPreview = !_isRawTextPreview;
+      const visualList = document.getElementById('copy-tracks-visual-list');
+      const rawBox = document.getElementById('copy-tracks-raw-container');
+      const toggleText = document.getElementById('raw-preview-toggle-text');
+      if (visualList && rawBox) {
+        visualList.classList.toggle('hidden', _isRawTextPreview);
+        rawBox.classList.toggle('hidden', !_isRawTextPreview);
+      }
+      if (toggleText) {
+        toggleText.innerText = _isRawTextPreview ? 'Tampilan Kartu' : 'Teks Mentah';
+      }
+    }
+
+    function togglePreviewAccordion() {
+      _isPreviewCollapsed = !_isPreviewCollapsed;
+      const visualList = document.getElementById('copy-tracks-visual-list');
+      const rawBox = document.getElementById('copy-tracks-raw-container');
+      const chevron = document.getElementById('preview-chevron');
+      if (visualList && !_isRawTextPreview) {
+        visualList.classList.toggle('hidden', _isPreviewCollapsed);
+      }
+      if (rawBox && _isRawTextPreview) {
+        rawBox.classList.toggle('hidden', _isPreviewCollapsed);
+      }
+      if (chevron) {
+        chevron.classList.toggle('rotate-180', _isPreviewCollapsed);
+      }
+    }
+
+    async function openCopyTracksModal(fromSelection = false) {
+      const modal = document.getElementById('modal-copy-tracks');
+      if (!modal) return;
+      const scopeSelect = document.getElementById('copy-tracks-scope');
+      if (scopeSelect) {
+        if (fromSelection && _selectedTrackIds && _selectedTrackIds.size > 0) {
+          scopeSelect.value = 'selected';
+        } else if (_selectedTrackIds && _selectedTrackIds.size > 0) {
+          scopeSelect.value = 'selected';
+        } else {
+          scopeSelect.value = 'current';
+        }
+      }
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      await updateCopyTracksPreview();
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function closeCopyTracksModal() {
+      const modal = document.getElementById('modal-copy-tracks');
+      if (!modal) return;
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    async function updateCopyTracksPreview() {
+      const scope = document.getElementById('copy-tracks-scope')?.value || 'current';
+      const format = document.getElementById('copy-tracks-format')?.value || 'title_only';
+      const isNumbered = document.getElementById('copy-tracks-numbered')?.checked !== false;
+      const previewEl = document.getElementById('copy-tracks-preview');
+      const countEl = document.getElementById('copy-tracks-count');
+      const visualListEl = document.getElementById('copy-tracks-visual-list');
+
+      let targetTracks = [];
+      if (scope === 'selected') {
+        targetTracks = _tracks.filter(t => _selectedTrackIds && _selectedTrackIds.has(t.video_id));
+        if (targetTracks.length === 0) {
+          targetTracks = _tracks.slice(0, 5);
+        }
+      } else if (scope === 'all') {
+        if (!_allLibraryTracksCache) {
+          try {
+            const res = await fetch('/api/tracks?playlist_id=all');
+            const data = await res.json();
+            _allLibraryTracksCache = data.tracks || [];
+          } catch (e) {
+            _allLibraryTracksCache = _tracks;
+          }
+        }
+        targetTracks = _allLibraryTracksCache;
+      } else {
+        targetTracks = _tracks || [];
+      }
+
+      if (countEl) {
+        countEl.innerText = `${targetTracks.length} Lagu ${scope === 'selected' ? 'Terpilih' : 'Contoh'}`;
+      }
+
+      // Render Visual Cards matching Mockup
+      if (visualListEl) {
+        if (targetTracks.length === 0) {
+          visualListEl.innerHTML = `
+            <div class="py-8 text-center text-xs text-textMuted">
+              <i data-lucide="music" class="w-7 h-7 mx-auto mb-2 text-textMuted/40"></i>
+              <p>Tidak ada lagu terpilih.</p>
+            </div>
+          `;
+        } else {
+          visualListEl.innerHTML = targetTracks.map((t, idx) => {
+            const num = isNumbered ? `${idx + 1}.` : '';
+            let title = (t.title || t.result_title || 'Unknown Title').trim();
+            let art = '';
+            if (Array.isArray(t.artists) && t.artists.length > 0) {
+              art = t.artists.join(', ');
+            } else if (t.result_artist) {
+              art = String(t.result_artist).replace(/[\[\]"']/g, '').trim();
+            } else if (typeof t.artists === 'string' && t.artists) {
+              art = t.artists.replace(/[\[\]"']/g, '').trim();
+            }
+
+            let displayLabel = title;
+            if (format === 'artist_title' && art) {
+              displayLabel = `${art} – ${title}`;
+            } else if (format === 'title_artist' && art) {
+              displayLabel = `${title} – ${art}`;
+            }
+
+            const genre = (t.genre && t.genre !== 'Uncategorized') ? t.genre : 'Indie Pop';
+            const thumbUrl = t.video_id ? `https://i.ytimg.com/vi/${encodeURIComponent(t.video_id)}/mqdefault.jpg` : '';
+
+            return `
+              <div class="flex items-center justify-between p-2 rounded-xl hover:bg-[#161b28] transition group text-xs">
+                <div class="flex items-center space-x-3 min-w-0 flex-1 mr-2">
+                  <span class="w-6 text-center text-xs font-mono text-[#64748b] flex-shrink-0">${num}</span>
+                  <div class="w-8 h-8 rounded-lg overflow-hidden bg-[#161a26] border border-[#252b3b] flex-shrink-0 flex items-center justify-center shadow-xs">
+                    ${thumbUrl ? `<img src="${thumbUrl}" alt="" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />` : ''}
+                    <div class="${thumbUrl ? 'hidden' : 'flex'} w-full h-full items-center justify-center text-[#5a94f5]">
+                      <i data-lucide="music" class="w-3.5 h-3.5"></i>
+                    </div>
+                  </div>
+                  <span class="font-medium text-[#f1f5f9] truncate">${escapeHtml(displayLabel)}</span>
+                </div>
+                <span class="px-2.5 py-0.5 rounded-full bg-[#181d2b] border border-[#252e3f] text-[10px] text-[#8e9aa8] flex-shrink-0 font-medium whitespace-nowrap">
+                  ${escapeHtml(genre)}
+                </span>
+              </div>
+            `;
+          }).join('');
+        }
+        if (window.lucide) lucide.createIcons();
+      }
+
+      // Prepare Plain & AI Text formats
+      const lines = targetTracks.map((t, idx) => {
+        const num = isNumbered ? `${idx + 1}. ` : '';
+        let title = (t.title || t.result_title || 'Unknown Title').trim();
+        let art = '';
+        if (Array.isArray(t.artists) && t.artists.length > 0) {
+          art = t.artists.join(', ');
+        } else if (t.result_artist) {
+          art = String(t.result_artist).replace(/[\[\]"']/g, '').trim();
+        } else if (typeof t.artists === 'string' && t.artists) {
+          art = t.artists.replace(/[\[\]"']/g, '').trim();
+        }
+
+        if (format === 'artist_title' && art) {
+          return `${num}${art} - ${title}`;
+        } else if (format === 'title_artist' && art) {
+          return `${num}${title} - ${art}`;
+        }
+        return `${num}${title}`;
+      });
+
+      _currentCleanTrackList = lines.join('\n');
+      _currentFullAiPrompt = buildAiPrompt(_currentCleanTrackList);
+
+      if (previewEl) {
+        previewEl.value = _currentFullAiPrompt;
+      }
+    }
+
+    async function copyCleanTrackList() {
+      const text = _currentCleanTrackList || document.getElementById('copy-tracks-preview')?.value || '';
+      if (!text) {
+        showToast('Tidak ada teks lagu untuk disalin.');
+        return;
+      }
+      await navigator.clipboard.writeText(text);
+      const lines = text.split('\n').filter(l => l.trim()).length;
+      showToast(`${lines} judul lagu berhasil disalin ke clipboard!`);
+      closeCopyTracksModal();
+    }
+
+    async function copyAiPromptTemplate() {
+      const prompt = _currentFullAiPrompt || document.getElementById('copy-tracks-preview')?.value || '';
+      if (!prompt) {
+        showToast('Tidak ada prompt untuk disalin.');
+        return;
+      }
+      await navigator.clipboard.writeText(prompt);
+      showToast('Prompt AI siap pakai berhasil disalin ke clipboard! Siap ditempel ke ChatGPT / Claude.');
+      closeCopyTracksModal();
+    }
+
+    // ── Smart Group Playlist Builder (Pemisah Kategori / Mood) ──────────────────
+    let _parsedGroups = [];
+    let _groupDebounceTimer = null;
+
+    function openGroupSplitterModal() {
+      const modal = document.getElementById('modal-group-splitter');
+      if (!modal) return;
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      if (document.getElementById('group-splitter-input')?.value.trim()) {
+        processGroupedText();
+      }
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function closeGroupSplitterModal() {
+      const modal = document.getElementById('modal-group-splitter');
+      if (!modal) return;
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function clearGroupInput() {
+      const input = document.getElementById('group-splitter-input');
+      if (input) input.value = '';
+      processGroupedText();
+    }
+
+    function loadGroupExample(type) {
+      const input = document.getElementById('group-splitter-input');
+      if (!input) return;
+      if (type === 'genre') {
+        input.value = `🎸 Indie Pop / Alternative Pop
+1. Penelope
+2. Elvis (feat. Brendan Yates)
+3. Handsome
+4. Hannah Montana
+5. Boyfriend
+
+🎹 Indie Rock
+1. Iron Man
+2. Empty Stage
+3. Grandma Song
+
+🎧 Indie Soul / Alternative R&B
+1. Indecision (feat. Daniel Caesar)
+2. The Colosseum (feat. Mustafa)
+
+🌙 Alternative Pop / Dream Pop
+1. Roleplay
+2. Dream Fatigue`;
+      } else if (type === 'mood') {
+        input.value = `🌙 Slow / Relaxed
+Lagu yang cenderung santai, mellow, atau tidak terlalu agresif temponya.
+1. Penelope
+2. Grandma Song
+3. Hannah Montana
+4. Boyfriend
+5. Indecision (feat. Daniel Caesar)
+6. Dream Fatigue
+
+💓 Upbeat / Energetic
+Lagu yang terasa lebih hidup, punya dorongan ritme, atau lebih bikin kepala ikut bergerak.
+1. Elvis (feat. Brendan Yates)
+2. Handsome
+3. Iron Man
+4. The Colosseum (feat. Mustafa)
+5. Empty Stage
+6. Roleplay`;
+      }
+      processGroupedText();
+    }
+
+    function debounceProcessGroups() {
+      clearTimeout(_groupDebounceTimer);
+      _groupDebounceTimer = setTimeout(processGroupedText, 250);
+    }
+
+    function parseGroupedPlaylistText(rawText) {
+      const lines = rawText.split('\n');
+      const groups = [];
+      let current = null;
+
+      const isHeader = (line) => {
+        const t = line.trim();
+        if (!t) return false;
+        if (/^#{1,4}\s+/.test(t)) return true;
+        // Emoji leading character
+        if (/^[\p{Emoji}\p{Extended_Pictographic}]/u.test(t)) return true;
+        // Group name ending with colon or no number prefix & short line
+        if (t.endsWith(':') && !/^\d+[\.\)]\s*/.test(t)) return true;
+        return false;
+      };
+
+      const isTrack = (line) => {
+        const t = line.trim();
+        if (!t) return false;
+        return /^\d+[\.\)]\s*/.test(t) || /^[-*•]\s*/.test(t);
+      };
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+
+        if (isHeader(line)) {
+          const cleanTitle = line.replace(/^#{1,4}\s+/, '').replace(/:$/, '').trim();
+          current = {
+            title: cleanTitle,
+            description: '',
+            rawTracks: []
+          };
+          groups.push(current);
+          continue;
+        }
+
+        if (current) {
+          if (isTrack(line)) {
+            const cleanTrack = line.replace(/^\d+[\.\)]\s*/, '').replace(/^[-*•]\s*/, '').trim();
+            if (cleanTrack) current.rawTracks.push(cleanTrack);
+          } else if (current.rawTracks.length === 0) {
+            // Description directly under group header
+            current.description = current.description ? (current.description + ' ' + line) : line;
+          } else {
+            current.rawTracks.push(line);
+          }
+        } else {
+          // Track before any header
+          current = {
+            title: '🎵 Playlist Kustom',
+            description: '',
+            rawTracks: [line.replace(/^\d+[\.\)]\s*/, '').replace(/^[-*•]\s*/, '').trim()]
+          };
+          groups.push(current);
+        }
+      }
+      return groups;
+    }
+
+    function _normalizeTrackString(str) {
+      return (str || '')
+        .toLowerCase()
+        .replace(/\[.*?\]|\(.*?\)/g, '')
+        .replace(/[^a-z0-9]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    async function processGroupedText() {
+      const text = document.getElementById('group-splitter-input')?.value || '';
+      const listEl = document.getElementById('group-splitter-results-list');
+      const badgeEl = document.getElementById('group-splitter-summary-badge');
+      if (!listEl) return;
+
+      if (!text.trim()) {
+        _parsedGroups = [];
+        if (badgeEl) badgeEl.innerText = '0 grup terdeteksi';
+        listEl.innerHTML = `
+          <div class="p-6 text-center text-xs text-textMuted border border-dashed border-borderColor rounded-xl space-y-1">
+            <i data-lucide="layers" class="w-5 h-5 mx-auto text-textMuted/60 mb-1"></i>
+            <p>Tempel daftar lagu per kategori di atas untuk melihat pratinjau playlist otomatis.</p>
+          </div>
+        `;
+        if (window.lucide) lucide.createIcons();
+        return;
+      }
+
+      // Ensure library pool is available
+      if (!_allLibraryTracksCache || _allLibraryTracksCache.length === 0) {
+        try {
+          const res = await fetch('/api/tracks?playlist_id=all');
+          const data = await res.json();
+          _allLibraryTracksCache = data.tracks || _tracks || [];
+        } catch (e) {
+          _allLibraryTracksCache = _tracks || [];
+        }
+      }
+
+      const library = (_allLibraryTracksCache && _allLibraryTracksCache.length > 0) ? _allLibraryTracksCache : (_tracks || []);
+      const parsed = parseGroupedPlaylistText(text);
+
+      let totalMatchedAll = 0;
+      let totalTracksAll = 0;
+
+      // Match tracks against library
+      _parsedGroups = parsed.map(g => {
+        const matchedItems = g.rawTracks.map(rawName => {
+          totalTracksAll++;
+          const normRaw = _normalizeTrackString(rawName);
+          const rawLower = rawName.toLowerCase();
+
+          // 1. Direct title exact or substring match
+          let found = library.find(t => {
+            const tLower = (t.title || '').toLowerCase();
+            const rLower = (t.result_title || '').toLowerCase();
+            return tLower === rawLower || rLower === rawLower;
+          });
+
+          // 2. Normalized match without (feat. ...) or brackets
+          if (!found) {
+            found = library.find(t => {
+              const normTitle = _normalizeTrackString(t.title);
+              const normRes = _normalizeTrackString(t.result_title);
+              return (normTitle && (normTitle === normRaw || normRaw.includes(normTitle) || normTitle.includes(normRaw))) ||
+                     (normRes && (normRes === normRaw || normRaw.includes(normRes) || normRes.includes(normRaw)));
+            });
+          }
+
+          // 3. Match against title + artist
+          if (!found) {
+            found = library.find(t => {
+              const artStr = Array.isArray(t.artists) ? t.artists.join(' ') : (t.result_artist || '');
+              const fullStr = _normalizeTrackString(`${t.title} ${artStr}`);
+              return fullStr && (fullStr.includes(normRaw) || normRaw.includes(_normalizeTrackString(t.title)));
+            });
+          }
+
+          const spotifyId = found?.spotify_id || '';
+          const isMatched = Boolean(spotifyId);
+          if (isMatched) totalMatchedAll++;
+
+          return {
+            rawName,
+            track: found || null,
+            video_id: found?.video_id || null,
+            title: found?.title || found?.result_title || rawName,
+            artist: found ? (Array.isArray(found.artists) ? found.artists.join(', ') : (found.result_artist || '')) : '',
+            spotify_id: spotifyId,
+            spotify_uri: spotifyId ? `spotify:track:${spotifyId}` : null
+          };
+        });
+
+        const validUris = matchedItems.filter(item => item.spotify_uri).map(item => item.spotify_uri);
+        const validVideoIds = matchedItems.filter(item => item.video_id).map(item => item.video_id);
+
+        return {
+          title: g.title,
+          description: g.description,
+          items: matchedItems,
+          uris: validUris,
+          video_ids: validVideoIds,
+          total: matchedItems.length,
+          matchedCount: validUris.length
+        };
+      });
+
+      if (badgeEl) {
+        badgeEl.innerText = `${_parsedGroups.length} grup • ${totalTracksAll} lagu (${totalMatchedAll} URI Spotify Siap)`;
+      }
+
+      if (_parsedGroups.length === 0) {
+        listEl.innerHTML = '<div class="p-6 text-center text-xs text-textMuted border border-dashed border-borderColor rounded-xl">Tidak ada grup atau lagu yang terdeteksi. Pastikan format ada judul grup atau baris nomor lagu.</div>';
+        return;
+      }
+
+      listEl.innerHTML = _parsedGroups.map((group, gIdx) => {
+        const isAllMatched = group.matchedCount === group.total && group.total > 0;
+        const matchPct = group.total > 0 ? Math.round((group.matchedCount / group.total) * 100) : 0;
+        const descHtml = group.description ? `
+          <div class="px-3 py-1.5 rounded-lg bg-bgCard/60 border border-borderColor/40 text-[11px] text-textSecondary italic">
+            “${escapeHtml(group.description)}”
+          </div>
+        ` : '';
+
+        const itemsHtml = group.items.map((item, iIdx) => {
+          const hasUri = Boolean(item.spotify_uri);
+          return `
+            <div class="flex items-center justify-between py-1 px-2 rounded-lg ${hasUri ? 'bg-bgCard/40' : 'bg-statusWarning/5 border border-statusWarning/20'} text-xs">
+              <div class="flex items-center space-x-2 min-w-0 pr-2">
+                <span class="text-[10px] font-mono text-textMuted w-4 flex-shrink-0">${iIdx + 1}.</span>
+                <div class="min-w-0">
+                  <span class="font-medium text-textPrimary truncate block">${escapeHtml(item.title)}</span>
+                  ${item.artist ? `<span class="text-[10px] text-textMuted truncate block">${escapeHtml(item.artist)}</span>` : ''}
+                </div>
+              </div>
+              <div class="flex items-center space-x-1.5 flex-shrink-0">
+                ${hasUri ? `
+                  <span class="text-[10px] font-mono font-medium px-1.5 py-0.5 rounded bg-spotifyGreen/15 text-spotifyGreen border border-spotifyGreen/30 flex items-center space-x-1">
+                    <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                    <span>Cocok Spotify</span>
+                  </span>
+                ` : `
+                  <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-statusWarning/15 text-statusWarning border border-statusWarning/30 flex items-center space-x-1" title="Lagu tidak ditemukan di database saat ini">
+                    <i data-lucide="help-circle" class="w-3.5 h-3.5"></i>
+                    <span>Belum Dicocokkan</span>
+                  </span>
+                `}
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        return `
+          <div class="p-4 rounded-xl bg-bgElevated border ${isAllMatched ? 'border-spotifyGreen/40' : 'border-borderColor'} space-y-3 shadow-sm nav-transition">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-borderColor/60 pb-2.5">
+              <div class="space-y-0.5 min-w-0">
+                <div class="flex items-center space-x-2">
+                  <h4 class="text-xs md:text-sm font-bold text-textPrimary truncate">${escapeHtml(group.title)}</h4>
+                  <span class="text-[10px] font-mono px-2 py-0.5 rounded-full ${isAllMatched ? 'bg-spotifyGreen/20 text-spotifyGreen border border-spotifyGreen/30' : 'bg-bgCard text-textMuted border border-borderColor'}">
+                    ${group.matchedCount}/${group.total} Lagu Siap (${matchPct}%)
+                  </span>
+                </div>
+              </div>
+              <div class="flex items-center space-x-2 flex-shrink-0">
+                <button onclick="copyGroupSpotifyUris(${gIdx})" class="px-2.5 py-1.5 rounded-lg bg-bgCard hover:bg-borderColor text-textPrimary border border-borderColor text-xs font-semibold flex items-center space-x-1.5 transition" title="Salin URI Spotify khusus untuk grup ini agar bisa langsung di Ctrl+V">
+                  <svg class="w-3.5 h-3.5 text-spotifyGreen" aria-hidden="true" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.494 17.306c-.215.353-.676.466-1.028.252-2.82-1.722-6.368-2.112-10.55-1.156-.402.092-.803-.16-.895-.562-.092-.403.16-.803.562-.896 4.582-1.047 8.508-.598 11.66 1.334.352.214.465.675.251 1.028zm1.467-3.26c-.27.44-.848.58-1.288.31-3.227-1.983-8.146-2.557-11.96-1.398-.498.15-1.024-.132-1.175-.63-.15-.499.132-1.025.63-1.176 4.364-1.324 9.782-.685 13.483 1.596.44.27.58.848.31 1.288zm.126-3.414c-3.87-2.298-10.254-2.51-13.934-1.393-.593.18-1.22-.162-1.4-.755-.18-.593.163-1.22.756-1.4 4.23-1.284 11.278-1.034 15.75 1.62.533.316.707 1.01.392 1.543-.316.534-1.01.708-1.564.385z"/></svg>
+                  <span>Salin URI</span>
+                </button>
+                <button onclick="saveSingleGroupPlaylist(${gIdx})" class="px-2.5 py-1.5 rounded-lg bg-spotifyGreen text-black text-xs font-semibold flex items-center space-x-1 hover:brightness-105 transition" title="Simpan sebagai playlist di aplikasi ini">
+                  <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                  <span>Buat di App</span>
+                </button>
+              </div>
+            </div>
+            ${descHtml}
+            <div class="space-y-1 max-h-48 overflow-y-auto custom-scroll pr-1">
+              ${itemsHtml}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    async function copyGroupSpotifyUris(gIdx) {
+      const group = _parsedGroups[gIdx];
+      if (!group || !group.uris || group.uris.length === 0) {
+        showToast('Tidak ada URI Spotify yang cocok untuk grup ini.');
+        return;
+      }
+      await navigator.clipboard.writeText(group.uris.join('\n'));
+      showToast(`${group.uris.length} URI Spotify untuk "${group.title}" tersalin! Buka Spotify Desktop dan tekan Ctrl+V.`);
+    }
+
+    async function saveSingleGroupPlaylist(gIdx) {
+      const group = _parsedGroups[gIdx];
+      if (!group || !group.video_ids || group.video_ids.length === 0) {
+        showToast('Belum ada lagu yang teridentifikasi di database untuk grup ini.');
+        return;
+      }
+      try {
+        const res = await fetch('/api/create-grouped-playlist', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: group.title,
+            description: group.description,
+            video_ids: group.video_ids
+          })
+        });
+        const data = await res.json();
+        if (data.status === 'ok') {
+          showToast(`Playlist "${group.title}" (${group.video_ids.length} lagu) berhasil dibuat di app!`);
+          loadPlaylists();
+        } else {
+          showToast(data.error || 'Gagal membuat playlist.');
+        }
+      } catch (err) {
+        showToast('Error: ' + err.message);
+      }
+    }
+
+    async function saveAllGroupPlaylists() {
+      if (!_parsedGroups || _parsedGroups.length === 0) {
+        showToast('Tidak ada grup playlist untuk dibuat.');
+        return;
+      }
+      const validGroups = _parsedGroups.filter(g => g.video_ids && g.video_ids.length > 0);
+      if (validGroups.length === 0) {
+        showToast('Tidak ada grup dengan lagu yang cocok di database.');
+        return;
+      }
+      try {
+        const payload = validGroups.map(g => ({
+          title: g.title,
+          description: g.description,
+          video_ids: g.video_ids
+        }));
+        const res = await fetch('/api/create-grouped-playlist', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ groups: payload })
+        });
+        const data = await res.json();
+        if (data.status === 'ok') {
+          showToast(`${data.created.length} playlist berhasil dibuat di aplikasi!`);
+          await loadPlaylists();
+          closeGroupSplitterModal();
+          switchView('playlists');
+        } else {
+          showToast(data.error || 'Gagal membuat playlist.');
+        }
+      } catch (err) {
+        showToast('Error: ' + err.message);
+      }
+    }
+
+    async function copyAllGroupsFormatted() {
+      if (!_parsedGroups || _parsedGroups.length === 0) {
+        showToast('Tidak ada grup untuk disalin.');
+        return;
+      }
+      const blocks = [];
+      _parsedGroups.forEach(g => {
+        if (g.uris && g.uris.length > 0) {
+          blocks.push(`# ${g.title}\n${g.description ? '# ' + g.description + '\n' : ''}${g.uris.join('\n')}`);
+        }
+      });
+      if (blocks.length === 0) {
+        showToast('Belum ada URI Spotify yang cocok untuk disalin.');
+        return;
+      }
+      await navigator.clipboard.writeText(blocks.join('\n\n'));
+      showToast('Semua grup & URI Spotify berhasil disalin ke clipboard!');
     }
 
     // ── Review Actions ─────────────────────────────────────────────────────
@@ -4124,7 +5641,7 @@
 
     // ── Theme Management ───────────────────────────────────────────────────
     function setTheme(theme) {
-      if (!['dark', 'light', 'gray', 'colorful'].includes(theme)) theme = 'dark';
+      if (!['dark', 'light', 'gray', 'colorful', 'glass'].includes(theme)) theme = 'dark';
       document.documentElement.setAttribute('data-theme', theme);
       if (theme === 'light') {
         document.documentElement.classList.remove('dark');
@@ -4135,7 +5652,7 @@
 
       updateThemeNodesActiveState();
 
-      ['dark', 'light', 'gray', 'colorful'].forEach(t => {
+      ['dark', 'light', 'gray', 'colorful', 'glass'].forEach(t => {
         const btn = document.getElementById(`theme-btn-${t}`);
         if (btn) {
           if (t === theme) {
@@ -4264,8 +5781,8 @@
       if (label) label.innerText = current;
       const dot = document.getElementById('sidebar-theme-dot');
       if (dot) {
-        const colors = { dark: '#A7B5CC', light: '#3B82F6', gray: '#60A5FA', colorful: '#EC4899' };
-        dot.style.backgroundColor = colors[current] || '#A7B5CC';
+        const colors = { dark: '#A7B5CC', light: '#3B82F6', gray: '#60A5FA', colorful: '#EC4899', glass: '#38BDF8' };
+        dot.style.backgroundColor = colors[current] || '#38BDF8';
       }
     }
 
@@ -4355,19 +5872,28 @@
     function renderGenreSplitters() {
       let genres = [];
       if (_activePlaylistId && _activePlaylistId !== 'all') {
-        const pl = _playlists.find(p => p.id === Number(_activePlaylistId) || String(p.id) === String(_activePlaylistId) || p.yt_playlist_id === String(_activePlaylistId));
-        if (pl && pl.genres && pl.genres.length > 0) genres = pl.genres;
-      }
-      if (genres.length === 0 && _libraryGenres && _libraryGenres.length > 0) {
-        genres = _libraryGenres;
-      }
-      if (genres.length === 0 && _tracks && _tracks.length > 0) {
-        const map = {};
-        _tracks.forEach(t => {
-          const gName = (t.genre && t.genre.trim()) ? t.genre.trim() : 'Uncategorized';
-          map[gName] = (map[gName] || 0) + 1;
-        });
-        genres = Object.entries(map).map(([genre, count]) => ({ genre, count })).sort((a, b) => b.count - a.count);
+        if (_tracks && _tracks.length > 0) {
+          const map = {};
+          _tracks.forEach(t => {
+            const gName = (t.genre && t.genre.trim()) ? t.genre.trim() : 'Uncategorized';
+            map[gName] = (map[gName] || 0) + 1;
+          });
+          genres = Object.entries(map).map(([genre, count]) => ({ genre, count })).sort((a, b) => b.count - a.count);
+        } else {
+          const pl = _playlists.find(p => p.id === Number(_activePlaylistId) || String(p.id) === String(_activePlaylistId) || p.yt_playlist_id === String(_activePlaylistId));
+          if (pl && pl.genres && pl.genres.length > 0) genres = pl.genres;
+        }
+      } else {
+        if (_libraryGenres && _libraryGenres.length > 0) {
+          genres = _libraryGenres;
+        } else if (_tracks && _tracks.length > 0) {
+          const map = {};
+          _tracks.forEach(t => {
+            const gName = (t.genre && t.genre.trim()) ? t.genre.trim() : 'Uncategorized';
+            map[gName] = (map[gName] || 0) + 1;
+          });
+          genres = Object.entries(map).map(([genre, count]) => ({ genre, count })).sort((a, b) => b.count - a.count);
+        }
       }
 
       genres = genres.map(g => {
@@ -4561,19 +6087,28 @@
 
     // ── App Initialization ─────────────────────────────────────────────────
     document.addEventListener('DOMContentLoaded', () => {
-      const savedTheme = localStorage.getItem('yt2sp_theme') || 'dark';
-      setTheme(savedTheme);
-      const savedPerf = localStorage.getItem('yt2sp_perf_mode') === 'true';
-      setPerformanceMode(savedPerf, false);
-      const savedLang = localStorage.getItem('yt2sp_lang') || 'en';
-      changeLanguage(savedLang);
-      refreshStatus();
-      loadPlaylists();
-      const initialHash = window.location.hash.replace('#', '');
-      if (initialHash && ['overview', 'playlists', 'transfer', 'history', 'accounts', 'guide', 'settings'].includes(initialHash)) {
-        switchView(initialHash);
+      if (window.lucide) {
+        try { lucide.createIcons(); } catch (e) { console.warn('Lucide initial init error:', e); }
       }
-      if (window.lucide) lucide.createIcons();
+      try {
+        const savedTheme = localStorage.getItem('yt2sp_theme') || 'dark';
+        setTheme(savedTheme);
+        const savedPerf = localStorage.getItem('yt2sp_perf_mode') === 'true';
+        setPerformanceMode(savedPerf, false);
+        const savedLang = localStorage.getItem('yt2sp_lang') || 'en';
+        changeLanguage(savedLang);
+        initSidebarAutoCollapse();
+        refreshStatus();
+        loadPlaylists();
+        const initialHash = window.location.hash.replace('#', '');
+        if (initialHash && ['overview', 'playlists', 'transfer', 'history', 'accounts', 'guide', 'settings'].includes(initialHash)) {
+          switchView(initialHash);
+        }
+      } catch (err) {
+        console.error('Initialization error in DOMContentLoaded:', err);
+      } finally {
+        if (window.lucide) lucide.createIcons();
+      }
 
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import logging
+import threading
 import time
 from typing import Callable
 
@@ -27,6 +28,7 @@ def run_resolve(
     artist_weight: float = 0.4,
     duration_tolerance: float = 0.10,
     on_progress: Callable[[str, str, float], None] | None = None,
+    stop_event: threading.Event | None = None,
 ) -> dict:
     """
     Jalankan resolver T1 (Spotify search) untuk semua pending tracks.
@@ -42,6 +44,10 @@ def run_resolve(
     stats = {"processed": 0, "auto": 0, "review": 0, "failed": 0, "skipped": 0}
 
     for track in pending:
+        if stop_event and stop_event.is_set():
+            logger.info("run_resolve dihentikan oleh stop_event.")
+            break
+
         video_id = track["video_id"]
         title = track["title"] or ""
         artists: list[str] = json.loads(track["artists"]) if track["artists"] else []

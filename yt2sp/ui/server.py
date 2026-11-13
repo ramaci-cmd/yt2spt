@@ -24,6 +24,7 @@ logger = logging.getLogger(__name__)
 
 # Task State untuk background jobs
 _job_lock = threading.Lock()
+_job_cancel_event = threading.Event()
 _job_state: dict[str, Any] = {
     "running": False,
     "type": None,
@@ -210,7 +211,16 @@ class UIHandler(BaseHTTPRequestHandler):
         query = urllib.parse.parse_qs(parsed.query)
 
         # ── API Endpoints ──
-        if path == "/api/status":
+        if path == "/api/version":
+            from yt2sp import __version__, __engine__
+            self._send_json({
+                "version": f"v{__version__}",
+                "engine": __engine__,
+                "badge": f"v{__version__} • {__engine__}",
+            })
+            return
+
+        elif path == "/api/status":
             cached = _get_cached_api("status", ttl_seconds=1.0)
             if cached is not None:
                 self._send_json(cached)
@@ -218,6 +228,10 @@ class UIHandler(BaseHTTPRequestHandler):
             db.init_db()
             summary = db.get_status_summary()
             summary["job"] = _get_job_state()
+            from yt2sp import __version__, __engine__
+            summary["version"] = f"v{__version__}"
+            summary["engine"] = __engine__
+            summary["version_badge"] = f"v{__version__} • {__engine__}"
             _set_cached_api("status", summary)
             self._send_json(summary)
             return
@@ -569,7 +583,21 @@ class UIHandler(BaseHTTPRequestHandler):
         except Exception:
             payload = {}
 
+        if path == "/api/cancel":
+            _job_cancel_event.set()
+            with _job_lock:
+                was_running = _job_state["running"]
+                job_type = _job_state["type"]
+                curr = _job_state["current"]
+                if was_running:
+                    _job_state["running"] = False
+                    _job_state["message"] = f"Pencocokan dibatalkan ({curr} lagu tersimpan)."
+            _invalidate_api_cache()
+            self._send_json({"status": "cancelled", "was_running": was_running})
+            return
+
         if path == "/api/extract":
+            _job_cancel_event.clear()
             with _job_lock:
                 if _job_state["running"]:
                     self._send_json({"error": "Proses lain sedang berjalan"}, 400)
@@ -618,6 +646,9 @@ class UIHandler(BaseHTTPRequestHandler):
 
                     saved = 0
                     for pos, raw in enumerate(tracks_raw):
+                        if _job_cancel_event.is_set():
+                            _update_job(False, "extract", saved, total, f"Ekstraksi dibatalkan ({saved} lagu tersimpan).")
+                            return
                         track = parse_track(raw)
                         raw_title = (track["title"] if track else (raw.get("title") or "")) or "Lagu"
                         display_title = str(raw_title)[:25]
@@ -647,6 +678,7 @@ class UIHandler(BaseHTTPRequestHandler):
             return
 
         elif path == "/api/resolve":
+            _job_cancel_event.clear()
             with _job_lock:
                 if _job_state["running"]:
                     self._send_json({"error": "Pencocokan sedang berjalan"}, 400)
@@ -708,8 +740,13 @@ class UIHandler(BaseHTTPRequestHandler):
                         auto_threshold=cfg["match"]["auto_accept_threshold"],
                         review_threshold=cfg["match"]["review_threshold"],
                         on_progress=on_progress,
+                        stop_event=_job_cancel_event,
                     )
-                    _update_job(False, "resolve", total, total, "Pencocokan selesai!")
+                    if _job_cancel_event.is_set():
+                        curr = _get_job_state()["current"]
+                        _update_job(False, "resolve", curr, total, f"Pencocokan dibatalkan ({curr} lagu tersimpan).")
+                    else:
+                        _update_job(False, "resolve", total, total, "Pencocokan selesai!")
                     _invalidate_api_cache()
                 except Exception as exc:
                     logger.exception("Resolve error: %s", exc)
@@ -721,6 +758,7 @@ class UIHandler(BaseHTTPRequestHandler):
             return
 
         elif path == "/api/tag-genre":
+            _job_cancel_event.clear()
             if _get_job_state()["running"]:
                 self._send_json({"error": "Proses lain sedang berjalan"}, 400)
                 return
@@ -734,6 +772,9 @@ class UIHandler(BaseHTTPRequestHandler):
                     _update_job(True, "genre", 0, total, f"Mendeteksi & memvalidasi genre untuk {total} lagu...")
 
                     for idx, t in enumerate(missing, 1):
+                        if _job_cancel_event.is_set():
+                            _update_job(False, "genre", idx - 1, total, f"Deteksi genre dibatalkan ({idx - 1} lagu selesai).")
+                            return
                         artists = json.loads(t["artists"]) if t["artists"] else []
                         r_title = t["result_title"] if "result_title" in t.keys() else None
                         r_artist = t["result_artist"] if "result_artist" in t.keys() else None
@@ -962,6 +1003,48 @@ class UIHandler(BaseHTTPRequestHandler):
             else:
                 self._send_json({"error": "Video ID diperlukan"}, 400)
                 return
+
+        elif path == "/api/create-grouped-playlist":
+            db.init_db()
+            groups = payload.get("groups", [])
+            if not groups and "title" in payload:
+                groups = [payload]
+
+            if not groups:
+                self._send_json({"error": "Daftar grup playlist kosong"}, 400)
+                return
+
+            import time
+            conn = db._get_conn()
+            created_results = []
+            for g in groups:
+                title = (g.get("title") or "Custom Group").strip()
+                vids = g.get("video_ids", [])
+                if not vids:
+                    continue
+
+                # Filter valid video IDs that exist in tracks table
+                valid_vids = []
+                for vid in vids:
+                    row = conn.execute("SELECT 1 FROM tracks WHERE video_id=?", (str(vid),)).fetchone()
+                    if row:
+                        valid_vids.append(str(vid))
+
+                if not valid_vids:
+                    continue
+
+                custom_pid = f"CUSTOM_{int(time.time()*1000)}_{abs(hash(title)) % 10000}"
+                pl_id = db.upsert_playlist(custom_pid, title, len(valid_vids))
+                for pos, vid in enumerate(valid_vids):
+                    try:
+                        db.upsert_playlist_track(pl_id, vid, pos)
+                    except Exception:
+                        pass
+                created_results.append({"id": pl_id, "title": title, "track_count": len(valid_vids)})
+
+            _invalidate_api_cache()
+            self._send_json({"status": "ok", "created": created_results})
+            return
 
         self.send_error(404, "Endpoint Not Found")
 
