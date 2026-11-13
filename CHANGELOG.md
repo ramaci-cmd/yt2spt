@@ -5,6 +5,16 @@ Format ini mengacu pada [Keep a Changelog](https://keepachangelog.com/id/1.0.0/)
 
 ---
 
+## [1.3.7] - 2026-11-14
+
+### Diperbaiki (Fixed)
+- **Perbaikan SyntaxError Script UI & Pemulihan Render Ikon Lucide**:
+  - Menghapus penutup blok fungsi dan pemanggilan ikon yang tersisa tanpa fungsi pembungkus pada `index.html`.
+  - Mengatasi galat `Unexpected token '}'` yang sempat menghentikan eksekusi script browser sehingga menyebabkan ikon-ikon antarmuka (sidebar, header, dan tabel) gagal dimuat (`lucide.createIcons()` tidak terpanggil) dan tombol navigasi tidak merespons.
+  - Memastikan seluruh ikon sistem dan navigasi tab kembali aktif dan berfungsi normal.
+
+---
+
 ## [1.3.6] - 2026-11-14
 
 ### Ditambahkan & Ditingkatkan (Added & Improved)
