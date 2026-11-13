@@ -5,6 +5,17 @@ Format ini mengacu pada [Keep a Changelog](https://keepachangelog.com/id/1.0.0/)
 
 ---
 
+## [1.3.4] - 2026-11-14
+
+### Diperbaiki (Fixed)
+- **Pencocokan Lagu Multibahasa & Unicode di Smart Group Playlist Builder**:
+  - Memperbaiki bug di mana daftar lagu yang ditempel keliru dicocokkan ke lagu yang sama (misal: *ヨイハナビ*).
+  - Normalisasi teks kini mempertahankan karakter Unicode huruf dan angka (`\p{L}\p{N}`) sehingga judul berbahasa Jepang, Korea, Mandarin, dan karakter non-ASCII lainnya tidak terhapus menjadi string kosong.
+  - Menambahkan pengaman panjang karakter minimum (`_strMatch`) untuk mencegah string kosong atau pendek menghasilkan kecocokan semu (*false-positive substring match*).
+  - Mendukung deteksi judul dan artis dua arah (baik format `Judul — Artis` maupun sebaliknya).
+
+---
+
 ## [1.3.3] - 2026-11-14
 
 ### Ditambahkan (Added)
