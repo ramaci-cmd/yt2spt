@@ -2061,7 +2061,7 @@
   <!-- ================================================================= -->
   <!-- MODAL: ALTERNATIVE VERSIONS PICKER -->
   <!-- ================================================================= -->
-  <div id="modal-alternatives" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4">
+  <div id="modal-alternatives" onclick="if(event.target === this) closeAlternativeModal()" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4">
     <div class="bg-bgCard border border-borderColor w-full max-w-2xl rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
       <div class="p-4 border-b border-borderColor flex items-center justify-between">
         <div class="flex items-center space-x-3 min-w-0 flex-1 pr-2">
@@ -2087,7 +2087,7 @@
   <!-- ================================================================= -->
   <!-- MODAL: MANUAL SPOTIFY LINK INPUT -->
   <!-- ================================================================= -->
-  <div id="modal-manual" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4">
+  <div id="modal-manual" onclick="if(event.target === this) closeManualModal()" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4">
     <div class="bg-bgCard border border-borderColor w-full max-w-md rounded-xl shadow-2xl p-5 space-y-4">
       <div class="flex items-center justify-between">
         <h3 class="text-sm font-semibold text-textPrimary">Input Link Spotify Manual</h3>
@@ -2118,7 +2118,7 @@
   <!-- ================================================================= -->
   <!-- MODAL: KONFIRMASI HAPUS LAGU -->
   <!-- ================================================================= -->
-  <div id="modal-delete-track" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4">
+  <div id="modal-delete-track" onclick="if(event.target === this) closeDeleteTrackModal()" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4">
     <div class="bg-bgCard border border-borderColor rounded-2xl max-w-sm w-full p-5 shadow-2xl relative fade-enter">
       <div class="flex items-center space-x-3 mb-3">
         <div class="w-10 h-10 rounded-xl bg-statusError/15 text-statusError flex items-center justify-center flex-shrink-0 border border-statusError/20">
@@ -2146,7 +2146,7 @@
   <!-- ================================================================= -->
   <!-- MODAL: CHUNKED URIs (50 LAGU PER BAGIAN) -->
   <!-- ================================================================= -->
-  <div id="modal-chunks" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4">
+  <div id="modal-chunks" onclick="if(event.target === this) closeChunksModal()" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4">
     <div class="bg-bgCard border border-borderColor w-full max-w-lg rounded-xl shadow-2xl p-5 space-y-4">
       <div class="flex items-center justify-between">
         <div>
@@ -2232,7 +2232,7 @@
   <!-- ================================================================= -->
   <!-- MODAL: COPY TRACK LIST & AI PROMPT BUILDER (PEMISAH KATEGORI LAGU) -->
   <!-- ================================================================= -->
-  <div id="modal-copy-tracks" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-4">
+  <div id="modal-copy-tracks" onclick="if(event.target === this) closeCopyTracksModal()" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-4">
     <div class="bg-[#131620] border border-[#1e2330] w-full max-w-2xl rounded-2xl shadow-2xl p-5 md:p-6 space-y-4 flex flex-col max-h-[92vh] overflow-hidden">
       <!-- Modal Header -->
       <div class="flex items-center justify-between pb-1">
@@ -2424,7 +2424,7 @@
   <!-- ================================================================= -->
   <!-- MODAL: SMART GROUP PLAYLIST BUILDER (PEMISAH KATEGORI & MOOD) -->
   <!-- ================================================================= -->
-  <div id="modal-group-splitter" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4">
+  <div id="modal-group-splitter" onclick="if(event.target === this) closeGroupSplitterModal()" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4">
     <div class="bg-bgCard border border-borderColor w-full max-w-3xl rounded-2xl shadow-2xl p-6 space-y-4 flex flex-col max-h-[92vh]">
       <div class="flex items-center justify-between border-b border-borderColor/60 pb-3">
         <div class="flex items-center space-x-2.5">
@@ -6149,15 +6149,32 @@ Lagu yang terasa lebih hidup, punya dorongan ritme, atau lebih bikin kepala ikut
         if (window.lucide) lucide.createIcons();
       }
 
+      // Global Modal Dismissal: Escape key and backdrop clicks
+      window.closeAllModals = function() {
+        if (typeof toggleThemeModal === 'function') toggleThemeModal(false);
+        if (typeof closeAllThemePopovers === 'function') closeAllThemePopovers();
+        if (typeof toggleStatsModal === 'function') toggleStatsModal(false);
+        if (typeof closeAlternativeModal === 'function') closeAlternativeModal();
+        if (typeof closeManualModal === 'function') closeManualModal();
+        if (typeof closeChunksModal === 'function') closeChunksModal();
+        if (typeof closeDeleteTrackModal === 'function') closeDeleteTrackModal();
+        if (typeof closeCopyTracksModal === 'function') closeCopyTracksModal();
+        if (typeof closeGroupSplitterModal === 'function') closeGroupSplitterModal();
+      };
+
       document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-          toggleThemeModal(false);
-          toggleStatsModal(false);
-          closeAlternativeModal();
-          closeManualModal();
-          closeChunksModal();
-          closeDeleteTrackModal();
+        if (e.key === 'Escape' || e.key === 'Esc') {
+          window.closeAllModals();
         }
+      });
+
+      // Global Backdrop click delegate: Exit modal when clicking dark overlay outside dialog card
+      document.querySelectorAll('[id^="modal-"]').forEach(modalEl => {
+        modalEl.addEventListener('click', (e) => {
+          if (e.target === modalEl) {
+            window.closeAllModals();
+          }
+        });
       });
     });
   </script>

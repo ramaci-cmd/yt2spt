@@ -5,6 +5,15 @@ Format ini mengacu pada [Keep a Changelog](https://keepachangelog.com/id/1.0.0/)
 
 ---
 
+## [1.3.3] - 2026-11-14
+
+### Ditambahkan (Added)
+- **Kemudahan Menutup Popup / Modal Layar Penuh (Escape & Backdrop Click)**:
+  - Seluruh modal popup (`modal-copy-tracks`, `modal-group-splitter`, `modal-stats`, `modal-alternatives`, `modal-manual`, `modal-chunks`, `modal-delete-track`) kini dapat ditutup instan hanya dengan menekan tombol **`Escape` (Esc)** pada keyboard.
+  - Menutup modal juga dapat dilakukan cukup dengan mengklik area latar belakang / luar kartu modal (*backdrop click*), tanpa harus mengarahkan kursor dan mengklik tombol "X".
+
+---
+
 ## [1.3.2] - 2026-11-14
 
 ### Ditambahkan & Ditingkatkan (Added & Improved)
