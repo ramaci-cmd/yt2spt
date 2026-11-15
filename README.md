@@ -297,6 +297,12 @@ yt2sp/
 
 ---
 
+## 🎨 Credits & Design Attribution
+
+The web dashboard visual aesthetic and interface direction are inspired by the editorial design of [**Transactify — Digital Payment Platform**](https://dribbble.com/shots/27285124-Transactify-Digital-Payment-Platform) on Dribbble, adapted for local music playlist migration and catalog reconciliation.
+
+---
+
 ## 📄 License
 
 Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for more information.
