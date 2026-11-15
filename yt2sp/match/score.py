@@ -13,7 +13,7 @@ from yt2sp.match.normalize import (
     normalize_title,
 )
 
-_DISTINCTIVE_PENALTY = 0.30  # kurangi skor jika penanda mismatch
+_DISTINCTIVE_PENALTY = 0.12  # shortcut: was 0.30 — too harsh, upgrade if false positives spike
 
 
 def _best_artist_score(yt_artists: list[str], sp_artist: str) -> float:
@@ -83,8 +83,8 @@ def compute_score(
 def classify(
     score: float,
     *,
-    auto_threshold: float = 0.85,
-    review_threshold: float = 0.60,
+    auto_threshold: float = 0.80,
+    review_threshold: float = 0.55,
 ) -> str:
     """Return 'resolved_auto' | 'needs_review' | 'failed'."""
     if score >= auto_threshold:

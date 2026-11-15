@@ -21,9 +21,9 @@ def run_resolve(
     *,
     limit: int | None = None,
     playlist_id: int | None = None,
-    rate_per_minute: float = 30.0,
-    auto_threshold: float = 0.85,
-    review_threshold: float = 0.60,
+    rate_per_minute: float = 80.0,
+    auto_threshold: float = 0.80,
+    review_threshold: float = 0.55,
     title_weight: float = 0.6,
     artist_weight: float = 0.4,
     duration_tolerance: float = 0.10,
@@ -171,20 +171,8 @@ def run_resolve(
             reason=best_reason,
         )
 
-        # Ambil dan simpan genre lagu dengan validasi multi-sumber
-        try:
-            track_genre = track["genre"] if "genre" in track.keys() and track["genre"] and track["genre"] != "Uncategorized" else None
-            if not track_genre:
-                from yt2sp.resolve.genre import fetch_genre_validated
-                gres = fetch_genre_validated(
-                    title,
-                    artists,
-                    result_title=best_candidate.title if best_candidate else None,
-                    result_artist=best_candidate.artist if best_candidate else None,
-                )
-                db.update_track_genre(video_id, gres.genre, source=gres.source)
-        except Exception:
-            pass
+        # Genre fetch di-skip dari hot loop matching agar tidak menambah latensi jaringan.
+        # Genre dapat di-tag secara instan/batch lewat menu Genre Splitter atau latar belakang.
 
         stats["processed"] += 1
         if status == "resolved_auto":

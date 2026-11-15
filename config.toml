@@ -1,17 +1,17 @@
 [resolve]
-# Request per menit ke Spotify scraper (aman & cepat: 60)
-rate_per_minute = 60
+# Request per menit ke Spotify scraper (dinaikkan untuk kecepatan matching maksimal)
+rate_per_minute = 120
 backoff_base = 2.0
-backoff_max = 120.0
+backoff_max = 60.0
 
 [match]
-# >= threshold ini → diterima otomatis
-auto_accept_threshold = 0.85
+# >= threshold ini → diterima otomatis (diturunkan ke 0.80 agar lagu tidak banyak masuk review)
+auto_accept_threshold = 0.80
 # >= threshold ini dan < auto_accept → masuk review
-review_threshold = 0.60
+review_threshold = 0.55
 # bobot kalkulasi skor
-title_weight = 0.6
-artist_weight = 0.4
+title_weight = 0.65
+artist_weight = 0.35
 # toleransi durasi dalam persen (0.10 = ±10%)
 duration_tolerance_pct = 0.10
 

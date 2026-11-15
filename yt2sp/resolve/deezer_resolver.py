@@ -31,7 +31,7 @@ class DeezerCandidate:
     spotify_ids: list[str]  # dari MusicBrainz
 
 
-def _get_json(url: str, headers: dict, timeout: int = 10) -> dict | None:
+def _get_json(url: str, headers: dict, timeout: int = 4) -> dict | None:
     req = urllib.request.Request(url, headers=headers)
     try:
         with urllib.request.urlopen(req, timeout=timeout) as r:
@@ -108,7 +108,7 @@ def _resolve_spotify_from_isrc(isrc: str) -> list[str]:
 def _mb_spotify_from_isrc(isrc: str) -> list[str]:
     """Query MusicBrainz ISRC endpoint → return list Spotify track IDs."""
     url = f"https://musicbrainz.org/ws/2/isrc/{isrc}?fmt=json&inc=url-rels"
-    data = _get_json(url, _MB_HEADERS, timeout=15)
+    data = _get_json(url, _MB_HEADERS, timeout=4)
     if not data:
         return []
     ids: list[str] = []
