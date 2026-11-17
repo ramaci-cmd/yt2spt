@@ -43,7 +43,7 @@ def run_resolve(
     if limit:
         pending = pending[:limit]
 
-    # Cek metadata playlist tujuan jika playlist_id diberikan
+    # Check destination playlist provider if playlist_id is provided
     playlist_dest = None
     if playlist_id is not None:
         pl_info = db.get_playlist(playlist_id)
@@ -54,7 +54,7 @@ def run_resolve(
 
     for track in pending:
         if stop_event and stop_event.is_set():
-            logger.info("run_resolve dihentikan oleh stop_event.")
+            logger.info("run_resolve stopped by stop_event.")
             break
 
         video_id = track["video_id"]
@@ -64,13 +64,13 @@ def run_resolve(
         video_type = track["video_type"] or ""
         track_src = (track["source_provider"] if "source_provider" in track.keys() else None) or "youtube"
 
-        # Tentukan target provider
+        # Determine target provider
         if playlist_dest:
             is_targeting_ytm = (playlist_dest == "ytm")
         else:
             is_targeting_ytm = (track_src == "spotify")
 
-        # Skip jika bukan track lagu
+        # Skip non-music tracks
         if video_type in ("PODCAST", "EPISODE", "SKIPPED", "MUSIC_VIDEO_TYPE_UGC"):
             db.set_match(
                 video_id,
@@ -100,7 +100,7 @@ def run_resolve(
         res_url: str = ""
         res_thumb: str = ""
 
-        # ── Jalur 1: Spotify -> YouTube Music ──────────────────────────────────
+        # Route 1: Spotify -> YouTube Music
         if is_targeting_ytm:
             try:
                 candidates = search_ytm_tracks(title, artists, top_n=5)
@@ -131,7 +131,7 @@ def run_resolve(
                 review_threshold=review_threshold,
             )
 
-            # Fallback jika pencarian awal belum menemukan kandidat meyakinkan
+            # Fallback search if primary query yields no confident candidate
             if (status == "failed" or not candidates) and artists:
                 try:
                     fallback_cands = search_ytm_tracks(title, [artists[0]], top_n=3)
@@ -162,7 +162,7 @@ def run_resolve(
                     logger.debug("T2 fallback error for %s: %s", video_id, exc)
 
             if not best_candidate and status == "failed":
-                best_reason = best_reason or "tidak ditemukan di katalog YouTube Music"
+                best_reason = best_reason or "not found in YouTube Music catalog"
 
             if best_candidate:
                 dest_id = best_candidate.video_id
@@ -171,7 +171,7 @@ def run_resolve(
                 res_url = best_candidate.url
                 res_thumb = best_candidate.thumbnail_url or (f"https://i.ytimg.com/vi/{dest_id}/mqdefault.jpg" if (dest_id and len(dest_id) == 11) else "")
 
-        # ── Jalur 2: YouTube Music -> Spotify ──────────────────────────────────
+        # Route 2: YouTube Music -> Spotify
         else:
             try:
                 sp_candidates = search_spotify(title, artists, top_n=5)
@@ -202,7 +202,7 @@ def run_resolve(
                 review_threshold=review_threshold,
             )
 
-            # Fallback T2: Deezer ISRC jika T1 gagal atau tidak ada kandidat
+            # Fallback T2: Deezer ISRC if T1 search fails
             if status == "failed" or not sp_candidates:
                 try:
                     deezer_cands = search_deezer(title, artists, top_n=2)
@@ -241,7 +241,7 @@ def run_resolve(
                     logger.debug("T2 Deezer fallback error for %s: %s", video_id, exc)
 
             if not best_candidate and status == "failed":
-                best_reason = best_reason or "tidak ditemukan di Spotify maupun Deezer"
+                best_reason = best_reason or "not found in Spotify or Deezer catalog"
 
             if best_candidate:
                 dest_id = best_candidate.spotify_id
@@ -250,11 +250,11 @@ def run_resolve(
                 res_url = getattr(best_candidate, "uri", f"spotify:track:{best_candidate.spotify_id}")
                 res_thumb = ""
 
-        # Simpan hasil match ke database
+        # Persist match in database
         db.set_match(
             video_id,
             dest_id=dest_id,
-            spotify_id=dest_id,  # sinkronisasi backward-compat
+            spotify_id=dest_id,  # Backward compatibility synchronization
             tier=best_tier,
             score=max(0.0, best_score),
             status=status,

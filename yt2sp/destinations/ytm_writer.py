@@ -1,4 +1,4 @@
-"""YouTube Music Playlist Writer – Membuat playlist riil di akun pengguna via ytmusicapi."""
+"""YouTube Music Playlist Writer – Creates and populates real playlists via ytmusicapi."""
 from __future__ import annotations
 
 import logging
@@ -17,10 +17,10 @@ DEFAULT_YTM_AUTH = Path("ytm_auth.json")
 
 def normalize_browser_headers(raw: str) -> str:
     """
-    Normalisasi input cURL (bash) atau Raw Headers dari Developer Tools
-    menjadi format "Key: Value" baris per baris yang dipahami oleh ytmusicapi.setup.
-    Otomatis mengekstrak flag -H dan flag -b / --cookie dari command cURL,
-    serta menyisipkan 'x-goog-authuser: 0' jika belum ada.
+    Normalize bash cURL input or raw headers from browser Developer Tools
+    into 'Key: Value' format understood by ytmusicapi.setup.
+    Automatically parses -H headers and -b / --cookie arguments,
+    injecting 'x-goog-authuser: 0' if missing.
     """
     if not raw or not raw.strip():
         return ""
@@ -88,7 +88,7 @@ class YTMExportResult:
 
 
 class AuthResult(tuple):
-    """Tuple (bool, str | None) yang juga dapat dievaluasi langsung sebagai boolean."""
+    """Tuple (bool, str | None) that also evaluates directly as a boolean."""
     def __new__(cls, ok: bool, err: str | None = None):
         return super().__new__(cls, (ok, err))
 
@@ -105,7 +105,7 @@ class AuthResult(tuple):
 
 
 def check_ytm_auth(auth_path: Path | str | None = None) -> AuthResult:
-    """Periksa apakah file autentikasi YouTube Music tersedia di filesystem."""
+    """Check whether a valid YouTube Music credentials file exists."""
     candidates = [
         Path(auth_path) if auth_path else None,
         Path("ytm_auth.json"),
@@ -115,14 +115,11 @@ def check_ytm_auth(auth_path: Path | str | None = None) -> AuthResult:
     for p in candidates:
         if p and p.exists() and p.is_file() and p.stat().st_size > 10:
             return AuthResult(True, None)
-    return AuthResult(False, "File autentikasi ('ytm_auth.json' atau 'oauth.json') tidak ditemukan.")
+    return AuthResult(False, "Authentication file ('ytm_auth.json' or 'oauth.json') not found.")
 
 
 def get_authenticated_ytm(auth_path: Path | str | None = None) -> YTMusic:
-    """
-    Return instance YTMusic terautentikasi.
-    Mendukung ytm_auth.json, oauth.json, atau headers_auth.json.
-    """
+    """Return an authenticated YTMusic instance supporting ytm_auth.json or oauth.json."""
     candidates = [
         Path(auth_path) if auth_path else None,
         Path("ytm_auth.json"),
@@ -133,10 +130,10 @@ def get_authenticated_ytm(auth_path: Path | str | None = None) -> YTMusic:
         if p and p.exists() and p.is_file() and p.stat().st_size > 10:
             return YTMusic(str(p))
     raise RuntimeError(
-        "File autentikasi YouTube Music ('ytm_auth.json' atau 'oauth.json') tidak ditemukan.\n"
-        "Silakan lakukan setup autentikasi terlebih dahulu:\n"
-        "1. Di Web UI: klik tombol 'Setup Akun YTM' dan paste cURL browser yang valid (dengan Cookie).\n"
-        "2. Di Terminal: jalankan perintah 'python -m yt2sp.cli auth-ytm'."
+        "YouTube Music authentication file ('ytm_auth.json' or 'oauth.json') not found.\n"
+        "Please complete setup first:\n"
+        "1. In Web UI: click 'Setup Akun YTM' and paste valid browser cURL headers.\n"
+        "2. In Terminal: run 'python -m yt2sp.cli auth-ytm'."
     )
 
 
@@ -153,32 +150,32 @@ def create_and_populate_ytm_playlist(
     ytm_client: YTMusic | None = None,
 ) -> YTMExportResult:
     """
-    Membuat playlist baru di YouTube Music dan menambahkan lagu-lagu yang telah dicocokkan.
+    Create a new YouTube Music playlist and add matched track video IDs.
     
     Args:
-        title: Nama playlist yang akan dibuat
-        video_ids: List YouTube video IDs dalam urutan yang tepat
-        track_ids: Alias untuk video_ids (kompatibilitas dengan pemanggil UI dan CLI)
-        description: Deskripsi playlist
-        privacy_status: 'PRIVATE', 'UNLISTED', atau 'PUBLIC'
-        chunk_size: Ukuran batch penambahan lagu (default: 50)
-        auth_path: Path file kredensial ytm_auth.json
-        on_progress: Callback progress (current, total, status_message)
-        ytm_client: Instance YTMusic terinjeksi (untuk testing)
+        title: Playlist title
+        video_ids: List of YouTube video IDs in order
+        track_ids: Alias for video_ids for backward compatibility
+        description: Playlist description
+        privacy_status: 'PRIVATE', 'UNLISTED', or 'PUBLIC'
+        chunk_size: Track batch insertion size (default: 50)
+        auth_path: Path to ytm_auth.json
+        on_progress: Progress callback (current, total, status_message)
+        ytm_client: Injected YTMusic client (for testing)
     """
     raw_ids = video_ids if video_ids is not None else (track_ids or [])
     if not raw_ids:
-        raise ValueError("Daftar lagu (video_ids / track_ids) kosong. Tidak ada lagu untuk dimasukkan ke playlist.")
+        raise ValueError("Track ID list is empty. No tracks to export to playlist.")
 
     ytm = ytm_client or get_authenticated_ytm(auth_path)
 
-    # Filter out ID kosong atau invalid
+    # Filter out empty or invalid IDs
     valid_ids: list[str] = [vid.strip() for vid in raw_ids if vid and isinstance(vid, str) and len(vid.strip()) >= 5]
     if not valid_ids:
-        raise ValueError("Tidak ada video ID YouTube yang valid untuk ditambahkan.")
+        raise ValueError("No valid YouTube video IDs to add.")
 
-    # 1. Buat playlist kosong di YouTube Music
-    logger.info("Membuat playlist YouTube Music: '%s' (privacy: %s)", title, privacy_status)
+    # 1. Create playlist on YouTube Music
+    logger.info("Creating YouTube Music playlist: '%s' (privacy: %s)", title, privacy_status)
     try:
         raw_res = ytm.create_playlist(
             title=title,
@@ -186,7 +183,7 @@ def create_and_populate_ytm_playlist(
             privacy_status=privacy_status,
         )
     except Exception as exc:
-        logger.error("Gagal membuat playlist YouTube Music '%s': %s", title, exc)
+        logger.error("Failed to create YouTube Music playlist '%s': %s", title, exc)
         return YTMExportResult(
             playlist_id="",
             playlist_url="",
@@ -195,10 +192,10 @@ def create_and_populate_ytm_playlist(
             total_added=0,
             failed_ids=valid_ids,
             status="failed",
-            error_message=f"Gagal membuat playlist: {exc}",
+            error_message=f"Failed to create playlist: {exc}",
         )
 
-    # Ambil ID playlist yang dikembalikan
+    # Extract returned playlist ID
     if isinstance(raw_res, str):
         created_pl_id = raw_res
     elif isinstance(raw_res, dict):
@@ -207,7 +204,7 @@ def create_and_populate_ytm_playlist(
         created_pl_id = str(raw_res)
 
     if not created_pl_id or "error" in created_pl_id.lower():
-        err_msg = f"Respon pembuatan playlist tidak valid: {raw_res}"
+        err_msg = f"Invalid playlist creation response: {raw_res}"
         logger.error(err_msg)
         return YTMExportResult(
             playlist_id="",
@@ -220,11 +217,11 @@ def create_and_populate_ytm_playlist(
             error_message=err_msg,
         )
 
-    # Format URL bersih (jika diawali VL, hilangkan prefix VL untuk link publik)
+    # Clean URL format (strip VL prefix if present for clean public link)
     clean_url_id = created_pl_id[2:] if created_pl_id.startswith("VL") else created_pl_id
     playlist_url = f"https://music.youtube.com/playlist?list={clean_url_id}"
 
-    # 2. Masukkan lagu ke dalam playlist secara bertahap (chunking per 50 lagu)
+    # 2. Add tracks in batches (chunks of 50)
     total_tracks = len(valid_ids)
     added_count = 0
     failed_ids: list[str] = []
@@ -238,20 +235,19 @@ def create_and_populate_ytm_playlist(
                 duplicates=True,
             )
             added_count += len(chunk)
-            msg = f"Menambahkan lagu ({added_count}/{total_tracks}) ke playlist..."
+            msg = f"Adding tracks ({added_count}/{total_tracks}) to playlist..."
             if on_progress:
                 on_progress(added_count, total_tracks, msg)
-            # Jeda kecil antar-chunk untuk stabilitas
             time.sleep(0.3)
         except Exception as exc:
-            logger.warning("Gagal menambahkan chunk lagu %d..%d: %s", i, i + len(chunk), exc)
-            # Retry item per item jika chunk gagal
+            logger.warning("Failed to add chunk %d..%d: %s", i, i + len(chunk), exc)
+            # Individual fallback retry if batch insertion failed
             for vid in chunk:
                 try:
                     ytm.add_playlist_items(playlistId=created_pl_id, videoIds=[vid], duplicates=True)
                     added_count += 1
                 except Exception as ind_exc:
-                    logger.debug("Gagal menambahkan lagu %s: %s", vid, ind_exc)
+                    logger.debug("Failed to add track %s: %s", vid, ind_exc)
                     failed_ids.append(vid)
 
     status = "success" if not failed_ids else ("partial" if added_count > 0 else "failed")

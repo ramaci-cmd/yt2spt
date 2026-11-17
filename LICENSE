@@ -1,24 +1,40 @@
-This is free and unencumbered software released into the public domain.
+Custom Source License (Non-Commercial with Conditional Commercial Window)
 
-Anyone is free to copy, modify, publish, use, compile, sell, or
-distribute this software, either in source code form or as a compiled
-binary, for any purpose, commercial or non-commercial, and by any
-means.
+Copyright (c) 2026 ramaci-cmd
 
-In jurisdictions that recognize copyright laws, the author or authors
-of this software dedicate any and all copyright interest in the
-software to the public domain. We make this dedication for the benefit
-of the public at large and to the detriment of our heirs and
-successors. We intend this dedication to be an overt act of
-relinquishment in perpetuity of all present and future rights to this
-software under copyright law.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to use,
+copy, modify, merge, publish, distribute, and adapt the Software for any
+personal, non-commercial, educational, or internal research purposes, subject
+to the following conditions:
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
+1. NON-COMMERCIAL USE:
+   The Software, its source code, and any derivative works may NOT be sold,
+   resold, leased, sublicensed, or otherwise monetized for commercial profit
+   without the prior written consent of the copyright holder (ramaci-cmd).
 
-For more information, please refer to <https://unlicense.org>
+2. COMMERCIAL INQUIRIES & 3-MONTH CONDITIONAL WINDOW:
+   If you wish to sell, monetize, or use the Software for commercial purposes:
+   a. You must contact the author (ramaci-cmd) via GitHub or their official
+      communication channels to request commercial licensing terms.
+   b. If the author does not respond to your formal inquiry within three (3)
+      consecutive months (90 calendar days), you are granted a provisional,
+      conditional license for commercial use subject to paragraphs (c) and (d).
+   c. MANDATORY ATTRIBUTION: You must prominently display the author's name
+      and credit ("Original work by ramaci-cmd") in all copies, documentation,
+      and user-facing attribution notices.
+   d. UNILATERAL RIGHT OF REVOCATION: The author (ramaci-cmd) explicitly
+      retains the perpetual, unilateral right to revoke this provisional
+      commercial permission at any subsequent time. Upon receipt of written
+      notice from the author demanding that you cease using, distributing, or
+      monetizing the author's code, you must immediately cease all such use
+      and remove the Software from your offerings.
+
+3. DISCLAIMER OF WARRANTY:
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   SOFTWARE.

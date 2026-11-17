@@ -22,7 +22,7 @@ from yt2sp.store import db
 
 logger = logging.getLogger(__name__)
 
-# Task State untuk background jobs
+# Task state for background jobs
 _job_lock = threading.Lock()
 _job_cancel_event = threading.Event()
 _job_state: dict[str, Any] = {
@@ -118,7 +118,7 @@ def _get_job_state() -> dict:
 
 class UIHandler(BaseHTTPRequestHandler):
     def log_message(self, format: str, *args: Any) -> None:
-        # Kurangi noise log server
+        # Suppress routine server polling logs
         pass
 
     def _is_safe_origin(self) -> bool:
@@ -692,7 +692,7 @@ class UIHandler(BaseHTTPRequestHandler):
                     else:
                         is_spotify_source = bool(clean_sp_id)
 
-                    # ── Jalur A: Ekstraksi dari Spotify ──
+                    # Route A: Extraction from Spotify
                     if is_spotify_source:
                         _update_job(True, "extract", 0, 0, "Menghubungi Spotify...")
                         sp_id = clean_sp_id or clean_spotify_playlist_id(raw_pl)
@@ -747,7 +747,7 @@ class UIHandler(BaseHTTPRequestHandler):
                             finish_msg += f" ({unavail_count} lagu tidak dapat dimuat)."
                         _update_job(False, "extract", saved, total, finish_msg)
 
-                    # ── Jalur B: Ekstraksi dari YouTube Music ──
+                    # Route B: Extraction from YouTube Music
                     else:
                         _update_job(True, "extract", 0, 0, "Menghubungi YouTube Music...")
                         ytm = get_ytm()
@@ -844,7 +844,7 @@ class UIHandler(BaseHTTPRequestHandler):
 
                     pending = db.get_pending_tracks(playlist_id=pl_id)
 
-                    # Jika tidak ada pending lagu, periksa apakah ada failed / un-accepted untuk diulang
+                    # If no pending tracks, check if unresolved or failed tracks need retry
                     if len(pending) == 0:
                         reset_count = db.reset_unresolved_tracks_to_pending(playlist_id=pl_id, reset_all=force_rematch)
                         if reset_count > 0:
@@ -852,7 +852,7 @@ class UIHandler(BaseHTTPRequestHandler):
 
                     total = len(pending)
 
-                    # Jika masih 0 (semua lagu di playlist sudah cocok / accepted)
+                    # If still 0, all tracks in this playlist are already resolved/accepted
                     if total == 0:
                         all_tracks = db.get_playlist_tracks(pl_id) if pl_id else db.get_all_library_tracks()
                         tot_count = max(len(all_tracks), 1)
@@ -976,7 +976,7 @@ class UIHandler(BaseHTTPRequestHandler):
                     self._send_json({"error": "Lagu tidak ditemukan di database"}, 404)
                     return
 
-                # Support YouTube Music / YouTube video link / ID atau Spotify format
+                # Support YouTube Music / YouTube video links/IDs or Spotify formats
                 import re
                 clean_input = (spotify_id or "").strip()
                 final_id = None
@@ -1296,7 +1296,7 @@ class UIHandler(BaseHTTPRequestHandler):
 
             final_title = custom_title or default_title
 
-            # ── Export ke YouTube Music ──
+            # ── Export to YouTube Music ──
             if target_dest == "ytm":
                 from yt2sp.destinations.ytm_writer import create_and_populate_ytm_playlist, check_ytm_auth
                 auth_ok, auth_err = check_ytm_auth()
@@ -1344,7 +1344,7 @@ class UIHandler(BaseHTTPRequestHandler):
                     self._send_json({"error": f"Gagal mengekspor playlist ke YouTube Music: {str(exc)}"}, 500)
                 return
 
-            # ── Export ke Spotify (URI blocks + CSV report) ──
+            # ── Export to Spotify (URI blocks + CSV report) ──
             else:
                 from yt2sp.export.writer import write_uri_blocks
                 from yt2sp.export.report import write_csv_report

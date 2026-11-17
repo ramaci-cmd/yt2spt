@@ -350,7 +350,7 @@
       }
     }
 
-    /* ── Mode Optimalisasi Laptop Kentang / Low-Spec Mode ─────────────────── */
+    /* ── Low-Spec / Potato Mode Optimization ─────────────────── */
     [data-performance-mode="true"] *,
     [data-performance-mode="true"] *::before,
     [data-performance-mode="true"] *::after {
@@ -3046,7 +3046,7 @@
   </div>
 
   <!-- ================================================================= -->
-  <!-- MODAL: KONFIRMASI HAPUS LAGU -->
+  <!-- MODAL: TRACK DELETION CONFIRMATION -->
   <!-- ================================================================= -->
   <div id="modal-delete-track" onclick="if(event.target === this) closeDeleteTrackModal()" class="fixed inset-0 z-50 bg-[#121614]/45 backdrop-blur-md hidden items-center justify-center p-3 sm:p-4 select-none">
     <div class="bg-white border border-borderColor rounded-3xl max-w-sm w-full p-6 shadow-2xl relative modal-card-animated">
@@ -3124,7 +3124,7 @@
   </div>
 
   <!-- ================================================================= -->
-  <!-- MODAL: CHUNKED URIs (50 LAGU PER BAGIAN) -->
+  <!-- MODAL: CHUNKED URIs (50 TRACKS PER BATCH) -->
   <!-- ================================================================= -->
   <div id="modal-chunks" onclick="if(event.target === this) closeChunksModal()" class="fixed inset-0 z-50 bg-[#121614]/45 backdrop-blur-md hidden items-center justify-center p-3 sm:p-4 select-none">
     <div class="bg-white border border-borderColor w-full max-w-lg rounded-3xl shadow-2xl p-6 space-y-4 modal-card-animated">
@@ -3210,7 +3210,7 @@
   </div>
 
   <!-- ================================================================= -->
-  <!-- MODAL: COPY TRACK LIST & AI PROMPT BUILDER (PEMISAH KATEGORI LAGU) -->
+  <!-- MODAL: COPY TRACK LIST & AI PROMPT BUILDER (CATEGORY SPLITTER) -->
   <!-- ================================================================= -->
   <div id="modal-copy-tracks" onclick="if(event.target === this) closeCopyTracksModal()" class="fixed inset-0 z-50 bg-[#121614]/45 backdrop-blur-md hidden items-center justify-center p-3 sm:p-4 select-none">
     <div class="hidden"><button id="tab-preview-prompt"></button><button id="tab-preview-clean"></button></div>
@@ -3234,7 +3234,7 @@
 
       <!-- Controls & Options Bar: 3 Columns Seamless (Matches Screenshot) -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 py-1 text-xs">
-        <!-- Sumber Lagu -->
+        <!-- Track Source -->
         <div class="space-y-1 sm:pr-4 sm:border-r border-borderColor">
           <div class="flex items-center space-x-2 text-textMuted text-[11px] font-medium">
             <i data-lucide="music" class="w-3.5 h-3.5 text-textMuted flex-shrink-0"></i>
@@ -3388,7 +3388,7 @@
 
         <!-- Right Buttons -->
         <div class="flex items-center space-x-2">
-          <!-- Salin Lagu Saja -->
+          <!-- Copy Tracks Only -->
           <button onclick="copyCleanTrackList()" class="px-4 py-2 rounded-full bg-bgElevated hover:bg-borderColor border border-borderColor text-textPrimary text-xs font-semibold flex items-center space-x-1.5 transition cursor-pointer shadow-sm">
             <i data-lucide="list" class="w-3.5 h-3.5 text-textMuted"></i>
             <span>Salin Lagu Saja</span>
@@ -3404,7 +3404,7 @@
   </div>
 
   <!-- ================================================================= -->
-  <!-- MODAL: SMART GROUP PLAYLIST BUILDER (PEMISAH KATEGORI & MOOD) -->
+  <!-- MODAL: SMART GROUP PLAYLIST BUILDER (CATEGORY & MOOD SPLITTER) -->
   <!-- ================================================================= -->
   <div id="modal-group-splitter" onclick="if(event.target === this) closeGroupSplitterModal()" class="fixed inset-0 z-50 bg-[#121614]/45 backdrop-blur-md hidden items-center justify-center p-3 sm:p-4 select-none">
     <div class="bg-white border border-borderColor w-full max-w-3xl rounded-3xl shadow-2xl p-6 space-y-4 flex flex-col max-h-[92vh] modal-card-animated">
@@ -5143,7 +5143,7 @@
 
     function playAudioPreview(targetEl, info) {
       if (_isPerfMode || document.documentElement.getAttribute('data-performance-mode') === 'true') {
-        return; // Potato Mode: nonaktifkan preview audio untuk hemat CPU & kuota
+        return; // Potato Mode: disable audio preview to conserve CPU & bandwidth
       }
 
       stopAudioPreview();
@@ -5983,7 +5983,7 @@ Daftar lagu:
 ${cleanTrackList}`;
       }
 
-      // Default: Preset Fleksibel dari Pengguna (User's Exact Master Prompt)
+      // Default: Flexible User Preset (User's Exact Master Prompt)
       return `Kelompokkan daftar lagu berikut berdasarkan karakteristik musik yang paling sesuai.
 
 Gunakan penilaian berdasarkan genre, mood, suasana, tempo, energi, karakter vokal, atau elemen musikal lainnya. Buat kategori secara fleksibel sesuai dengan karakter lagu yang ditemukan, bukan berdasarkan kategori yang sudah ditentukan sebelumnya.
@@ -6379,7 +6379,7 @@ Lagu yang terasa lebih hidup, punya dorongan ritme, atau lebih bikin kepala ikut
     function _extractTitleAndArtist(line) {
       const clean = _cleanTrackLine(line);
       if (!clean) return { title: '', artist: '' };
-      // Hanya pemisah lagu standar: —, –, -, |
+      // Standard track separators only: —, –, -, |
       const parts = clean.split(/\s*[\—\–\-\|]\s*/).filter(Boolean);
       if (parts.length >= 2) {
         return {
@@ -7112,7 +7112,7 @@ Lagu yang terasa lebih hidup, punya dorongan ritme, atau lebih bikin kepala ikut
       }
     }
 
-    // ── Chunks Modal (Copy 50 Lagu per Bagian) ─────────────────────────────
+    // ── Chunks Modal (Copy 50 Tracks per Batch) ─────────────────────────────
     async function showChunksModal() {
       const modal = document.getElementById('modal-chunks');
       const list = document.getElementById('chunks-modal-list');

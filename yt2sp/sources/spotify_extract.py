@@ -1,4 +1,4 @@
-"""Spotify Playlist Extractor menggunakan spotifyscraper (100% Gratis, Tanpa Spotify Dev Account)."""
+"""Spotify Playlist Extractor using spotifyscraper (100% Free, No Spotify Dev Account required)."""
 from __future__ import annotations
 
 import logging
@@ -11,26 +11,26 @@ from spotify_scraper import SpotifyClient
 
 logger = logging.getLogger(__name__)
 
-# Regex untuk mengenali Spotify playlist ID (22 karakter base62 alfanumerik)
+# Regular expression matching a 22-character alphanumeric Spotify playlist ID
 _SP_PLAYLIST_RE = re.compile(r"([a-zA-Z0-9]{22})")
 
 
 def clean_spotify_playlist_id(raw_input: str) -> str:
     """
-    Ekstrak ID playlist Spotify bersih (22 karakter) dari:
-    - URL Web: https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M?si=...
-    - URI Spotify: spotify:playlist:37i9dQZF1DXcBWIGoYBM5M
+    Extract a clean 22-character Spotify playlist ID from:
+    - Web URL: https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M?si=...
+    - Spotify URI: spotify:playlist:37i9dQZF1DXcBWIGoYBM5M
     - Bare ID: 37i9dQZF1DXcBWIGoYBM5M
     """
     s = raw_input.strip()
     if not s:
         return ""
 
-    # Jangan parse jika jelas merupakan link atau ID YouTube
+    # Do not parse if it is recognizably a YouTube link or ID
     if "youtube.com" in s or "youtu.be" in s or s.startswith("PL") or s.startswith("RD") or s.startswith("OLAK"):
         return ""
 
-    # Cek format URL: open.spotify.com/playlist/<id> atau open.spotify.com/intl-xx/playlist/<id>
+    # Check URL format: open.spotify.com/playlist/<id> or open.spotify.com/intl-xx/playlist/<id>
     if "spotify.com" in s and "/playlist/" in s:
         part = s.split("/playlist/")[1]
         clean_id = part.split("?")[0].split("/")[0].strip()
@@ -38,14 +38,14 @@ def clean_spotify_playlist_id(raw_input: str) -> str:
         if m:
             return m.group(1)
 
-    # Cek format URI: spotify:playlist:<id>
+    # Check URI format: spotify:playlist:<id>
     if s.startswith("spotify:playlist:"):
         clean_id = s.split("spotify:playlist:")[1].strip()
         m = _SP_PLAYLIST_RE.match(clean_id)
         if m:
             return m.group(1)
 
-    # Cek jika input langsung berupa 22 karakter base62 utuh
+    # Check if raw input is already a 22-character base62 string
     if _SP_PLAYLIST_RE.fullmatch(s):
         return s
 
@@ -75,7 +75,7 @@ class SpotifyTrackItem:
 
     def to_dict(self) -> dict[str, Any]:
         return {
-            "video_id": self.track_id,  # Kompatibel dengan primary key tabel tracks
+            "video_id": self.track_id,  # Compatible with primary key of tracks table
             "track_id": self.track_id,
             "title": self.title,
             "artists": self.artists,
@@ -116,25 +116,25 @@ def extract_spotify_playlist(
     client: SpotifyClient | None = None,
 ) -> SpotifyPlaylistResult:
     """
-    Ekstrak metadata playlist dan daftar lagu dari Spotify publik.
-    Tidak memerlukan akun Spotify Developer atau token OAuth.
+    Extract public Spotify playlist metadata and track lists.
+    No Spotify Developer account or OAuth token required.
     """
     clean_id = clean_spotify_playlist_id(playlist_id_or_url)
     if not clean_id:
-        raise ValueError("Link atau ID Playlist Spotify tidak valid.")
+        raise ValueError("Invalid Spotify playlist URL or ID.")
 
     sp = client or SpotifyClient()
     try:
         playlist = sp.get_playlist(clean_id, max_tracks=max_tracks)
     except Exception as exc:
-        logger.error("Gagal mengambil playlist Spotify %s: %s", clean_id, exc)
-        raise RuntimeError(f"Gagal memuat playlist Spotify: {exc}")
+        logger.error("Failed to fetch Spotify playlist %s: %s", clean_id, exc)
+        raise RuntimeError(f"Failed to load Spotify playlist: {exc}")
 
     title = playlist.name or f"Playlist {clean_id[:10]}"
     description = playlist.description or ""
     owner = (getattr(playlist.owner, "name", None) or getattr(playlist.owner, "display_name", None) or "") if playlist.owner else ""
     
-    # Ambil cover playlist jika ada
+    # Extract playlist cover if present
     thumbnail_url = None
     if playlist.images and len(playlist.images) > 0:
         img0 = playlist.images[0]
@@ -153,17 +153,17 @@ def extract_spotify_playlist(
         t_id = track.id
         t_name = (track.name or "").strip() or "Untitled Track"
         
-        # Ekstrak musisi
+        # Extract artists
         t_artists = [a.name for a in (track.artists or []) if a and getattr(a, "name", None)]
         if not t_artists:
             t_artists = ["Unknown Artist"]
 
-        # Ekstrak album
+        # Extract album
         t_album = ""
         if hasattr(track, "album") and track.album:
             t_album = track.album.name or ""
 
-        # Ekstrak cover track
+        # Extract track cover art
         t_thumb = None
         if hasattr(track, "images") and track.images:
             t_thumb = track.images[0].url
@@ -193,7 +193,7 @@ def extract_spotify_playlist(
         )
 
     total_reported = getattr(playlist, "total_tracks", len(extracted_tracks)) or len(extracted_tracks)
-    # Unavailable jika total yang dilaporkan lebih banyak dari tracks yang dapat diakses
+    # Unavailable if reported total exceeds accessible tracks
     if total_reported > len(extracted_tracks):
         unavailable_count = max(unavailable_count, total_reported - len(extracted_tracks))
 

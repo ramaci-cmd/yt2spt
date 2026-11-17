@@ -13,7 +13,7 @@ yt-spt/
 ├── pyproject.toml                   # Definisi paket setuptools, dependensi, & entrypoints CLI
 ├── CHANGELOG.md                     # Catatan riwayat versi terstruktur dari v1.0.0 s/d v2.0.0
 ├── README.md                        # Panduan visual proyek, CLI, & preview antarmuka
-├── LICENSE                          # Lisensi open-source The Unlicense (Public Domain)
+├── LICENSE                          # Custom Source License (Non-Commercial with Conditional Commercial Window)
 ├── .gitignore                       # Pola pengabaian git (db, virtualenvs, auth cache)
 │
 ├── yt2sp/                           # Direktori Paket Sumber Kode Utama

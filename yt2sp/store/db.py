@@ -399,7 +399,7 @@ def set_match(
     result_url: str = "",
     result_thumbnail: str = "",
 ) -> None:
-    # Sinkronkan dest_id dan spotify_id agar kompatibel dua arah
+    # Synchronize dest_id and spotify_id for bidirectional compatibility
     effective_dest_id = dest_id or spotify_id
     effective_spotify_id = spotify_id or dest_id
     conn = _get_conn()
@@ -709,10 +709,10 @@ def get_all_library_tracks_for_genre(genre: str) -> list[sqlite3.Row]:
     ).fetchall()
 
 
-# ── Reset / Hapus Data ────────────────────────────────────────────────────────
+# ── Reset & Data Deletion ─────────────────────────────────────────────────────
 
 def reset_all_data(clear_cache: bool = False) -> None:
-    """Hapus semua data playlist, track, matches, dan runs untuk mulai dari nol."""
+    """Clear all playlist, track, match, and run data to reset from scratch."""
     conn = _get_conn()
     conn.execute("DELETE FROM matches")
     conn.execute("DELETE FROM playlist_tracks")
@@ -746,19 +746,19 @@ def get_all_exported_remote_playlists() -> list[str]:
 
 
 def delete_playlist(playlist_id: int) -> None:
-    """Hapus satu playlist beserta tracks yang tidak lagi terhubung ke playlist manapun."""
+    """Delete a single playlist and cleanup orphaned tracks."""
     delete_playlists([playlist_id])
 
 
 def delete_playlists(playlist_ids: list[int]) -> int:
-    """Hapus sejumlah playlist sekaligus dari database."""
+    """Delete multiple playlists simultaneously from the database."""
     if not playlist_ids:
         return 0
     conn = _get_conn()
     placeholders = ",".join("?" for _ in playlist_ids)
     conn.execute(f"DELETE FROM playlist_tracks WHERE playlist_id IN ({placeholders})", playlist_ids)
     conn.execute(f"DELETE FROM playlists WHERE id IN ({placeholders})", playlist_ids)
-    # Hapus tracks & matches yatim (orphan)
+    # Remove orphaned tracks and matches
     conn.execute(
         "DELETE FROM matches WHERE video_id NOT IN (SELECT video_id FROM playlist_tracks)"
     )
@@ -774,12 +774,12 @@ def delete_playlists(playlist_ids: list[int]) -> int:
 
 
 def delete_track(video_id: str, playlist_id: int | None = None) -> None:
-    """Hapus satu lagu dari playlist tertentu atau dari seluruh database."""
+    """Delete a single track from a specific playlist or across the entire database."""
     delete_tracks([video_id], playlist_id)
 
 
 def delete_tracks(video_ids: list[str], playlist_id: int | None = None) -> int:
-    """Hapus sejumlah lagu sekaligus dari playlist tertentu atau dari seluruh database."""
+    """Delete multiple tracks from a specific playlist or across the entire database."""
     if not video_ids:
         return 0
     conn = _get_conn()
@@ -793,7 +793,7 @@ def delete_tracks(video_ids: list[str], playlist_id: int | None = None) -> int:
             "UPDATE playlists SET track_count = (SELECT COUNT(*) FROM playlist_tracks WHERE playlist_id=?) WHERE id=?",
             (playlist_id, playlist_id),
         )
-        # Hapus matches dan tracks jika tidak ada lagi di playlist manapun
+        # Remove matches and tracks if they no longer exist in any playlist
         conn.execute(
             "DELETE FROM matches WHERE video_id NOT IN (SELECT video_id FROM playlist_tracks)"
         )

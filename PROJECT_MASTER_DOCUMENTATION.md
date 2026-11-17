@@ -2,7 +2,7 @@
 # YT2Spotify (`yt2sp`) — High-Precision, Zero-Cost Music Migration Platform
 
 > **Status Proyek:** Production Stable (`v1.3.7`)  
-> **Lisensi:** The Unlicense (Public Domain - Bebas Tanpa Kewajiban Kredit)  
+> **Lisensi:** Custom Source License (Non-Commercial with Conditional Commercial Window)  
 > **Klasifikasi:** Single Source of Truth (SSOT) Technical & Product Architecture  
 > **Tanggal Rilis Dokumentasi:** 17 November 2026  
 

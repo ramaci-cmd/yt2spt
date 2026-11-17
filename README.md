@@ -6,7 +6,7 @@
 Accurate multi-pass track resolution, instant 30-second audio previews, 2×2 collage playlist artwork, smart genre splitting, and native Spotify Desktop clipboard pasting.
 
 [![Python](https://img.shields.io/badge/Python-3.11+-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/)
-[![License: Unlicense](https://img.shields.io/badge/License-Unlicense-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/License-Custom_Source-orange.svg)](LICENSE)
 [![Zero API Cost](https://img.shields.io/badge/API_Cost-%240_%2F_Free-brightgreen.svg)]()
 [![Privacy](https://img.shields.io/badge/Privacy-100%25_Local_SQLite-blueviolet.svg)]()
 [![Tests](https://img.shields.io/badge/Tests-21%20Passed-success.svg)](tests/)
@@ -297,19 +297,33 @@ yt2sp/
 
 ---
 
+## 🛠️ For Developers & Customization
+
+Seluruh logika inti, API server, extractor, hingga interaksi frontend telah dilengkapi dengan **komentar baris kode (*inline code comments*) berbahasa Inggris** yang dirancang khusus bagi Anda yang ingin mempelajari, mengedit, atau memodifikasi kode ini sendiri sesuai kebutuhan.
+
+> *All core logic, database handlers, pipeline resolvers, and UI scripts include clear inline code comments in English to guide developers who want to inspect, customize, or extend the project.*
+
+---
+
 ## 🎨 Credits & Design Attribution
 
 The web dashboard visual aesthetic and interface direction are inspired by the editorial design of [**Transactify — Digital Payment Platform**](https://dribbble.com/shots/27285124-Transactify-Digital-Payment-Platform) on Dribbble, adapted for local music playlist migration and catalog reconciliation.
 
 ---
 
-## 📄 License
+## 📄 License & Ketentuan Penggunaan
 
-Proyek ini dirilis di bawah lisensi publik **[The Unlicense](LICENSE)** (Public Domain).
+Proyek ini dirilis di bawah lisensi khusus (**Custom Source License**):
 
-Siapa pun bebas menggunakan, menyalin, memodifikasi, mempublikasikan, mendistribusikan, menjual, atau melakukan apa saja dengan repositori ini untuk keperluan komersial maupun pribadi — **bebas dengan atau tanpa mencantumkan kredit**.
+1. **Bebas untuk Penggunaan Pribadi & Non-Komersial:** Siapa pun bebas mengambil, mempelajari, mengedit, dan memodifikasi file dalam proyek ini untuk penggunaan pribadi, non-komersial, atau edukasi.
+2. **Larangan Diperjualbelikan Tanpa Izin:** Proyek ini, kodenya, atau produk turunannya **TIDAK BOLEH diperjualbelikan** kepada orang lain secara komersial.
+3. **Ketentuan Lisensi Komersial (Jeda 3 Bulan):**
+   - Jika ingin menjual atau mengomersialkan proyek ini, Anda **wajib menghubungi saya (`ramaci-cmd`) terlebih dahulu** untuk meminta izin.
+   - Apabila setelah dihubungi **tidak ada tanggapan/respons selama 3 bulan (90 hari)**, Anda diizinkan untuk menggunakannya secara komersial dengan syarat:
+     - **Wajib mencantumkan nama/kredit saya (`ramaci-cmd`)** secara jelas selama saya belum memberikan instruksi lain.
+     - **Hak Pencabutan Sewaktu-waktu:** Saya memegang hak penuh kapan saja untuk meminta Anda berhenti menggunakan/menjual kode saya. Begitu permintaan tersebut disampaikan, Anda **wajib segera menghentikan** penggunaan kode ini.
 
-> *This project is free and unencumbered software released into the public domain under **The Unlicense**. You are free to do whatever you want with this project, with or without attribution/credit. See [`LICENSE`](LICENSE) for more details.*
+Lihat teks lisensi lengkap di file [`LICENSE`](LICENSE).
 
 ---
 

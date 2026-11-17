@@ -108,7 +108,7 @@ def auth_ytm() -> None:
             except EOFError:
                 break
 
-        # Simpan headers via ytmusicapi
+        # Save headers via ytmusicapi
         try:
             from ytmusicapi import setup as ytm_setup
             from yt2sp.destinations.ytm_writer import normalize_browser_headers
@@ -200,7 +200,7 @@ def extract(
 
     ytm = get_ytm()
 
-    # Tentukan playlist yang akan diekstrak
+    # Determine which playlist to extract
     targets: list[tuple[str, str]] = []  # (yt_playlist_id, title)
 
     if liked:
@@ -246,7 +246,7 @@ def extract(
         if unavail > 0:
             rprint(f"[yellow]⚠️  Audit YouTube Music: {unavail} lagu tidak dapat dimuat karena telah dihapus atau dijadikan privat oleh uploader di YouTube.[/yellow]")
 
-        # Simpan ke DB
+        # Save to database
         playlist_db_id = database.upsert_playlist(yt_pid, pl_title, len(tracks_raw), unavailable_count=unavail)
 
         saved = 0
@@ -352,7 +352,7 @@ def resolve(
         except KeyboardInterrupt:
             rprint("\n[yellow]Dihentikan – progres tersimpan.[/yellow]")
 
-    # Ringkasan
+    # Summary
     t = Table(title="Hasil Resolve", show_header=True)
     t.add_column("Status")
     t.add_column("Jumlah", justify="right")
@@ -425,7 +425,7 @@ def review() -> None:
                 break
             elif action == "m":
                 raw_uri = Prompt.ask("Paste Spotify URI atau link")
-                # Ekstrak ID dari berbagai format
+                # Extract ID from various formats
                 sp_id = _extract_spotify_id(raw_uri)
                 if sp_id:
                     database.set_match(
@@ -451,7 +451,7 @@ def review() -> None:
 
 
 def _extract_spotify_id(raw: str) -> str | None:
-    """Ekstrak track ID dari URI atau URL Spotify."""
+    """Extract Spotify track ID from URI or URL."""
     import re
     # spotify:track:ID
     m = re.search(r"spotify:track:([A-Za-z0-9]{22})", raw)
@@ -461,7 +461,7 @@ def _extract_spotify_id(raw: str) -> str | None:
     m = re.search(r"open\.spotify\.com/track/([A-Za-z0-9]{22})", raw)
     if m:
         return m.group(1)
-    # Jika cuma ID langsung (22 chars)
+    # Bare 22-char ID
     raw = raw.strip()
     if re.match(r"^[A-Za-z0-9]{22}$", raw):
         return raw
@@ -498,7 +498,7 @@ def export(
         tracks = database.get_playlist_tracks(pl["id"])
         pl_title = pl["title"] or f"playlist_{pl['yt_playlist_id']}"
 
-        # Export langsung ke YouTube Music jika flag --ytm aktif
+        # Direct export to YouTube Music if --ytm flag is active
         if ytm:
             from yt2sp.destinations.ytm_writer import create_and_populate_ytm_playlist, check_ytm_auth
             auth_ok, auth_err = check_ytm_auth()
@@ -557,7 +557,7 @@ def export(
             else:
                 rprint(f"[yellow]⚠ {pl_title}:[/yellow] tidak ada lagu yang lolos")
 
-        # Buat CSV report
+        # Generate CSV report
         csv_path = write_csv_report(pl_title, tracks, out_dir / "reports")
         rprint(f"  [dim]Report CSV: {csv_path}[/dim]")
 

@@ -1,9 +1,9 @@
-"""Resolver Destinasi: Cari lagu di YouTube Music menggunakan ytmusicapi (100% Gratis, Tanpa Kuota Dev).
+"""Destination Resolver: Search songs on YouTube Music using ytmusicapi (100% Free, No Dev Quota).
 
 Flow:
-1. Build query dari judul Spotify + artis utama Spotify
-2. Cari top-N hasil di YouTube Music (filter='songs' dengan fallback ke videos)
-3. Return kandidat terstruktur dengan video_id, title, artist, album, duration_ms, thumbnail_url, url
+1. Build query from Spotify title + primary Spotify artist.
+2. Search top-N candidates on YouTube Music (filter='songs' with fallback to videos).
+3. Return structured candidates with video_id, title, artist, album, duration_ms, thumbnail_url, url.
 """
 from __future__ import annotations
 
@@ -54,7 +54,7 @@ class YTMTrackCandidate:
 
 
 def _parse_duration_to_ms(duration_val: Any) -> int:
-    """Konversi duration_seconds (int) atau string '3:45' / '1:05:20' ke milidetik."""
+    """Convert duration_seconds (int) or duration string '3:45' / '1:05:20' to milliseconds."""
     if isinstance(duration_val, (int, float)) and duration_val > 0:
         return int(duration_val * 1000)
 
@@ -81,8 +81,8 @@ def search_ytm_tracks(
     ytm: YTMusic | None = None,
 ) -> list[YTMTrackCandidate]:
     """
-    Cari lagu di YouTube Music berdasarkan metadata Spotify.
-    Return list kandidat YTMTrackCandidate.
+    Search songs on YouTube Music using Spotify metadata.
+    Returns a list of YTMTrackCandidate objects.
     """
     primary_artist = artists[0] if artists else ""
     query = f"{title} {primary_artist}".strip()
@@ -90,10 +90,10 @@ def search_ytm_tracks(
 
     for attempt in range(max_retries):
         try:
-            # 1. Cari dengan filter='songs' (rekaman studio resmi)
+            # 1. Search with filter='songs' (official studio releases)
             results = client.search(query, filter="songs", limit=max(top_n, 5))
             
-            # 2. Jika songs kosong, fallback ke pencarian umum (videos/music)
+            # 2. Fall back to general music/videos search if songs filter returned empty
             if not results:
                 results = client.search(query, filter="videos", limit=max(top_n, 5))
 
@@ -113,7 +113,7 @@ def search_ytm_tracks(
                 album_info = item.get("album") or {}
                 album_name = (album_info.get("name") if isinstance(album_info, dict) else "") or ""
 
-                # Durasi
+                # Duration resolution
                 dur_ms = 0
                 if "duration_seconds" in item and item["duration_seconds"]:
                     dur_ms = int(item["duration_seconds"]) * 1000
@@ -122,7 +122,7 @@ def search_ytm_tracks(
 
                 vtype = item.get("videoType") or "MUSIC_VIDEO_TYPE_ATV"
 
-                # Thumbnail
+                # Thumbnail resolution with fallback
                 thumb_url = None
                 thumbs = item.get("thumbnails") or []
                 if thumbs:
@@ -151,7 +151,7 @@ def search_ytm_tracks(
 
         except Exception as exc:
             logger.warning(
-                "YTM search attempt %d/%d gagal untuk '%s': %s",
+                "YTM search attempt %d/%d failed for '%s': %s",
                 attempt + 1,
                 max_retries,
                 query,
@@ -173,10 +173,10 @@ def find_ytm_alternative_versions(
     ytm: YTMusic | None = None,
 ) -> list[dict[str, Any]]:
     """
-    Mencari variasi lagu alternatif di YouTube Music:
-    - Cover oleh penyanyi berbeda
-    - Versi aransemen lain (Acoustic / Live / Remix)
-    - Hasil kemiripan judul tinggi lainnya
+    Search alternative song variations on YouTube Music:
+    - Covers by different performers
+    - Alternative arrangements (Acoustic / Live / Remix)
+    - High-similarity title matches
     """
     from rapidfuzz import fuzz
     from yt2sp.match.normalize import normalize_artist, normalize_title
@@ -212,7 +212,7 @@ def find_ytm_alternative_versions(
                 title_sim = fuzz.token_set_ratio(clean_title, norm_cand_title)
                 art_sim = fuzz.token_set_ratio(norm_orig_artist, norm_cand_artist)
 
-                # Filter hanya yang judulnya mirip (>= 50%)
+                # Filter only candidates with >= 50% title similarity
                 if title_sim < 50:
                     continue
 
@@ -222,19 +222,19 @@ def find_ytm_alternative_versions(
                 elif "duration" in item and item["duration"]:
                     dur_s = round(_parse_duration_to_ms(item["duration"]) / 1000)
 
-                # Klasifikasi tag
+                # Tag classification for alternative suggestions
                 if title_sim >= 80 and art_sim < 50:
-                    tag = "Penyanyi Berbeda (Cover)"
+                    tag = "Different Artist (Cover)"
                     badge_color = "amber"
-                    desc = f"Judul sama, dibawakan oleh {t_artist}"
+                    desc = f"Same title, performed by {t_artist}"
                 elif any(m in t_name.lower() for m in ["remix", "acoustic", "live", "cover", "karaoke"]):
-                    tag = "Versi Alternatif (Cover/Remix/Live)"
+                    tag = "Alternative Version (Cover/Remix/Live)"
                     badge_color = "purple"
-                    desc = f"Versi aransemen lain oleh {t_artist}"
+                    desc = f"Alternative arrangement by {t_artist}"
                 else:
-                    tag = "Kemiripan Judul & Musisi"
+                    tag = "Similar Title & Artist"
                     badge_color = "blue"
-                    desc = f"Lagu serupa oleh {t_artist}"
+                    desc = f"Similar track by {t_artist}"
 
                 thumb = None
                 thumbs = item.get("thumbnails") or []
@@ -245,7 +245,7 @@ def find_ytm_alternative_versions(
 
                 alternatives.append({
                     "video_id": vid,
-                    "spotify_id": vid,  # kompatibilitas field UI
+                    "spotify_id": vid,  # Field compatibility for UI
                     "uri": f"https://music.youtube.com/watch?v={vid}",
                     "title": t_name,
                     "artist": t_artist,
@@ -267,6 +267,6 @@ def find_ytm_alternative_versions(
         if len(alternatives) >= max_results:
             break
 
-    # Urutkan: Cover/Penyanyi berbeda dulu, lalu kemiripan judul tertinggi
-    alternatives.sort(key=lambda x: (x["tag"].startswith("Penyanyi"), x["title_sim"]), reverse=True)
+    # Sort: covers/different artists first, then highest title similarity
+    alternatives.sort(key=lambda x: (x["tag"].startswith("Different"), x["title_sim"]), reverse=True)
     return alternatives[:max_results]
