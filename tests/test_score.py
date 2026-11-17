@@ -16,7 +16,7 @@ def test_exact_match():
 
 
 def test_distinctive_marker_penalty():
-    # YTM is live version, Spotify is studio version
+    # Source is live version, candidate is studio version
     score, reason = compute_score(
         yt_title="Hotel California (Live)",
         yt_artists=["Eagles"],
@@ -25,16 +25,16 @@ def test_distinctive_marker_penalty():
     )
     # Penalty applies
     assert "marker" in reason
-    assert score < 0.85
-    assert classify(score) in ("needs_review", "failed")
+    assert score <= 0.88  # 1.0 - 0.12 penalty
+    assert classify(score, auto_threshold=0.90) in ("needs_review", "failed")
 
 
 def test_classify_thresholds():
     assert classify(0.90) == "resolved_auto"
-    assert classify(0.85) == "resolved_auto"
-    assert classify(0.84) == "needs_review"
-    assert classify(0.60) == "needs_review"
-    assert classify(0.59) == "failed"
+    assert classify(0.80) == "resolved_auto"
+    assert classify(0.79) == "needs_review"
+    assert classify(0.55) == "needs_review"
+    assert classify(0.54) == "failed"
 
 
 def test_duration_tolerance():

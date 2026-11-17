@@ -249,6 +249,11 @@ class UIHandler(BaseHTTPRequestHandler):
                 p_keys = p.keys()
                 unavail = p["unavailable_count"] if "unavailable_count" in p_keys and p["unavailable_count"] else 0
                 sample_vids = db.get_playlist_sample_video_ids(p["id"], limit=4)
+                sample_thumbs = db.get_playlist_sample_thumbnails(p["id"], limit=4)
+                src_p = (p["source_provider"] if "source_provider" in p_keys else "youtube") or "youtube"
+                dest_p = (p["destination_provider"] if "destination_provider" in p_keys else "spotify") or "spotify"
+                desc = (p["description"] if "description" in p_keys else "") or ""
+                thumb = (p["thumbnail_url"] if "thumbnail_url" in p_keys else "") or ""
                 data.append({
                     "id": p["id"],
                     "yt_playlist_id": p["yt_playlist_id"],
@@ -256,8 +261,13 @@ class UIHandler(BaseHTTPRequestHandler):
                     "track_count": p["track_count"],
                     "unavailable_count": unavail,
                     "extracted_at": p["extracted_at"],
+                    "source_provider": src_p,
+                    "destination_provider": dest_p,
+                    "description": desc,
+                    "thumbnail_url": thumb,
                     "genres": [{"genre": g["genre"], "count": g["track_count"]} for g in genres],
                     "sample_video_ids": sample_vids,
+                    "sample_thumbnails": sample_thumbs,
                 })
             lib_genres = db.get_all_library_genres()
             total_lib_tracks = len(db.get_all_library_tracks())
@@ -322,6 +332,11 @@ class UIHandler(BaseHTTPRequestHandler):
                 r_title = t["result_title"] if "result_title" in t.keys() and t["result_title"] else ""
                 r_ascii = unidecode.unidecode(r_title) if r_title else ""
 
+                dest_id_val = (t["dest_id"] if "dest_id" in t.keys() else None) or (t["spotify_id"] or "")
+                res_thumb_val = (t["result_thumbnail"] if "result_thumbnail" in t.keys() else "") or ""
+                if not res_thumb_val and dest_id_val and len(dest_id_val) == 11:
+                    res_thumb_val = f"https://i.ytimg.com/vi/{dest_id_val}/mqdefault.jpg"
+
                 tracks.append({
                     "video_id": t["video_id"],
                     "title": t_title,
@@ -333,6 +348,9 @@ class UIHandler(BaseHTTPRequestHandler):
                     "status": t_status,
                     "score": t["score"],
                     "spotify_id": t["spotify_id"] or "",
+                    "dest_id": dest_id_val,
+                    "thumbnail_url": (t["thumbnail_url"] if "thumbnail_url" in t.keys() else "") or "",
+                    "result_thumbnail": res_thumb_val,
                     "reason": t["reason"] or "",
                     "result_title": r_title,
                     "ascii_result": r_ascii,
@@ -420,8 +438,17 @@ class UIHandler(BaseHTTPRequestHandler):
             self._send_json(res_missing)
             return
 
+        elif path == "/api/ytm-auth-status":
+            from yt2sp.destinations.ytm_writer import check_ytm_auth
+            auth_ok, auth_err = check_ytm_auth()
+            self._send_json({
+                "authenticated": auth_ok,
+                "error": auth_err,
+                "auth_file": "ytm_auth.json",
+            })
+            return
+
         elif path == "/api/alternatives":
-            from yt2sp.resolve.spotify_resolver import find_alternative_versions
             db.init_db()
             vid = query.get("video_id", [""])[0]
             if not vid:
@@ -433,7 +460,22 @@ class UIHandler(BaseHTTPRequestHandler):
                 self._send_json({"alternatives": []})
                 return
             artists = json.loads(row["artists"]) if row["artists"] else []
-            alts = find_alternative_versions(row["title"], artists)
+            r_keys = row.keys()
+            src_prov = (row["source_provider"] if "source_provider" in r_keys else None) or "youtube"
+
+            if src_prov == "spotify":
+                from yt2sp.destinations.ytm_resolver import find_ytm_alternative_versions
+                alts = find_ytm_alternative_versions(row["title"], artists)
+                for a in alts:
+                    if "video_id" in a and "spotify_id" not in a:
+                        a["spotify_id"] = a["video_id"]
+            else:
+                from yt2sp.resolve.spotify_resolver import find_alternative_versions
+                alts = find_alternative_versions(row["title"], artists)
+                for a in alts:
+                    if "spotify_id" in a and "video_id" not in a:
+                        a["video_id"] = a["spotify_id"]
+
             self._send_json({"video_id": vid, "title": row["title"], "artists": artists, "alternatives": alts})
             return
 
@@ -488,19 +530,31 @@ class UIHandler(BaseHTTPRequestHandler):
             # 3. Track title directly from DB if video_id given
             if video_id:
                 t_row = db.get_track(video_id)
-                if t_row and t_row["title"]:
-                    raw_title = t_row["title"].strip()
-                    cleaned_db_title = _clean_preview_query(raw_title)
-                    if cleaned_db_title:
-                        candidates.append(cleaned_db_title)
-                    try:
-                        arts = json.loads(t_row["artists"]) if t_row["artists"] else []
-                        art_str = arts[0] if arts else ""
-                    except Exception:
-                        art_str = ""
-                    if art_str and art_str.lower() not in (cleaned_db_title or raw_title).lower():
-                        candidates.append(f"{art_str} {cleaned_db_title or raw_title}".strip())
-                    candidates.append(raw_title)
+                if t_row:
+                    if "preview_url" in t_row.keys() and t_row["preview_url"]:
+                        res_obj = {
+                            "preview_url": t_row["preview_url"],
+                            "title": t_row["title"] or "",
+                            "artist": (json.loads(t_row["artists"])[0] if t_row["artists"] else "") if ("artists" in t_row.keys() and t_row["artists"]) else "",
+                            "provider": "spotify",
+                            "duration": 30,
+                        }
+                        _set_cached_api(cache_key, res_obj)
+                        self._send_json(res_obj)
+                        return
+                    if t_row["title"]:
+                        raw_title = t_row["title"].strip()
+                        cleaned_db_title = _clean_preview_query(raw_title)
+                        if cleaned_db_title:
+                            candidates.append(cleaned_db_title)
+                        try:
+                            arts = json.loads(t_row["artists"]) if t_row["artists"] else []
+                            art_str = arts[0] if arts else ""
+                        except Exception:
+                            art_str = ""
+                        if art_str and art_str.lower() not in (cleaned_db_title or raw_title).lower():
+                            candidates.append(f"{art_str} {cleaned_db_title or raw_title}".strip())
+                        candidates.append(raw_title)
 
             # 4. Provided q_param
             if q_param:
@@ -613,69 +667,143 @@ class UIHandler(BaseHTTPRequestHandler):
                 _job_state["type"] = "extract"
                 _job_state["current"] = 0
                 _job_state["total"] = 0
-                _job_state["message"] = "Menghubungi YouTube Music..."
+                _job_state["message"] = "Menyiapkan ekstraksi playlist..."
                 _job_state["error"] = None
             _invalidate_api_cache()
 
             raw_pl = payload.get("playlist_id", "").strip()
             liked = payload.get("liked", False)
+            direction = (payload.get("direction") or "auto").strip().lower()
 
             def _run():
-                from yt2sp.ytm.extract import (
-                    get_ytm, get_playlist_details, parse_track, get_liked_songs, clean_playlist_id
-                )
                 try:
                     db.init_db()
-                    _update_job(True, "extract", 0, 0, "Menghubungi YouTube Music...")
-                    ytm = get_ytm()
+                    from yt2sp.sources.spotify_extract import clean_spotify_playlist_id, extract_spotify_playlist
+                    from yt2sp.ytm.extract import (
+                        get_ytm, get_playlist_details, parse_track, get_liked_songs, clean_playlist_id
+                    )
 
-                    if liked:
-                        tracks_raw = get_liked_songs(ytm)
-                        pl_title = "Liked Songs"
-                        yt_pid = "LIKED_SONGS"
-                        unavail_count = 0
+                    clean_sp_id = clean_spotify_playlist_id(raw_pl)
+                    is_spotify_source = False
+                    if direction == "sp_to_yt":
+                        is_spotify_source = True
+                    elif direction == "yt_to_sp":
+                        is_spotify_source = False
                     else:
-                        clean_id = clean_playlist_id(raw_pl)
-                        if not clean_id:
-                            raise ValueError("Link atau ID Playlist tidak valid!")
-                        res = get_playlist_details(ytm, clean_id)
+                        is_spotify_source = bool(clean_sp_id)
+
+                    # ── Jalur A: Ekstraksi dari Spotify ──
+                    if is_spotify_source:
+                        _update_job(True, "extract", 0, 0, "Menghubungi Spotify...")
+                        sp_id = clean_sp_id or clean_spotify_playlist_id(raw_pl)
+                        if not sp_id:
+                            raise ValueError("Link atau ID Playlist Spotify tidak valid!")
+                        res = extract_spotify_playlist(sp_id)
                         pl_title = res.title
                         tracks_raw = res.tracks
-                        unavail_count = getattr(res, "unavailable_count", 0)
-                        yt_pid = clean_id
+                        unavail_count = res.unavailable_count
+                        sp_pid = getattr(res, "playlist_id", None) or getattr(res, "id", sp_id)
+                        total = len(tracks_raw)
+                        if total == 0:
+                            raise ValueError(f"Tidak ada lagu ditemukan di playlist Spotify '{pl_title}'. Pastikan playlist bersifat Publik.")
 
-                    total = len(tracks_raw)
-                    if total == 0:
-                        raise ValueError(f"Tidak ada lagu ditemukan di playlist '{pl_title}'. Pastikan playlist bersifat Publik atau Unlisted.")
+                        _update_job(True, "extract", 0, total, f"Menyimpan {total} lagu dari '{pl_title}'...")
+                        cover_img = getattr(res, "cover_image", None) or getattr(res, "thumbnail_url", None)
+                        db_pl_id = db.upsert_playlist(
+                            sp_pid,
+                            pl_title,
+                            total,
+                            unavailable_count=unavail_count,
+                            source_provider="spotify",
+                            destination_provider="ytm",
+                            description=getattr(res, "description", "") or "",
+                            thumbnail_url=cover_img,
+                        )
 
-                    _update_job(True, "extract", 0, total, f"Menyimpan {total} lagu dari '{pl_title}'...")
-                    db_pl_id = db.upsert_playlist(yt_pid, pl_title, total, unavailable_count=unavail_count)
-
-                    saved = 0
-                    for pos, raw in enumerate(tracks_raw):
-                        if _job_cancel_event.is_set():
-                            _update_job(False, "extract", saved, total, f"Ekstraksi dibatalkan ({saved} lagu tersimpan).")
-                            return
-                        track = parse_track(raw)
-                        raw_title = (track["title"] if track else (raw.get("title") or "")) or "Lagu"
-                        display_title = str(raw_title)[:25]
-                        if track:
+                        saved = 0
+                        for pos, tr in enumerate(tracks_raw):
+                            if _job_cancel_event.is_set():
+                                _update_job(False, "extract", saved, total, f"Ekstraksi dibatalkan ({saved} lagu tersimpan).")
+                                return
+                            display_title = str(tr.title)[:25]
                             db.upsert_track(
-                                track["video_id"],
-                                track["title"],
-                                track["artists"],
-                                track["album"],
-                                track["duration_ms"],
-                                track["video_type"],
+                                tr.track_id,
+                                tr.title,
+                                tr.artists,
+                                tr.album,
+                                tr.duration_ms,
+                                "song",
+                                thumbnail_url=tr.thumbnail_url,
+                                preview_url=tr.preview_url,
+                                isrc=tr.isrc,
+                                source_provider="spotify",
                             )
-                            db.upsert_playlist_track(db_pl_id, track["video_id"], pos)
+                            db.upsert_playlist_track(db_pl_id, tr.track_id, pos)
                             saved += 1
-                        _update_job(True, "extract", pos + 1, total, f"Menyimpan ({pos + 1}/{total}): {display_title}")
+                            _update_job(True, "extract", pos + 1, total, f"Menyimpan ({pos + 1}/{total}): {display_title}")
 
-                    finish_msg = f"Selesai! {saved} lagu berhasil ditarik dari '{pl_title}'."
-                    if unavail_count > 0:
-                        finish_msg += f" ({unavail_count} video YouTube tidak dapat dimuat karena dihapus/privat oleh uploader)."
-                    _update_job(False, "extract", saved, total, finish_msg)
+                        finish_msg = f"Selesai! {saved} lagu berhasil ditarik dari playlist Spotify '{pl_title}'."
+                        if unavail_count > 0:
+                            finish_msg += f" ({unavail_count} lagu tidak dapat dimuat)."
+                        _update_job(False, "extract", saved, total, finish_msg)
+
+                    # ── Jalur B: Ekstraksi dari YouTube Music ──
+                    else:
+                        _update_job(True, "extract", 0, 0, "Menghubungi YouTube Music...")
+                        ytm = get_ytm()
+                        if liked:
+                            tracks_raw = get_liked_songs(ytm)
+                            pl_title = "Liked Songs"
+                            yt_pid = "LIKED_SONGS"
+                            unavail_count = 0
+                        else:
+                            clean_yt_id = clean_playlist_id(raw_pl)
+                            if not clean_yt_id:
+                                raise ValueError("Link atau ID Playlist YouTube Music tidak valid!")
+                            res_yt = get_playlist_details(ytm, clean_yt_id)
+                            pl_title = res_yt.title
+                            tracks_raw = res_yt.tracks
+                            unavail_count = getattr(res_yt, "unavailable_count", 0)
+                            yt_pid = clean_yt_id
+
+                        total = len(tracks_raw)
+                        if total == 0:
+                            raise ValueError(f"Tidak ada lagu ditemukan di playlist '{pl_title}'.")
+
+                        _update_job(True, "extract", 0, total, f"Menyimpan {total} lagu dari '{pl_title}'...")
+                        db_pl_id = db.upsert_playlist(
+                            yt_pid,
+                            pl_title,
+                            total,
+                            unavailable_count=unavail_count,
+                            source_provider="youtube",
+                            destination_provider="spotify",
+                        )
+
+                        saved = 0
+                        for pos, raw in enumerate(tracks_raw):
+                            if _job_cancel_event.is_set():
+                                _update_job(False, "extract", saved, total, f"Ekstraksi dibatalkan ({saved} lagu tersimpan).")
+                                return
+                            track = parse_track(raw)
+                            raw_title = (track["title"] if track else (raw.get("title") or "")) or "Lagu"
+                            display_title = str(raw_title)[:25]
+                            if track:
+                                db.upsert_track(
+                                    track["video_id"],
+                                    track["title"],
+                                    track["artists"],
+                                    track["album"],
+                                    track["duration_ms"],
+                                    track["video_type"],
+                                    source_provider="youtube",
+                                )
+                                db.upsert_playlist_track(db_pl_id, track["video_id"], pos)
+                                saved += 1
+                            _update_job(True, "extract", pos + 1, total, f"Menyimpan ({pos + 1}/{total}): {display_title}")
+
+                        finish_msg = f"Selesai! {saved} lagu berhasil ditarik dari '{pl_title}'."
+                        _update_job(False, "extract", saved, total, finish_msg)
                 except Exception as exc:
                     logger.exception("Extract error: %s", exc)
                     _update_job(False, "extract", 0, 0, f"Gagal: {str(exc)}", error=str(exc))
@@ -848,42 +976,52 @@ class UIHandler(BaseHTTPRequestHandler):
                     self._send_json({"error": "Lagu tidak ditemukan di database"}, 404)
                     return
 
-                # Ekstrak Spotify ID dari berbagai format link/URI/ID
+                # Support YouTube Music / YouTube video link / ID atau Spotify format
                 import re
                 clean_input = (spotify_id or "").strip()
                 final_id = None
-                m_url = re.search(r"open\.spotify\.com/track/([A-Za-z0-9]{22})", clean_input)
-                m_uri = re.search(r"spotify:track:([A-Za-z0-9]{22})", clean_input)
-                m_exact = re.search(r"^([A-Za-z0-9]{22})$", clean_input)
-                m_any = re.search(r"([A-Za-z0-9]{22})", clean_input)
+                m_ytm = re.search(r"music\.youtube\.com/watch\?v=([a-zA-Z0-9_-]{11})", clean_input)
+                m_yt = re.search(r"(?:youtube\.com/watch\?v=|youtu\.be/)([a-zA-Z0-9_-]{11})", clean_input)
+                m_11 = re.search(r"^([a-zA-Z0-9_-]{11})$", clean_input)
+                m_sp = re.search(r"(?:open\.spotify\.com/track/|spotify:track:)([A-Za-z0-9]{22})", clean_input)
 
-                if m_url:
-                    final_id = m_url.group(1)
-                elif m_uri:
-                    final_id = m_uri.group(1)
-                elif m_exact:
-                    final_id = m_exact.group(1)
-                elif m_any:
-                    final_id = m_any.group(1)
+                if m_ytm:
+                    final_id = m_ytm.group(1)
+                elif m_yt:
+                    final_id = m_yt.group(1)
+                elif m_11:
+                    final_id = m_11.group(1)
+                elif m_sp:
+                    final_id = m_sp.group(1)
 
                 if not final_id:
                     self._send_json({
-                        "error": "Link atau ID Spotify tidak valid. Masukkan URL seperti https://open.spotify.com/track/... atau URI spotify:track:..."
+                        "error": "Link atau Video ID YouTube Music tidak valid. Masukkan URL seperti https://music.youtube.com/watch?v=... atau Video ID 11 karakter."
                     }, 400)
                     return
 
-                # Ambil info lagu dari Spotify oEmbed (100% gratis, tanpa API key)
-                sp_title = ""
-                sp_thumbnail = ""
-                try:
-                    oembed_url = f"https://open.spotify.com/oembed?url=https://open.spotify.com/track/{final_id}"
-                    req = urllib.request.Request(oembed_url, headers={"User-Agent": "Mozilla/5.0"})
-                    with urllib.request.urlopen(req, timeout=3) as r:
-                        oembed_data = json.loads(r.read().decode("utf-8"))
-                        sp_title = oembed_data.get("title", "")
-                        sp_thumbnail = oembed_data.get("thumbnail_url", "")
-                except Exception:
-                    pass
+                yt_title = ""
+                yt_thumbnail = ""
+                if len(final_id) == 11:
+                    try:
+                        oembed_url = f"https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v={final_id}&format=json"
+                        req = urllib.request.Request(oembed_url, headers={"User-Agent": "Mozilla/5.0"})
+                        with urllib.request.urlopen(req, timeout=3) as r:
+                            oembed_data = json.loads(r.read().decode("utf-8"))
+                            yt_title = oembed_data.get("title", "")
+                            yt_thumbnail = oembed_data.get("thumbnail_url", "")
+                    except Exception:
+                        pass
+                else:
+                    try:
+                        oembed_url = f"https://open.spotify.com/oembed?url=https://open.spotify.com/track/{final_id}"
+                        req = urllib.request.Request(oembed_url, headers={"User-Agent": "Mozilla/5.0"})
+                        with urllib.request.urlopen(req, timeout=3) as r:
+                            oembed_data = json.loads(r.read().decode("utf-8"))
+                            yt_title = oembed_data.get("title", "")
+                            yt_thumbnail = oembed_data.get("thumbnail_url", "")
+                    except Exception:
+                        pass
 
                 track_title = track["title"] if track else (m["result_title"] if m else "")
                 artists_val = track["artists"] if track else (m["result_artist"] if m else "")
@@ -894,18 +1032,22 @@ class UIHandler(BaseHTTPRequestHandler):
                     tier="manual",
                     score=1.0,
                     status="accepted",
-                    result_title=sp_title or track_title or "Spotify Track",
+                    result_title=yt_title or track_title or "YouTube Music Track",
                     result_artist=artists_val or "Manual Input",
                     decided_by="ui_manual",
                     reason="Diinput manual oleh pengguna lewat UI",
+                    dest_id=final_id,
+                    result_url=f"https://music.youtube.com/watch?v={final_id}" if len(final_id) == 11 else None,
+                    result_thumbnail=yt_thumbnail or None,
                 )
 
                 _invalidate_api_cache()
                 self._send_json({
                     "status": "ok",
                     "spotify_id": final_id,
-                    "title": sp_title or track_title,
-                    "thumbnail_url": sp_thumbnail,
+                    "dest_id": final_id,
+                    "title": yt_title or track_title,
+                    "thumbnail_url": yt_thumbnail,
                 })
                 return
 
@@ -943,6 +1085,21 @@ class UIHandler(BaseHTTPRequestHandler):
         elif path == "/api/reset":
             db.init_db()
             clear_cache = payload.get("clear_cache", False)
+            delete_remote = payload.get("delete_remote", False)
+            if delete_remote:
+                try:
+                    from yt2sp.destinations.ytm_writer import get_authenticated_ytm, check_ytm_auth
+                    if check_ytm_auth():
+                        ytm = get_authenticated_ytm()
+                        remote_pls = db.get_all_exported_remote_playlists()
+                        for r_pid in remote_pls:
+                            try:
+                                ytm.delete_playlist(r_pid)
+                            except Exception as e:
+                                logger.warning("Gagal hapus playlist remote YTM %s: %s", r_pid, e)
+                except Exception as exc:
+                    logger.warning("Error saat hapus remote playlist: %s", exc)
+
             db.reset_all_data(clear_cache=clear_cache)
             _invalidate_api_cache()
             _update_job(False, None, 0, 0, "Database berhasil dikosongkan. Siap mulai dari 0.")
@@ -953,6 +1110,33 @@ class UIHandler(BaseHTTPRequestHandler):
             db.init_db()
             playlist_ids = payload.get("playlist_ids")
             playlist_id = payload.get("playlist_id")
+            delete_remote = payload.get("delete_remote", False)
+
+            if delete_remote:
+                try:
+                    from yt2sp.destinations.ytm_writer import get_authenticated_ytm, check_ytm_auth
+                    if check_ytm_auth():
+                        ytm = get_authenticated_ytm()
+                        target_pids = []
+                        if playlist_ids and isinstance(playlist_ids, list):
+                            target_pids.extend(playlist_ids)
+                        elif playlist_id:
+                            target_pids.append(playlist_id)
+                        for pid in target_pids:
+                            try:
+                                p_row = db.get_playlist(int(pid))
+                                if p_row:
+                                    keys = p_row.keys()
+                                    exp_id = p_row["exported_playlist_id"] if "exported_playlist_id" in keys else None
+                                    yt_id = p_row["yt_playlist_id"] if "yt_playlist_id" in keys else None
+                                    to_del = exp_id or (yt_id if yt_id and (yt_id.startswith("PL") or yt_id.startswith("RD")) else None)
+                                    if to_del:
+                                        ytm.delete_playlist(to_del)
+                            except Exception as e:
+                                logger.warning("Gagal hapus remote playlist: %s", e)
+                except Exception as exc:
+                    logger.warning("Error saat remote playlist delete: %s", exc)
+
             if playlist_ids and isinstance(playlist_ids, list):
                 valid_ids = []
                 for pid in playlist_ids:
@@ -986,12 +1170,31 @@ class UIHandler(BaseHTTPRequestHandler):
             video_ids = payload.get("video_ids")
             video_id = payload.get("video_id")
             playlist_id = payload.get("playlist_id")
+            delete_remote = payload.get("delete_remote", False)
             pl_id = None
             if playlist_id not in (None, "all", "", 0, "0"):
                 try:
                     pl_id = int(playlist_id)
                 except (ValueError, TypeError):
                     pl_id = None
+
+            if delete_remote and pl_id:
+                try:
+                    from yt2sp.destinations.ytm_writer import get_authenticated_ytm, check_ytm_auth
+                    if check_ytm_auth():
+                        p_row = db.get_playlist(pl_id)
+                        if p_row and "exported_playlist_id" in p_row.keys() and p_row["exported_playlist_id"]:
+                            ytm = get_authenticated_ytm()
+                            r_pl = ytm.get_playlist(p_row["exported_playlist_id"])
+                            to_remove = []
+                            del_set = set([str(v) for v in video_ids] if video_ids else [str(video_id)])
+                            for item in r_pl.get("tracks", []):
+                                if item.get("videoId") in del_set and "setVideoId" in item:
+                                    to_remove.append({"videoId": item["videoId"], "setVideoId": item["setVideoId"]})
+                            if to_remove:
+                                ytm.remove_playlist_items(p_row["exported_playlist_id"], to_remove)
+                except Exception as e:
+                    logger.warning("Gagal hapus lagu dari remote playlist YTM: %s", e)
 
             if video_ids and isinstance(video_ids, list):
                 clean_vids = [str(v) for v in video_ids if v]
@@ -1009,6 +1212,7 @@ class UIHandler(BaseHTTPRequestHandler):
                 return
             else:
                 self._send_json({"error": "Video ID diperlukan"}, 400)
+                return
                 return
 
         elif path == "/api/create-grouped-playlist":
@@ -1051,6 +1255,147 @@ class UIHandler(BaseHTTPRequestHandler):
 
             _invalidate_api_cache()
             self._send_json({"status": "ok", "created": created_results})
+            return
+
+        elif path in ("/api/export", "/api/export-ytm"):
+            db.init_db()
+            pl_id_param = payload.get("playlist_id")
+            custom_title = (payload.get("title") or "").strip()
+            custom_desc = (payload.get("description") or "").strip()
+            privacy = (payload.get("privacy") or "PRIVATE").upper()
+            if privacy not in ("PRIVATE", "PUBLIC", "UNLISTED"):
+                privacy = "PRIVATE"
+
+            pl_id = None
+            if pl_id_param not in (None, "all", "", 0, "0"):
+                try:
+                    pl_id = int(pl_id_param)
+                except (ValueError, TypeError):
+                    pl_id = None
+
+            pl_info = db.get_playlist(pl_id) if pl_id else None
+            explicit_target = (payload.get("target") or payload.get("destination") or "").lower()
+
+            if path == "/api/export-ytm" or explicit_target in ("ytm", "ytmusic", "youtube"):
+                target_dest = "ytm"
+            elif explicit_target in ("spotify", "sp"):
+                target_dest = "spotify"
+            elif pl_info and ("destination_provider" in pl_info.keys() and pl_info["destination_provider"] == "ytm"):
+                target_dest = "ytm"
+            elif pl_info and ("destination_provider" in pl_info.keys() and pl_info["destination_provider"] == "spotify"):
+                target_dest = "spotify"
+            else:
+                target_dest = "ytm"
+
+            if pl_id:
+                raw_tracks = db.get_playlist_tracks(pl_id)
+                default_title = (pl_info["title"] if pl_info else "Migrated Playlist")
+            else:
+                raw_tracks = db.get_all_library_tracks()
+                default_title = "Migrated Library"
+
+            final_title = custom_title or default_title
+
+            # ── Export ke YouTube Music ──
+            if target_dest == "ytm":
+                from yt2sp.destinations.ytm_writer import create_and_populate_ytm_playlist, check_ytm_auth
+                auth_ok, auth_err = check_ytm_auth()
+                if not auth_ok:
+                    self._send_json({
+                        "error": f"Autentikasi YouTube Music belum siap: {auth_err}. Silakan setup akun di tab Accounts."
+                    }, 401)
+                    return
+
+                track_ids = []
+                for t in raw_tracks:
+                    row = dict(t)
+                    st = row.get("status")
+                    dest_id = row.get("dest_id") or row.get("spotify_id")
+                    if st in ("accepted", "resolved_auto") and dest_id:
+                        track_ids.append(dest_id)
+
+                if not track_ids:
+                    self._send_json({
+                        "error": "Tidak ada lagu yang sudah disetujui (accepted / auto) untuk diekspor ke YouTube Music."
+                    }, 400)
+                    return
+
+                try:
+                    res = create_and_populate_ytm_playlist(
+                        title=f"{final_title} (Spotify2YTM)" if "Spotify2YTM" not in final_title else final_title,
+                        track_ids=track_ids,
+                        description=custom_desc or "Migrated using YT2SP Unified Migration Platform",
+                        privacy_status=privacy,
+                    )
+                    if pl_id:
+                        db.update_playlist_export(pl_id, res.playlist_id, res.playlist_url)
+                    self._send_json({
+                        "status": "ok",
+                        "destination": "ytm",
+                        "playlist_id": res.playlist_id,
+                        "playlist_url": res.playlist_url,
+                        "total_added": res.total_added,
+                        "total_requested": res.total_requested,
+                        "failed_count": len(res.failed_ids),
+                        "title": final_title,
+                    })
+                except Exception as exc:
+                    logger.exception("Export YTM error: %s", exc)
+                    self._send_json({"error": f"Gagal mengekspor playlist ke YouTube Music: {str(exc)}"}, 500)
+                return
+
+            # ── Export ke Spotify (URI blocks + CSV report) ──
+            else:
+                from yt2sp.export.writer import write_uri_blocks
+                from yt2sp.export.report import write_csv_report
+
+                uris = []
+                accepted_tracks = []
+                for t in raw_tracks:
+                    row = dict(t)
+                    st = row.get("status")
+                    sp_id = row.get("spotify_id") or row.get("dest_id")
+                    if st in ("accepted", "resolved_auto") and sp_id:
+                        uris.append(f"spotify:track:{sp_id}")
+                        accepted_tracks.append(t)
+
+                if not uris:
+                    self._send_json({
+                        "error": "Tidak ada lagu yang sudah disetujui (accepted / auto) untuk diekspor ke Spotify."
+                    }, 400)
+                    return
+
+                out_dir = Path("output")
+                chunk_size = int(payload.get("chunk_size", 50))
+                files = write_uri_blocks(final_title, uris, out_dir / "uris", chunk_size=chunk_size)
+                csv_path = write_csv_report(final_title, accepted_tracks, out_dir / "reports")
+
+                self._send_json({
+                    "status": "ok",
+                    "destination": "spotify",
+                    "total_uris": len(uris),
+                    "files_created": [str(f) for f in files],
+                    "report_file": str(csv_path),
+                    "title": final_title,
+                    "message": f"Export Spotify selesai. {len(uris)} URI tersimpan di {out_dir / 'uris'}.",
+                })
+                return
+
+        elif path == "/api/save-ytm-auth":
+            headers_raw = (payload.get("headers") or "").strip()
+            if not headers_raw:
+                self._send_json({"error": "Header/cURL tidak boleh kosong."}, 400)
+                return
+            try:
+                from ytmusicapi import setup
+                from yt2sp.destinations.ytm_writer import normalize_browser_headers
+                normalized = normalize_browser_headers(headers_raw)
+                setup(filepath="ytm_auth.json", headers_raw=normalized)
+                _invalidate_api_cache()
+                self._send_json({"status": "ok", "message": "Autentikasi YouTube Music berhasil disimpan!"})
+            except Exception as exc:
+                logger.exception("Save YTM auth error: %s", exc)
+                self._send_json({"error": f"Gagal menyimpan autentikasi: {str(exc)}"}, 400)
             return
 
         self.send_error(404, "Endpoint Not Found")

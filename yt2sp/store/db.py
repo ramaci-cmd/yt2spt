@@ -31,7 +31,13 @@ def init_db(db_path: Path | None = None) -> None:
     """Buat tabel jika belum ada."""
     global DB_PATH
     if db_path:
-        DB_PATH = db_path
+        DB_PATH = Path(db_path)
+        if hasattr(_local, "conn") and _local.conn is not None:
+            try:
+                _local.conn.close()
+            except Exception:
+                pass
+            _local.conn = None
     conn = _get_conn()
     conn.executescript(
         """
@@ -116,6 +122,51 @@ def init_db(db_path: Path | None = None) -> None:
         conn.execute("ALTER TABLE tracks ADD COLUMN genre_source TEXT")
     except sqlite3.OperationalError:
         pass
+
+    # Defensive schema migrations for bidirectional migration platform (YT2SP + SP2YT)
+    for col_ddl in [
+        "ALTER TABLE playlists ADD COLUMN source_provider TEXT DEFAULT 'youtube'",
+        "ALTER TABLE playlists ADD COLUMN destination_provider TEXT DEFAULT 'spotify'",
+        "ALTER TABLE playlists ADD COLUMN description TEXT DEFAULT ''",
+        "ALTER TABLE playlists ADD COLUMN thumbnail_url TEXT",
+        "ALTER TABLE tracks ADD COLUMN source_provider TEXT DEFAULT 'youtube'",
+        "ALTER TABLE tracks ADD COLUMN isrc TEXT",
+        "ALTER TABLE tracks ADD COLUMN thumbnail_url TEXT",
+        "ALTER TABLE tracks ADD COLUMN preview_url TEXT",
+        "ALTER TABLE matches ADD COLUMN dest_id TEXT",
+        "ALTER TABLE matches ADD COLUMN result_url TEXT",
+        "ALTER TABLE matches ADD COLUMN result_thumbnail TEXT",
+        "ALTER TABLE playlists ADD COLUMN exported_playlist_id TEXT",
+        "ALTER TABLE playlists ADD COLUMN exported_url TEXT",
+    ]:
+        try:
+            conn.execute(col_ddl)
+        except sqlite3.OperationalError:
+            pass
+
+    # Sanitize existing playlists to ensure accurate provider identification
+    try:
+        # Spotify playlists: 22 chars alphanumeric ID without PL/RD/OLAK prefix
+        conn.execute("""
+            UPDATE playlists 
+            SET source_provider = 'spotify', destination_provider = 'ytm'
+            WHERE (source_provider IS NULL OR source_provider = 'youtube')
+              AND length(yt_playlist_id) = 22
+              AND yt_playlist_id NOT LIKE 'PL%'
+              AND yt_playlist_id NOT LIKE 'RD%'
+              AND yt_playlist_id NOT LIKE 'OLAK%'
+        """)
+        # Legacy YouTube playlists: starting with PL, RD, OLAK, or standard YouTube IDs
+        conn.execute("""
+            UPDATE playlists
+            SET source_provider = 'youtube', destination_provider = 'spotify'
+            WHERE (yt_playlist_id LIKE 'PL%' OR yt_playlist_id LIKE 'RD%' OR yt_playlist_id LIKE 'OLAK%')
+              AND (source_provider IS NULL OR source_provider = '' OR source_provider = 'spotify')
+        """)
+        conn.commit()
+    except Exception:
+        pass
+
     conn.commit()
 
 
@@ -125,19 +176,35 @@ def now_iso() -> str:
 
 # ── Playlist ──────────────────────────────────────────────────────────────────
 
-def upsert_playlist(yt_playlist_id: str, title: str, track_count: int, unavailable_count: int = 0) -> int:
+def upsert_playlist(
+    yt_playlist_id: str,
+    title: str,
+    track_count: int,
+    unavailable_count: int = 0,
+    *,
+    description: str = "",
+    thumbnail_url: str | None = None,
+    source_provider: str = "youtube",
+    destination_provider: str = "spotify",
+) -> int:
     conn = _get_conn()
     conn.execute(
         """
-        INSERT INTO playlists (yt_playlist_id, title, track_count, unavailable_count, extracted_at)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO playlists (yt_playlist_id, title, track_count, unavailable_count, extracted_at,
+                               description, thumbnail_url, source_provider, destination_provider)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(yt_playlist_id) DO UPDATE SET
             title=excluded.title,
             track_count=excluded.track_count,
             unavailable_count=excluded.unavailable_count,
-            extracted_at=excluded.extracted_at
+            extracted_at=excluded.extracted_at,
+            description=COALESCE(excluded.description, playlists.description),
+            thumbnail_url=COALESCE(excluded.thumbnail_url, playlists.thumbnail_url),
+            source_provider=excluded.source_provider,
+            destination_provider=excluded.destination_provider
         """,
-        (yt_playlist_id, title, track_count, unavailable_count, now_iso()),
+        (yt_playlist_id, title, track_count, unavailable_count, now_iso(),
+         description, thumbnail_url, source_provider, destination_provider),
     )
     conn.commit()
     row = conn.execute(
@@ -148,6 +215,12 @@ def upsert_playlist(yt_playlist_id: str, title: str, track_count: int, unavailab
 
 def get_all_playlists() -> list[sqlite3.Row]:
     return _get_conn().execute("SELECT * FROM playlists ORDER BY id").fetchall()
+
+
+def get_playlist(playlist_id: int) -> sqlite3.Row | None:
+    return _get_conn().execute(
+        "SELECT * FROM playlists WHERE id=?", (playlist_id,)
+    ).fetchone()
 
 
 def get_playlist_by_ytid(yt_playlist_id: str) -> sqlite3.Row | None:
@@ -171,6 +244,28 @@ def get_playlist_sample_video_ids(playlist_id: int, limit: int = 4) -> list[str]
     return [r["video_id"] for r in rows if r["video_id"]]
 
 
+def get_playlist_sample_thumbnails(playlist_id: int, limit: int = 4) -> list[str]:
+    """Return up to `limit` thumbnail URLs for tracks in a playlist."""
+    rows = _get_conn().execute(
+        """
+        SELECT t.thumbnail_url, t.video_id
+        FROM playlist_tracks pt
+        JOIN tracks t ON t.video_id = pt.video_id
+        WHERE pt.playlist_id = ?
+        ORDER BY pt.position
+        LIMIT ?
+        """,
+        (playlist_id, limit),
+    ).fetchall()
+    thumbs: list[str] = []
+    for r in rows:
+        if r["thumbnail_url"]:
+            thumbs.append(r["thumbnail_url"])
+        elif r["video_id"] and len(r["video_id"]) == 11:
+            thumbs.append(f"https://i.ytimg.com/vi/{r['video_id']}/mqdefault.jpg")
+    return thumbs
+
+
 
 # ── Track ─────────────────────────────────────────────────────────────────────
 
@@ -180,16 +275,42 @@ def upsert_track(
     artists: list[str],
     album: str,
     duration_ms: int,
-    video_type: str,
+    video_type: str = "MUSIC_VIDEO_TYPE_ATV",
+    *,
+    thumbnail_url: str | None = None,
+    preview_url: str | None = None,
+    isrc: str | None = None,
+    source_provider: str = "youtube",
 ) -> None:
     conn = _get_conn()
     conn.execute(
         """
-        INSERT INTO tracks (video_id, title, artists, album, duration_ms, video_type)
-        VALUES (?, ?, ?, ?, ?, ?)
-        ON CONFLICT(video_id) DO NOTHING
+        INSERT INTO tracks (video_id, title, artists, album, duration_ms, video_type,
+                            thumbnail_url, preview_url, isrc, source_provider)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(video_id) DO UPDATE SET
+            title=excluded.title,
+            artists=excluded.artists,
+            album=excluded.album,
+            duration_ms=excluded.duration_ms,
+            video_type=excluded.video_type,
+            thumbnail_url=COALESCE(excluded.thumbnail_url, tracks.thumbnail_url),
+            preview_url=COALESCE(excluded.preview_url, tracks.preview_url),
+            isrc=COALESCE(excluded.isrc, tracks.isrc),
+            source_provider=excluded.source_provider
         """,
-        (video_id, title, json.dumps(artists, ensure_ascii=False), album, duration_ms, video_type),
+        (
+            video_id,
+            title,
+            json.dumps(artists, ensure_ascii=False),
+            album,
+            duration_ms,
+            video_type,
+            thumbnail_url,
+            preview_url,
+            isrc,
+            source_provider,
+        ),
     )
     conn.commit()
 
@@ -218,7 +339,8 @@ def get_playlist_tracks(playlist_id: int) -> list[sqlite3.Row]:
     """Return tracks+matches for a playlist in order."""
     return _get_conn().execute(
         """
-        SELECT t.*, pt.position, m.spotify_id, m.status, m.score, m.tier, m.reason,
+        SELECT t.*, pt.position, m.spotify_id, m.dest_id, m.result_url, m.result_thumbnail,
+               m.status, m.score, m.tier, m.reason,
                m.result_title, m.result_artist
         FROM playlist_tracks pt
         JOIN tracks t ON t.video_id = pt.video_id
@@ -236,7 +358,8 @@ def get_all_library_tracks() -> list[sqlite3.Row]:
         """
         SELECT t.*,
                COALESCE(MIN(pt.position), 0) as position,
-               m.spotify_id, m.status, m.score, m.tier, m.reason,
+               m.spotify_id, m.dest_id, m.result_url, m.result_thumbnail,
+               m.status, m.score, m.tier, m.reason,
                m.result_title, m.result_artist,
                GROUP_CONCAT(DISTINCT p.title) as in_playlists
         FROM tracks t
@@ -264,7 +387,7 @@ def init_match(video_id: str) -> None:
 def set_match(
     video_id: str,
     *,
-    spotify_id: str | None,
+    spotify_id: str | None = None,
     tier: str,
     score: float,
     status: str,
@@ -272,16 +395,23 @@ def set_match(
     result_artist: str = "",
     decided_by: str = "auto",
     reason: str = "",
+    dest_id: str | None = None,
+    result_url: str = "",
+    result_thumbnail: str = "",
 ) -> None:
+    # Sinkronkan dest_id dan spotify_id agar kompatibel dua arah
+    effective_dest_id = dest_id or spotify_id
+    effective_spotify_id = spotify_id or dest_id
     conn = _get_conn()
     conn.execute(
         """
         INSERT INTO matches
-            (video_id, spotify_id, tier, score, status, result_title, result_artist,
-             decided_by, reason, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (video_id, spotify_id, dest_id, tier, score, status, result_title, result_artist,
+             decided_by, reason, result_url, result_thumbnail, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(video_id) DO UPDATE SET
             spotify_id=excluded.spotify_id,
+            dest_id=excluded.dest_id,
             tier=excluded.tier,
             score=excluded.score,
             status=excluded.status,
@@ -289,11 +419,14 @@ def set_match(
             result_artist=excluded.result_artist,
             decided_by=excluded.decided_by,
             reason=excluded.reason,
+            result_url=COALESCE(excluded.result_url, matches.result_url),
+            result_thumbnail=COALESCE(excluded.result_thumbnail, matches.result_thumbnail),
             updated_at=excluded.updated_at
         """,
         (
-            video_id, spotify_id, tier, score, status,
-            result_title, result_artist, decided_by, reason, now_iso(),
+            video_id, effective_spotify_id, effective_dest_id, tier, score, status,
+            result_title, result_artist, decided_by, reason,
+            result_url, result_thumbnail, now_iso(),
         ),
     )
     conn.commit()
@@ -593,6 +726,23 @@ def reset_all_data(clear_cache: bool = False) -> None:
         conn.execute("VACUUM")
     except Exception:
         pass
+
+
+def update_playlist_export(playlist_id: int, exported_id: str, exported_url: str) -> None:
+    conn = _get_conn()
+    conn.execute(
+        "UPDATE playlists SET exported_playlist_id = ?, exported_url = ? WHERE id = ?",
+        (exported_id, exported_url, playlist_id),
+    )
+    conn.commit()
+
+
+def get_all_exported_remote_playlists() -> list[str]:
+    conn = _get_conn()
+    rows = conn.execute(
+        "SELECT exported_playlist_id FROM playlists WHERE exported_playlist_id IS NOT NULL AND exported_playlist_id != ''"
+    ).fetchall()
+    return [r["exported_playlist_id"] for r in rows if r["exported_playlist_id"]]
 
 
 def delete_playlist(playlist_id: int) -> None:

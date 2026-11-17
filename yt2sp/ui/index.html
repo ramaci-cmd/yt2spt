@@ -679,11 +679,20 @@
       <span id="page-current-title" class="hidden"></span>
       <!-- Right: Status, Eco Mode & CTA Pill -->
       <div class="flex items-center space-x-1.5 sm:space-x-2.5 flex-shrink-0">
-        <!-- Live Task Status Badge -->
+        <!-- Live Task Status Badge with Cancel Button -->
         <div id="header-task-status" class="hidden items-center space-x-1.5 px-2.5 py-1 rounded-full bg-[#E8F2EC] border border-emerald-200 text-xs text-[#1E5638]">
           <div class="w-1.5 h-1.5 rounded-full bg-[#2B8A57] animate-pulse flex-shrink-0"></div>
           <span id="header-task-text" class="text-[10px] sm:text-[11px] font-medium truncate max-w-[75px] sm:max-w-[140px]">Processing...</span>
+          <button onclick="cancelMatchingProcess()" class="p-0.5 rounded hover:bg-red-100 text-red-600 transition" title="Batalkan Proses Berjalan">
+            <i data-lucide="x" class="w-3 h-3"></i>
+          </button>
         </div>
+
+        <!-- Quick Reset Database Header Button -->
+        <button onclick="openResetDatabaseModal()" id="header-reset-db-btn" class="btn-motion flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-full bg-red-500/20 hover:bg-red-500/35 backdrop-blur-md border border-red-300/30 text-white text-xs font-medium shadow-sm transition-all" title="Reset &amp; Kosongkan Database">
+          <i data-lucide="trash-2" class="w-3.5 h-3.5 text-red-200"></i>
+          <span class="hidden md:inline font-medium">Reset DB</span>
+        </button>
 
         <!-- Eco / Performance Mode Header Button -->
         <button onclick="togglePerformanceMode()" id="header-perf-btn" class="btn-motion flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/25 text-white text-xs font-medium shadow-sm transition-all" data-i18n-title="hdr_potato_mode" title="Eco Performance Mode">
@@ -1537,7 +1546,7 @@
           <div class="bg-white p-1.5 rounded-full border border-black/[0.08] shadow-sm flex items-center w-full md:w-auto flex-1 md:max-w-md">
             <div class="relative flex-1 flex items-center">
               <i data-lucide="link" class="w-4 h-4 text-[#84938B] ml-3 mr-2 flex-shrink-0"></i>
-              <input type="text" id="extract-input-link" data-i18n-placeholder="ext_input_ph" placeholder="Paste link playlist YouTube..." class="w-full bg-transparent border-0 text-xs text-[#121614] placeholder-[#84938B] focus:outline-none pr-3">
+              <input type="text" id="extract-input-link" oninput="onPlaylistInputChanged(this.value)" data-i18n-placeholder="ext_input_ph" placeholder="Paste link playlist YouTube Music atau Spotify..." class="w-full bg-transparent border-0 text-xs text-[#121614] placeholder-[#84938B] focus:outline-none pr-3">
             </div>
             <button onclick="triggerExtract()" data-i18n="ext_btn_extract" class="btn-motion px-5 py-2 rounded-full bg-[#121614] hover:bg-[#183327] text-white text-xs font-medium whitespace-nowrap shadow-sm transition-all flex-shrink-0">Tarik Playlist</button>
           </div>
@@ -1688,23 +1697,42 @@
             </div>
           </div>
 
-          <!-- Direct Playlist Link Input in Step 1 -->
-          <div class="bg-white border border-borderColor rounded-2xl p-6 space-y-3 shadow-sm">
-            <label class="block text-xs font-semibold text-textPrimary flex items-center space-x-1.5">
-              <i data-lucide="link-2" class="w-4 h-4 text-accent"></i>
-              <span data-i18n="step1_input_label">Masukkan Link Playlist YouTube Music:</span>
-            </label>
-            <div class="flex items-center space-x-2">
-              <div class="relative flex-1">
-                <i data-lucide="music" class="w-4 h-4 text-textMuted absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
-                <input type="text" id="step1-playlist-link" onkeydown="if(event.key==='Enter') extractFromStep1()" data-i18n-placeholder="step1_input_ph" placeholder="Paste link playlist YouTube Music (https://music.youtube.com/playlist?list=...)" class="w-full bg-bgElevated border border-borderColor rounded-xl pl-9 pr-3 py-2.5 text-xs text-textPrimary focus:outline-none focus:border-accent focus:ring-2 focus:ring-[#183327] transition">
+          <!-- Direct Playlist Link Input in Step 1 with Direction Switcher -->
+          <div class="bg-white border border-borderColor rounded-2xl p-6 space-y-4 shadow-sm">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-borderColor/60">
+              <div>
+                <span class="text-[10px] font-bold tracking-wider text-[#526058] uppercase block" data-i18n="mig_mode_label">Arah Migrasi Playlist</span>
+                <span id="step1-provider-desc" class="text-xs text-textSecondary font-medium">Pilih arah transfer atau langsung paste link playlist (sistem mendeteksi otomatis).</span>
               </div>
-              <button onclick="extractFromStep1()" class="btn-motion icon-nudge px-5 py-2.5 rounded-full bg-[#183327] hover:bg-[#234939] text-white text-xs font-semibold flex items-center space-x-1.5 shadow-sm nav-transition flex-shrink-0">
-                <i data-lucide="download-cloud" class="w-3.5 h-3.5"></i>
-                <span data-i18n="step1_btn_extract">Tarik & Lanjutkan</span>
-              </button>
+              <div class="inline-flex p-1 bg-[#F2F1EC] rounded-full border border-black/[0.08] shadow-inner flex-shrink-0">
+                <button id="dir-pill-yt2sp" onclick="setMigrationDirection('yt_to_sp')" class="btn-motion cursor-pointer px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center space-x-1.5 bg-[#183327] text-white shadow-sm">
+                  <span class="w-2 h-2 rounded-full bg-red-400"></span>
+                  <span>YouTube Music → Spotify</span>
+                </button>
+                <button id="dir-pill-sp2yt" onclick="setMigrationDirection('sp_to_yt')" class="btn-motion cursor-pointer px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center space-x-1.5 text-textSecondary hover:text-textPrimary">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                  <span>Spotify → YouTube Music</span>
+                </button>
+              </div>
             </div>
-            <p class="text-[11px] text-textMuted" data-i18n="step1_hint">Mendukung link web YouTube Music, YouTube reguler, atau ID playlist. Anda juga bisa memilih langsung dari koleksi playlist database.</p>
+
+            <div>
+              <label class="block text-xs font-semibold text-textPrimary flex items-center space-x-1.5 mb-2">
+                <i data-lucide="link-2" class="w-4 h-4 text-accent"></i>
+                <span id="step1-input-label-text" data-i18n="step1_input_label">Masukkan Link Playlist:</span>
+              </label>
+              <div class="flex items-center space-x-2">
+                <div class="relative flex-1">
+                  <i data-lucide="music" class="w-4 h-4 text-textMuted absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                  <input type="text" id="step1-playlist-link" oninput="onPlaylistInputChanged(this.value)" onkeydown="if(event.key==='Enter') extractFromStep1()" data-i18n-placeholder="step1_input_ph" placeholder="Paste link playlist YouTube Music atau Spotify..." class="w-full bg-bgElevated border border-borderColor rounded-xl pl-9 pr-3 py-2.5 text-xs text-textPrimary focus:outline-none focus:border-accent focus:ring-2 focus:ring-[#183327] transition">
+                </div>
+                <button onclick="extractFromStep1()" class="btn-motion icon-nudge px-5 py-2.5 rounded-full bg-[#183327] hover:bg-[#234939] text-white text-xs font-semibold flex items-center space-x-1.5 shadow-sm nav-transition flex-shrink-0">
+                  <i data-lucide="download-cloud" class="w-3.5 h-3.5"></i>
+                  <span data-i18n="step1_btn_extract">Tarik & Lanjutkan</span>
+                </button>
+              </div>
+              <p id="step1-hint-text" class="text-[11px] text-textMuted mt-2" data-i18n="step1_hint">Mendukung link web YouTube Music, Spotify, atau ID playlist. Sistem akan otomatis menyesuaikan arah migrasi.</p>
+            </div>
           </div>
 
           <div class="flex items-center justify-between pt-2">
@@ -1782,8 +1810,12 @@
             </div>
           </div>
 
-          <div class="flex justify-between pt-4">
+          <div class="flex justify-between items-center pt-4">
             <button onclick="goToStep(1)" data-i18n="btn_back" class="btn-motion px-5 py-2.5 rounded-full bg-bgElevated text-textSecondary hover:text-textPrimary text-xs font-medium border border-borderColor">Kembali</button>
+            <button onclick="openResetDatabaseModal()" class="btn-motion text-xs text-statusError hover:underline flex items-center space-x-1.5 py-1.5 px-3 rounded-full hover:bg-statusError/10 transition border border-transparent hover:border-statusError/20" title="Kosongkan semua lagu &amp; playlist di database">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              <span>Kosongkan Database</span>
+            </button>
             <button onclick="proceedFromStep2ToStep3()" class="btn-motion icon-nudge px-6 py-2.5 rounded-full bg-[#183327] hover:bg-[#234939] text-white text-xs font-semibold flex items-center space-x-2 shadow-sm">
               <span data-i18n="step2_btn_proceed">Lanjut: Review Opsi</span>
               <i data-lucide="arrow-right" class="w-4 h-4"></i>
@@ -1875,8 +1907,12 @@
             </div>
           </div>
 
-          <div class="flex justify-between pt-4">
+          <div class="flex justify-between items-center pt-4">
             <button onclick="goToStep(2)" data-i18n="btn_back" class="btn-motion px-5 py-2.5 rounded-full bg-bgElevated text-textSecondary hover:text-textPrimary text-xs font-medium border border-borderColor">Kembali</button>
+            <button onclick="openResetDatabaseModal()" class="btn-motion text-xs text-statusError hover:underline flex items-center space-x-1.5 py-1.5 px-3 rounded-full hover:bg-statusError/10 transition border border-transparent hover:border-statusError/20" title="Kosongkan semua lagu &amp; playlist di database">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              <span>Kosongkan Database</span>
+            </button>
             <button onclick="startMatchingProcess()" class="btn-motion icon-nudge px-6 py-2.5 rounded-full bg-[#183327] hover:bg-[#234939] text-white text-xs font-semibold flex items-center space-x-2 shadow-sm">
               <i data-lucide="play" class="w-4 h-4 fill-current"></i>
               <span data-i18n="step3_btn_match">Mulai Pencocokan (Match Songs)</span>
@@ -2036,11 +2072,15 @@
 
             <!-- Action Buttons -->
             <div class="flex flex-wrap items-center justify-center gap-3 pt-4">
-              <button onclick="copyAllPlaylistUris()" class="btn-motion px-5 py-2.5 rounded-lg bg-spotifyGreen text-black font-semibold text-xs flex items-center space-x-2 shadow-lg shadow-spotifyGreen/10 hover:brightness-105 nav-transition">
-                <svg class="w-4 h-4 text-black" aria-hidden="true" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.494 17.306c-.215.353-.676.466-1.028.252-2.82-1.722-6.368-2.112-10.55-1.156-.402.092-.803-.16-.895-.562-.092-.403.16-.803.562-.896 4.582-1.047 8.508-.598 11.66 1.334.352.214.465.675.251 1.028zm1.467-3.26c-.27.44-.848.58-1.288.31-3.227-1.983-8.146-2.557-11.96-1.398-.498.15-1.024-.132-1.175-.63-.15-.499.132-1.025.63-1.176 4.364-1.324 9.782-.685 13.483 1.596.44.27.58.848.31 1.288zm.126-3.414c-3.87-2.298-10.254-2.51-13.934-1.393-.593.18-1.22-.162-1.4-.755-.18-.593.163-1.22.756-1.4 4.23-1.284 11.278-1.034 15.75 1.62.533.316.707 1.01.392 1.543-.316.534-1.01.708-1.564.385z"/>
+              <button onclick="exportToYouTubeMusic()" class="btn-motion px-5 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold text-xs flex items-center space-x-2 shadow-lg shadow-red-500/20 hover:brightness-105 nav-transition cursor-pointer">
+                <svg class="w-4 h-4 text-white" aria-hidden="true" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm0-14c-3.309 0-6 2.691-6 6s2.691 6 6 6 6-2.691 6-6-2.691-6-6-6zm-1.5 8.5v-5l4.5 2.5-4.5 2.5z"/>
                 </svg>
-                <span data-i18n="step5_btn_copy_all">Salin Semua URI Spotify</span>
+                <span data-i18n="step5_btn_export_ytm">Buat Playlist di YouTube Music</span>
+              </button>
+              <button onclick="copyAllPlaylistUris()" class="btn-motion px-4 py-2.5 rounded-lg bg-bgElevated hover:bg-borderColor text-textPrimary border border-borderColor text-xs font-semibold flex items-center space-x-2">
+                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                <span data-i18n="step5_btn_copy_all">Salin Semua Link/URI</span>
               </button>
               <button onclick="showChunksModal()" class="btn-motion px-4 py-2.5 rounded-lg bg-bgElevated hover:bg-borderColor text-textPrimary border border-borderColor text-xs font-semibold">
                 <span data-i18n="step5_btn_copy_chunks">Salin per Bagian (50 Lagu)</span>
@@ -2072,8 +2112,12 @@
             <p id="history-playlist-subtitle" class="text-xs sm:text-sm text-[#526058] mt-1.5 leading-relaxed" data-i18n="history_sub">Inspect track matches, resolve alternatives, and copy URIs to Spotify.</p>
           </div>
 
-          <!-- Header Actions: Settings & Start New Transfer -->
+          <!-- Header Actions: Drop DB, Settings & Start New Transfer -->
           <div class="flex items-center space-x-2 flex-shrink-0">
+            <button onclick="openResetDatabaseModal()" class="btn-motion px-3.5 py-1.5 rounded-full bg-red-50 hover:bg-red-100 border border-red-200 text-xs text-statusError font-semibold flex items-center space-x-1.5 transition shadow-sm" title="Kosongkan &amp; Drop Database">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5 text-statusError"></i>
+              <span>Drop Database</span>
+            </button>
             <button onclick="switchView('settings')" class="px-3.5 py-1.5 rounded-full bg-white hover:bg-bgElevated border border-borderColor text-xs text-textPrimary font-medium flex items-center space-x-1.5 transition shadow-sm">
               <i data-lucide="settings" class="w-3.5 h-3.5 text-textSecondary"></i>
               <span data-i18n="nav_settings">Settings</span>
@@ -2338,15 +2382,15 @@
                   </th>
                   <th class="p-3 w-12 text-center">#</th>
                   <th class="p-3">
-                    <div class="flex items-center space-x-1.5">
+                    <div id="th-source-track-container" class="flex items-center space-x-1.5">
                       <svg class="w-3.5 h-3.5 text-red-500" aria-hidden="true" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm0-14c-3.309 0-6 2.691-6 6s2.691 6 6 6 6-2.691 6-6-2.691-6-6-6zm-1.5 8.5v-5l4.5 2.5-4.5 2.5z"/></svg>
-                      <span data-i18n="th_yt_track">Lagu YouTube Music</span>
+                      <span id="th-source-track-text" data-i18n="th_yt_track">Lagu YouTube Music</span>
                     </div>
                   </th>
-                  <th class="p-3 w-16 text-center">
-                    <div class="flex items-center justify-center space-x-1" title="Spotify Match">
+                  <th class="p-3 w-20 text-center">
+                    <div id="th-match-track-container" class="flex items-center justify-center space-x-1" title="Destination Match">
                       <svg class="w-3.5 h-3.5 text-emerald-500" aria-hidden="true" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.494 17.306c-.215.353-.676.466-1.028.252-2.82-1.722-6.368-2.112-10.55-1.156-.402.092-.803-.16-.895-.562-.092-.403.16-.803.562-.896 4.582-1.047 8.508-.598 11.66 1.334.352.214.465.675.251 1.028zm1.467-3.26c-.27.44-.848.58-1.288.31-3.227-1.983-8.146-2.557-11.96-1.398-.498.15-1.024-.132-1.175-.63-.15-.499.132-1.025.63-1.176 4.364-1.324 9.782-.685 13.483 1.596.44.27.58.848.31 1.288zm.126-3.414c-3.87-2.298-10.254-2.51-13.934-1.393-.593.18-1.22-.162-1.4-.755-.18-.593.163-1.22.756-1.4 4.23-1.284 11.278-1.034 15.75 1.62.533.316.707 1.01.392 1.543-.316.534-1.01.708-1.564.385z"/></svg>
-                      <span data-i18n="th_match">Match</span>
+                      <span id="th-match-track-text" data-i18n="th_match">Match</span>
                     </div>
                   </th>
                   <th onclick="toggleScoreSort()" class="p-3 w-28 cursor-pointer select-none hover:text-textPrimary transition-colors group/th" title="Klik untuk mengurutkan berdasarkan Skor (%)">
@@ -2436,10 +2480,16 @@
               </div>
 
               <div class="pt-2 flex items-center justify-between">
-                <span class="text-[11px] text-textMuted font-mono">ytmusicapi v1.10.4</span>
-                <button onclick="startNewTransferFlow()" class="btn-motion px-4 py-2 rounded-full bg-[#121614] hover:bg-[#183327] text-white text-xs font-semibold shadow-sm transition">
-                  <span data-i18n="acc_btn_extract">Tarik Playlist Baru</span>
-                </button>
+                <span class="text-[11px] text-textMuted font-mono">ytmusicapi v1.12.3</span>
+                <div class="flex items-center space-x-2">
+                  <button onclick="openYTMAuthModal()" class="btn-motion px-3.5 py-1.5 rounded-full bg-red-600 hover:bg-red-700 text-white text-xs font-semibold shadow-sm transition flex items-center space-x-1">
+                    <i data-lucide="key" class="w-3 h-3"></i>
+                    <span>Setup Akun YTM</span>
+                  </button>
+                  <button onclick="startNewTransferFlow()" class="btn-motion px-3.5 py-1.5 rounded-full bg-[#121614] hover:bg-[#183327] text-white text-xs font-semibold shadow-sm transition">
+                    <span data-i18n="acc_btn_extract">Tarik Playlist</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -2920,12 +2970,12 @@
   </div>
 
   <!-- ================================================================= -->
-  <!-- MODAL: MANUAL SPOTIFY LINK INPUT -->
+  <!-- MODAL: MANUAL SPOTIFY / YTM LINK INPUT -->
   <!-- ================================================================= -->
   <div id="modal-manual" onclick="if(event.target === this) closeManualModal()" class="fixed inset-0 z-50 bg-[#121614]/45 backdrop-blur-md hidden items-center justify-center p-3 sm:p-4 select-none">
     <div class="bg-white border border-borderColor w-full max-w-md rounded-3xl shadow-2xl p-6 space-y-4 modal-card-animated">
       <div class="flex items-center justify-between">
-        <h3 class="text-sm font-semibold text-textPrimary">Input Link Spotify Manual</h3>
+        <h3 class="text-sm font-semibold text-textPrimary">Input Link YouTube Music Manual</h3>
         <button onclick="closeManualModal()" class="btn-motion text-textMuted hover:text-textPrimary p-2 rounded-full hover:bg-[#F5F7F5] transition" title="Tutup">
           <i data-lucide="x" class="w-4 h-4"></i>
         </button>
@@ -2938,14 +2988,59 @@
           </div>
           <div class="min-w-0 flex-1">
             <p id="manual-modal-track-name" class="text-xs text-textPrimary font-semibold truncate"></p>
-            <p class="text-[11px] text-textMuted">Tautkan link atau ID Spotify untuk lagu ini</p>
+            <p class="text-[11px] text-textMuted">Tautkan link atau ID YouTube Music untuk lagu ini</p>
           </div>
         </div>
-        <input type="text" id="manual-spotify-input" placeholder="Paste link Spotify (https://open.spotify.com/track/...)" class="w-full bg-[#F5F7F5] border border-borderColor rounded-xl px-4 py-2.5 text-xs text-textPrimary focus:outline-none focus:ring-2 focus:ring-[#183327] transition-all">
+        <input type="text" id="manual-spotify-input" placeholder="Paste link YouTube Music (https://music.youtube.com/watch?v=...) atau Video ID" class="w-full bg-[#F5F7F5] border border-borderColor rounded-xl px-4 py-2.5 text-xs text-textPrimary focus:outline-none focus:ring-2 focus:ring-[#183327] transition-all">
       </div>
       <div class="flex justify-end space-x-2 pt-2">
         <button onclick="closeManualModal()" class="btn-motion px-4 py-2 rounded-full bg-[#F5F7F5] text-textSecondary hover:text-textPrimary text-xs border border-borderColor">Batal</button>
         <button onclick="submitManualLink()" class="btn-motion px-5 py-2 rounded-full bg-[#183327] hover:bg-[#234939] text-white font-semibold text-xs shadow-sm">Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================= -->
+  <!-- MODAL: YOUTUBE MUSIC AUTHENTICATION SETUP -->
+  <!-- ================================================================= -->
+  <div id="modal-ytm-auth" onclick="if(event.target === this) closeYTMAuthModal()" class="fixed inset-0 z-50 bg-[#121614]/45 backdrop-blur-md hidden items-center justify-center p-3 sm:p-4 select-none">
+    <div class="bg-white border border-borderColor w-full max-w-lg rounded-3xl shadow-2xl p-6 space-y-4 modal-card-animated">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-2xl bg-red-500/10 text-red-600 flex items-center justify-center flex-shrink-0 border border-red-500/20">
+            <svg class="w-5 h-5 text-red-500" aria-hidden="true" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm0-14c-3.309 0-6 2.691-6 6s2.691 6 6 6 6-2.691 6-6-2.691-6-6-6zm-1.5 8.5v-5l4.5 2.5-4.5 2.5z"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="font-serif italic text-xl text-[#121614]">Autentikasi YouTube Music</h3>
+            <p class="text-xs text-textMuted">Wajib untuk membuat dan mengisi playlist otomatis</p>
+          </div>
+        </div>
+        <button onclick="closeYTMAuthModal()" class="btn-motion text-textMuted hover:text-textPrimary p-2 rounded-full hover:bg-[#F5F7F5] transition" title="Tutup">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="space-y-2 text-xs text-textSecondary bg-[#F5F7F5] p-3.5 rounded-2xl border border-borderColor/60">
+        <p class="font-semibold text-textPrimary">Cara mendapatkan cookie/header YouTube Music:</p>
+        <ol class="list-decimal list-inside space-y-1 text-textMuted">
+          <li>Buka <a href="https://music.youtube.com" target="_blank" class="text-accent underline font-medium">music.youtube.com</a> di browser Anda dan pastikan login.</li>
+          <li>Tekan <strong>F12</strong> (Developer Tools) &gt; tab <strong>Network</strong>.</li>
+          <li>Cari request ke <code class="bg-white px-1 py-0.5 rounded border border-black/10">music.youtube.com</code>.</li>
+          <li>Klik kanan &gt; <strong>Copy</strong> &gt; <strong>Copy as cURL (bash)</strong>.</li>
+          <li>Paste teks cURL atau seluruh header ke kotak di bawah:</li>
+        </ol>
+      </div>
+
+      <textarea id="ytm-auth-headers-input" rows="5" placeholder="Paste command cURL atau request headers di sini..." class="w-full bg-[#F5F7F5] border border-borderColor rounded-xl p-3 text-xs font-mono text-textPrimary focus:outline-none focus:ring-2 focus:ring-[#183327] transition"></textarea>
+
+      <div class="flex items-center justify-end space-x-2 pt-2">
+        <button onclick="closeYTMAuthModal()" class="btn-motion px-4 py-2 rounded-full bg-[#F5F7F5] text-textSecondary hover:text-textPrimary text-xs border border-borderColor">Batal</button>
+        <button onclick="submitYTMAuth()" class="btn-motion px-5 py-2 rounded-full bg-[#183327] hover:bg-[#234939] text-white font-semibold text-xs shadow-sm flex items-center space-x-1.5">
+          <i data-lucide="save" class="w-3.5 h-3.5"></i>
+          <span>Simpan Autentikasi</span>
+        </button>
       </div>
     </div>
   </div>
@@ -2965,15 +3060,64 @@
           <p class="text-xs text-textMuted" id="delete-modal-subtitle">Konfirmasi hapus dari library</p>
         </div>
       </div>
-      <div class="p-3.5 rounded-2xl bg-[#F5F7F5] border border-borderColor mb-4">
+      <div class="p-3.5 rounded-2xl bg-[#F5F7F5] border border-borderColor mb-3">
         <p class="text-xs font-semibold text-textPrimary truncate" id="delete-track-title-preview">-</p>
-        <p class="text-[11px] text-textMuted mt-0.5" id="delete-modal-note">Lagu ini tidak akan ikut dicocokkan atau diekspor ke Spotify.</p>
+        <p class="text-[11px] text-textMuted mt-0.5" id="delete-modal-note">Lagu ini tidak akan ikut dicocokkan atau diekspor ke Spotify / YouTube Music.</p>
+      </div>
+      <div class="mb-4">
+        <label class="flex items-start space-x-2.5 p-2.5 rounded-xl bg-red-50/70 border border-red-200/80 text-xs text-red-900 cursor-pointer select-none">
+          <input type="checkbox" id="delete-track-remote-chk" class="mt-0.5 rounded accent-red-600 cursor-pointer w-4 h-4">
+          <div class="leading-tight">
+            <span class="font-semibold block">Hapus juga dari YouTube Music</span>
+            <span class="text-[10px] text-red-700/80">Jika lagu ini sudah diekspor ke playlist akun YouTube Music Anda.</span>
+          </div>
+        </label>
       </div>
       <div class="flex items-center justify-end space-x-2">
         <button onclick="closeDeleteTrackModal()" class="btn-motion px-4 py-2 rounded-full bg-[#F5F7F5] text-textSecondary hover:text-textPrimary text-xs font-medium border border-borderColor transition">Batal</button>
         <button id="btn-confirm-delete-track" onclick="executeDeleteTrack()" class="btn-motion px-4 py-2 rounded-full bg-statusError text-white hover:bg-red-600 text-xs font-semibold shadow-sm transition flex items-center space-x-1.5">
           <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
           <span id="btn-confirm-delete-text">Hapus Lagu</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================= -->
+  <!-- MODAL: KONFIRMASI RESET / DROP DATABASE -->
+  <!-- ================================================================= -->
+  <div id="modal-reset-db" onclick="if(event.target === this) closeResetDatabaseModal()" class="fixed inset-0 z-50 bg-[#121614]/45 backdrop-blur-md hidden items-center justify-center p-3 sm:p-4 select-none">
+    <div class="bg-white border border-borderColor rounded-3xl max-w-md w-full p-6 shadow-2xl relative modal-card-animated space-y-4">
+      <div class="flex items-center space-x-3">
+        <div class="w-11 h-11 rounded-2xl bg-red-500/15 text-red-600 flex items-center justify-center flex-shrink-0 border border-red-500/20">
+          <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <span class="text-[10px] font-semibold tracking-[0.2em] text-statusError uppercase block">DANGER ZONE</span>
+          <h4 class="font-serif italic text-2xl text-[#121614] leading-tight">Reset &amp; Drop Database?</h4>
+          <p class="text-xs text-textMuted mt-0.5">Semua playlist &amp; lagu lokal akan dikosongkan</p>
+        </div>
+      </div>
+      <div class="p-3.5 rounded-2xl bg-[#F5F7F5] border border-borderColor text-xs text-textSecondary space-y-1">
+        <p class="font-semibold text-textPrimary">Tindakan ini akan mengosongkan:</p>
+        <ul class="list-disc list-inside text-textMuted text-[11px] space-y-0.5">
+          <li>Semua riwayat playlist yang pernah ditarik (Spotify &amp; YTM)</li>
+          <li>Seluruh daftar lagu dan riwayat kecocokan di database lokal SQLite</li>
+          <li>Antrian pencocokan dan cache hasil review</li>
+        </ul>
+      </div>
+      <label class="flex items-start space-x-2.5 p-3 rounded-xl bg-red-50/70 border border-red-200 text-xs text-red-900 cursor-pointer select-none">
+        <input type="checkbox" id="reset-db-remote-chk" class="mt-0.5 rounded accent-red-600 cursor-pointer w-4 h-4">
+        <div class="leading-tight">
+          <span class="font-semibold block">Hapus juga playlist yang pernah dibuat di YouTube Music</span>
+          <span class="text-[10px] text-red-700/80">Otomatis menghapus playlist hasil migrasi di akun @mengokey.</span>
+        </div>
+      </label>
+      <div class="flex items-center justify-end space-x-2 pt-2">
+        <button onclick="closeResetDatabaseModal()" class="btn-motion px-4 py-2 rounded-full bg-[#F5F7F5] text-textSecondary hover:text-textPrimary text-xs font-medium border border-borderColor transition">Batal</button>
+        <button id="btn-execute-reset-db" onclick="executeResetDatabase()" class="btn-motion px-5 py-2.5 rounded-full bg-statusError hover:bg-red-700 text-white text-xs font-semibold shadow-sm transition flex items-center space-x-1.5">
+          <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+          <span>Ya, Kosongkan Database</span>
         </button>
       </div>
     </div>
@@ -3538,6 +3682,7 @@
         loadTracks();
         renderGenreSplitters();
       }
+      if (viewName === 'accounts') checkYTMAuthStatus();
       if (viewName === 'overview') refreshStatus();
       if (viewName === 'transfer') {
         if (_currentGuidedStep === 4) {
@@ -3914,25 +4059,37 @@
       const initials = title.trim().split(/\s+/).slice(0, 2).map(w => w[0]?.toUpperCase()).join('') || 'PL';
 
       let innerCoverHtml = '';
-      if (vids.length >= 2) {
-        const tiles = vids.length >= 4 
-          ? vids.slice(0, 4) 
-          : [vids[0], vids[1 % vids.length], vids[2 % vids.length], vids[3 % vids.length]];
-        innerCoverHtml = `
-          <div class="grid grid-cols-2 grid-rows-2 w-full h-full bg-bgCard">
-            ${tiles.map(vid => `
-              <div class="relative w-full h-full overflow-hidden bg-bgElevated">
-                <img src="https://i.ytimg.com/vi/${escapeHtml(vid)}/mqdefault.jpg" alt="" class="w-full h-full object-cover pointer-events-none" loading="lazy" onerror="this.src='https://i.ytimg.com/vi/${escapeHtml(vid)}/default.jpg'">
-              </div>
-            `).join('')}
-          </div>
-        `;
-      } else if (vids.length === 1) {
+      if (p.thumbnail_url) {
         innerCoverHtml = `
           <div class="relative w-full h-full overflow-hidden bg-bgElevated">
-            <img src="https://i.ytimg.com/vi/${escapeHtml(vids[0])}/mqdefault.jpg" alt="" class="w-full h-full object-cover pointer-events-none" loading="lazy" onerror="this.src='https://i.ytimg.com/vi/${escapeHtml(vids[0])}/default.jpg'">
+            <img src="${escapeHtml(p.thumbnail_url)}" alt="" class="w-full h-full object-cover pointer-events-none" loading="lazy" onerror="this.style.display='none';">
           </div>
         `;
+      } else {
+        const sampleThumbs = (Array.isArray(p.sample_thumbnails) && p.sample_thumbnails.length > 0)
+          ? p.sample_thumbnails.filter(Boolean)
+          : vids.map(vid => (vid && vid.length === 11) ? `https://i.ytimg.com/vi/${encodeURIComponent(vid)}/mqdefault.jpg` : '').filter(Boolean);
+
+        if (sampleThumbs.length >= 2) {
+          const tiles = sampleThumbs.length >= 4 
+            ? sampleThumbs.slice(0, 4) 
+            : [sampleThumbs[0], sampleThumbs[1 % sampleThumbs.length], sampleThumbs[2 % sampleThumbs.length], sampleThumbs[3 % sampleThumbs.length]];
+          innerCoverHtml = `
+            <div class="grid grid-cols-2 grid-rows-2 w-full h-full bg-bgCard">
+              ${tiles.map(url => `
+                <div class="relative w-full h-full overflow-hidden bg-bgElevated">
+                  <img src="${escapeHtml(url)}" alt="" class="w-full h-full object-cover pointer-events-none" loading="lazy" onerror="this.style.display='none';">
+                </div>
+              `).join('')}
+            </div>
+          `;
+        } else if (sampleThumbs.length === 1) {
+          innerCoverHtml = `
+            <div class="relative w-full h-full overflow-hidden bg-bgElevated">
+              <img src="${escapeHtml(sampleThumbs[0])}" alt="" class="w-full h-full object-cover pointer-events-none" loading="lazy" onerror="this.style.display='none';">
+            </div>
+          `;
+        }
       }
 
       if (size === 'lg') {
@@ -4022,14 +4179,16 @@
       const titleEl = document.getElementById('hero-center-title');
       const artistEl = document.getElementById('hero-center-artist');
       const pillEl = document.getElementById('hero-center-pill');
+      const isSp = (p.source_provider === 'spotify');
       if (titleEl) titleEl.textContent = p.title || 'Playlist';
-      if (artistEl) artistEl.textContent = `${p.track_count || 0} tracks • YouTube Music`;
+      if (artistEl) artistEl.textContent = `${p.track_count || 0} tracks • ${isSp ? 'Spotify' : 'YouTube Music'}`;
       if (pillEl) pillEl.textContent = `${p.title?.substring(0,20) || 'Library'} • Preview`;
-      if (artworkEl && vids.length > 0) {
+      const heroCover = p.thumbnail_url || (Array.isArray(p.sample_thumbnails) && p.sample_thumbnails[0]) || (vids.length > 0 && vids[0].length === 11 ? `https://i.ytimg.com/vi/${vids[0]}/mqdefault.jpg` : '');
+      if (artworkEl && heroCover) {
         const bgDiv = artworkEl.querySelector('.absolute.inset-0:first-child');
         if (bgDiv) {
           bgDiv.className = 'absolute inset-0 bg-cover bg-center';
-          bgDiv.style.backgroundImage = `url('https://i.ytimg.com/vi/${vids[0]}/mqdefault.jpg')`;
+          bgDiv.style.backgroundImage = `url('${heroCover}')`;
         }
       }
     }
@@ -4050,7 +4209,11 @@
         const isChecked = _selectedPlaylistIds.has(p.id);
         const dateStr = p.extracted_at ? p.extracted_at.substring(0, 10) : '-';
         const glist = (p.genres || []).map(g => (typeof g === 'object' && g ? g.genre : g)).filter(Boolean);
-        const genreStr = glist.length > 0 ? glist.slice(0, 2).join(', ') : 'YouTube Music';
+        const genreStr = glist.length > 0 ? glist.slice(0, 2).join(', ') : 'Music';
+        const isSp2Yt = (p.source_provider === 'spotify' || p.destination_provider === 'ytm');
+        const dirBadge = isSp2Yt
+          ? '<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Spotify → YTM</span>'
+          : '<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">YTM → Spotify</span>';
         return `
           <div class="px-4 py-3 grid grid-cols-12 gap-3 items-center hover:bg-bgElevated/50 text-xs nav-transition">
             <div class="col-span-1 text-center">
@@ -4058,9 +4221,14 @@
             </div>
             <div class="col-span-5 md:col-span-4 flex items-center space-x-3 min-w-0">
               ${getPlaylistArtworkHtml(p, 'md')}
-              <div class="min-w-0">
-                <span class="font-semibold text-textPrimary truncate block">${escapeHtml(p.title)}</span>
-                <span class="text-[10px] text-textMuted truncate block">${escapeHtml(genreStr)}</span>
+              <div class="min-w-0 space-y-0.5">
+                <div class="flex items-center space-x-1.5 truncate">
+                  <span class="font-semibold text-textPrimary truncate">${escapeHtml(p.title)}</span>
+                </div>
+                <div class="flex items-center space-x-1.5">
+                  ${dirBadge}
+                  <span class="text-[10px] text-textMuted truncate">${escapeHtml(genreStr)}</span>
+                </div>
               </div>
             </div>
             <div class="col-span-3 text-center text-textSecondary font-medium font-mono">
@@ -4518,8 +4686,19 @@
     function renderStep3RealTrackItem(t, idx) {
       const durationStr = t.duration_s ? `${Math.floor(t.duration_s / 60)}:${String(t.duration_s % 60).padStart(2, '0')}` : '--:--';
       const artistsList = Array.isArray(t.artists) ? t.artists : (typeof t.artists === 'string' ? [t.artists] : []);
-      const artistsStr = artistsList.length > 0 ? artistsList.join(', ') : 'YouTube Music';
-      const thumbUrl = t.video_id ? `https://i.ytimg.com/vi/${t.video_id}/mqdefault.jpg` : '';
+      const isSpotifySource = (t.video_id && t.video_id.length === 22);
+      const defaultProvider = isSpotifySource ? 'Spotify' : 'YouTube Music';
+      const artistsStr = artistsList.length > 0 ? artistsList.join(', ') : defaultProvider;
+      const thumbUrl = t.thumbnail_url || (isSpotifySource ? '' : (t.video_id && t.video_id.length === 11 ? `https://i.ytimg.com/vi/${encodeURIComponent(t.video_id)}/mqdefault.jpg` : ''));
+      const badgeSvg = isSpotifySource ? `
+        <svg class="w-2.5 h-2.5 text-emerald-400" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.494 17.306c-.215.353-.676.466-1.028.252-2.82-1.722-6.368-2.112-10.55-1.156-.402.092-.803-.16-.895-.562-.092-.403.16-.803.562-.896 4.582-1.047 8.508-.598 11.66 1.334.352.214.465.675.251 1.028zm1.467-3.26c-.27.44-.848.58-1.288.31-3.227-1.983-8.146-2.557-11.96-1.398-.498.15-1.024-.132-1.175-.63-.15-.499.132-1.025.63-1.176 4.364-1.324 9.782-.685 13.483 1.596.44.27.58.848.31 1.288zm.126-3.414c-3.87-2.298-10.254-2.51-13.934-1.393-.593.18-1.22-.162-1.4-.755-.18-.593.163-1.22.756-1.4 4.23-1.284 11.278-1.034 15.75 1.62.533.316.707 1.01.392 1.543-.316.534-1.01.708-1.564.385z"/>
+        </svg>
+      ` : `
+        <svg class="w-2 h-2 text-[#FF0000]" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm0-14c-3.309 0-6 2.691-6 6s2.691 6 6 6 6-2.691 6-6-2.691-6-6-6zm-1.5 8.5v-5l4.5 2.5-4.5 2.5z"/>
+        </svg>
+      `;
 
       return `
         <div class="flex items-center space-x-3 p-2.5 rounded-xl bg-bgElevated/75 border border-borderColor hover:border-accent/40 transition-all duration-300">
@@ -4535,6 +4714,9 @@
                 <i data-lucide="music" class="w-4 h-4"></i>
               </div>
             `}
+            <div class="absolute bottom-0 right-0 w-3 h-3 bg-black/80 rounded-tl flex items-center justify-center pointer-events-none" title="${defaultProvider}">
+              ${badgeSvg}
+            </div>
           </div>
           <div class="min-w-0 flex-1">
             <p class="text-xs font-semibold text-textPrimary truncate" title="${escapeHtml(t.title || 'Untitled Track')}">${escapeHtml(t.title || 'Untitled Track')}</p>
@@ -4715,10 +4897,11 @@
       const input = document.getElementById('step1-playlist-link');
       const val = (input?.value || '').trim();
       if (!val) {
-        showToast('Silakan masukkan link playlist YouTube Music terlebih dahulu.');
+        showToast('Silakan masukkan link playlist terlebih dahulu.');
         return;
       }
-      showToast('Menghubungi YouTube Music untuk menarik playlist...');
+      onPlaylistInputChanged(val);
+      showToast(`Menghubungi provider untuk menarik playlist (${_currentMigrationDirection === 'sp_to_yt' ? 'Spotify → YTM' : 'YTM → Spotify'})...`);
       await triggerExtractWithUrl(val, true);
       input.value = '';
     }
@@ -4727,10 +4910,11 @@
       const input = document.getElementById('step2-custom-link');
       const val = (input?.value || '').trim();
       if (!val) {
-        showToast('Silakan masukkan link playlist YouTube Music terlebih dahulu.');
+        showToast('Silakan masukkan link playlist terlebih dahulu.');
         return;
       }
-      showToast('Menghubungi YouTube Music untuk menarik playlist...');
+      onPlaylistInputChanged(val);
+      showToast(`Menghubungi provider untuk menarik playlist (${_currentMigrationDirection === 'sp_to_yt' ? 'Spotify → YTM' : 'YTM → Spotify'})...`);
       await triggerExtractWithUrl(val, true);
       input.value = '';
     }
@@ -5099,6 +5283,8 @@
     function closeDeleteTrackModal() {
       _pendingDeleteVideoId = null;
       _isBatchDelete = false;
+      const chk = document.getElementById('delete-track-remote-chk');
+      if (chk) chk.checked = false;
       const modal = document.getElementById('modal-delete-track');
       if (modal) {
         modal.classList.add('hidden');
@@ -5114,14 +5300,15 @@
       }
       try {
         const plId = _activePlaylistId || 'all';
+        const deleteRemote = document.getElementById('delete-track-remote-chk')?.checked || false;
         let payload;
         if (_isBatchDelete) {
           const vids = Array.from(_selectedTrackIds);
           if (vids.length === 0) return;
-          payload = { video_ids: vids, playlist_id: plId };
+          payload = { video_ids: vids, playlist_id: plId, delete_remote: deleteRemote };
         } else {
           if (!_pendingDeleteVideoId) return;
-          payload = { video_id: _pendingDeleteVideoId, playlist_id: plId };
+          payload = { video_id: _pendingDeleteVideoId, playlist_id: plId, delete_remote: deleteRemote };
         }
 
         const res = await fetch('/api/delete-track', {
@@ -5330,6 +5517,40 @@
       const end = Math.min(start + _pageSize, total);
       const pageTracks = _tracks.slice(start, end);
 
+      // Dynamic Column Header updating based on migration direction
+      const isSpSource = _tracks.some(t => t.video_id && t.video_id.length === 22) || (_currentMigrationDirection === 'sp_to_yt');
+      const thSrc = document.getElementById('th-source-track-container');
+      const thMatch = document.getElementById('th-match-track-container');
+      if (thSrc && thMatch) {
+        if (isSpSource) {
+          thSrc.innerHTML = `
+            <svg class="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.494 17.306c-.215.353-.676.466-1.028.252-2.82-1.722-6.368-2.112-10.55-1.156-.402.092-.803-.16-.895-.562-.092-.403.16-.803.562-.896 4.582-1.047 8.508-.598 11.66 1.334.352.214.465.675.251 1.028zm1.467-3.26c-.27.44-.848.58-1.288.31-3.227-1.983-8.146-2.557-11.96-1.398-.498.15-1.024-.132-1.175-.63-.15-.499.132-1.025.63-1.176 4.364-1.324 9.782-.685 13.483 1.596.44.27.58.848.31 1.288zm.126-3.414c-3.87-2.298-10.254-2.51-13.934-1.393-.593.18-1.22-.162-1.4-.755-.18-.593.163-1.22.756-1.4 4.23-1.284 11.278-1.034 15.75 1.62.533.316.707 1.01.392 1.543-.316.534-1.01.708-1.564.385z"/>
+            </svg>
+            <span class="font-semibold text-textPrimary">Lagu Spotify (Asal)</span>
+          `;
+          thMatch.innerHTML = `
+            <svg class="w-3.5 h-3.5 text-red-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm0-14c-3.309 0-6 2.691-6 6s2.691 6 6 6 6-2.691 6-6-2.691-6-6-6zm-1.5 8.5v-5l4.5 2.5-4.5 2.5z"/>
+            </svg>
+            <span class="font-semibold text-textPrimary">Match (YTM)</span>
+          `;
+        } else {
+          thSrc.innerHTML = `
+            <svg class="w-3.5 h-3.5 text-red-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm0-14c-3.309 0-6 2.691-6 6s2.691 6 6 6 6-2.691 6-6-2.691-6-6-6zm-1.5 8.5v-5l4.5 2.5-4.5 2.5z"/>
+            </svg>
+            <span class="font-semibold text-textPrimary">Lagu YouTube Music (Asal)</span>
+          `;
+          thMatch.innerHTML = `
+            <svg class="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.494 17.306c-.215.353-.676.466-1.028.252-2.82-1.722-6.368-2.112-10.55-1.156-.402.092-.803-.16-.895-.562-.092-.403.16-.803.562-.896 4.582-1.047 8.508-.598 11.66 1.334.352.214.465.675.251 1.028zm1.467-3.26c-.27.44-.848.58-1.288.31-3.227-1.983-8.146-2.557-11.96-1.398-.498.15-1.024-.132-1.175-.63-.15-.499.132-1.025.63-1.176 4.364-1.324 9.782-.685 13.483 1.596.44.27.58.848.31 1.288zm.126-3.414c-3.87-2.298-10.254-2.51-13.934-1.393-.593.18-1.22-.162-1.4-.755-.18-.593.163-1.22.756-1.4 4.23-1.284 11.278-1.034 15.75 1.62.533.316.707 1.01.392 1.543-.316.534-1.01.708-1.564.385z"/>
+            </svg>
+            <span class="font-semibold text-textPrimary">Match (Spotify)</span>
+          `;
+        }
+      }
+
       document.getElementById('pagination-info').innerText = `Menampilkan ${start + 1} - ${end} dari ${total} lagu`;
       document.getElementById('btn-prev-page').disabled = (_currentPage <= 1);
       document.getElementById('btn-next-page').disabled = (end >= total);
@@ -5363,21 +5584,76 @@
         const ytSearchQ = escapeHtml(((t.artists || []).join(' ') + ' ' + (t.title || ''))).replace(/'/g, "\\'");
         const spSearchQ = escapeHtml(((t.result_artist || (t.artists || []).join(' ')) + ' ' + (t.result_title || t.title || ''))).replace(/'/g, "\\'");
 
-        // Spotify Match Icon with Hover Audio Preview
+        // Match Icon & Link (YouTube Music or Spotify)
         let spIcon = `<span class="text-textMuted">-</span>`;
         if (t.spotify_id) {
-          spIcon = `
-            <a href="https://open.spotify.com/track/${t.spotify_id}" target="_blank"
-               onmouseenter="playAudioPreview(this, {video_id: '${t.video_id}', spotify_id: '${t.spotify_id}', title: '${cleanTitleEsc}', artist: '${cleanArtistEsc}', q: '${spSearchQ}'})"
-               onmouseleave="stopAudioPreview()"
-               title="Spotify: ${escapeHtml(t.result_title || t.title)} (Arahkan kursor untuk dengar cuplikan Spotify)"
-               class="w-7 h-7 rounded-lg bg-spotifyGreen/10 hover:bg-spotifyGreen/20 text-spotifyGreen flex items-center justify-center mx-auto border border-spotifyGreen/20 nav-transition relative">
-              <svg class="w-3.5 h-3.5 text-spotifyGreen" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.494 17.306c-.215.353-.676.466-1.028.252-2.82-1.722-6.368-2.112-10.55-1.156-.402.092-.803-.16-.895-.562-.092-.403.16-.803.562-.896 4.582-1.047 8.508-.598 11.66 1.334.352.214.465.675.251 1.028zm1.467-3.26c-.27.44-.848.58-1.288.31-3.227-1.983-8.146-2.557-11.96-1.398-.498.15-1.024-.132-1.175-.63-.15-.499.132-1.025.63-1.176 4.364-1.324 9.782-.685 13.483 1.596.44.27.58.848.31 1.288zm.126-3.414c-3.87-2.298-10.254-2.51-13.934-1.393-.593.18-1.22-.162-1.4-.755-.18-.593.163-1.22.756-1.4 4.23-1.284 11.278-1.034 15.75 1.62.533.316.707 1.01.392 1.543-.316.534-1.01.708-1.564.385z"/>
-              </svg>
-            </a>
+          const isDestYTM = (t.spotify_id.length === 11);
+          const destUrl = isDestYTM ? `https://music.youtube.com/watch?v=${encodeURIComponent(t.spotify_id)}` : `https://open.spotify.com/track/${encodeURIComponent(t.spotify_id)}`;
+          const destLabel = isDestYTM ? 'YouTube Music' : 'Spotify';
+          const destColorClass = isDestYTM ? 'bg-red-500/10 hover:bg-red-500/20 text-red-500 border-red-500/20' : 'bg-spotifyGreen/10 hover:bg-spotifyGreen/20 text-spotifyGreen border-spotifyGreen/20';
+          const destThumb = t.result_thumbnail || (isDestYTM ? `https://i.ytimg.com/vi/${encodeURIComponent(t.spotify_id)}/mqdefault.jpg` : '');
+          const destSvg = isDestYTM ? `
+            <svg class="w-3.5 h-3.5 text-red-500" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm0-14c-3.309 0-6 2.691-6 6s2.691 6 6 6 6-2.691 6-6-2.691-6-6-6zm-1.5 8.5v-5l4.5 2.5-4.5 2.5z"/>
+            </svg>
+          ` : `
+            <svg class="w-3.5 h-3.5 text-spotifyGreen" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.494 17.306c-.215.353-.676.466-1.028.252-2.82-1.722-6.368-2.112-10.55-1.156-.402.092-.803-.16-.895-.562-.092-.403.16-.803.562-.896 4.582-1.047 8.508-.598 11.66 1.334.352.214.465.675.251 1.028zm1.467-3.26c-.27.44-.848.58-1.288.31-3.227-1.983-8.146-2.557-11.96-1.398-.498.15-1.024-.132-1.175-.63-.15-.499.132-1.025.63-1.176 4.364-1.324 9.782-.685 13.483 1.596.44.27.58.848.31 1.288zm.126-3.414c-3.87-2.298-10.254-2.51-13.934-1.393-.593.18-1.22-.162-1.4-.755-.18-.593.163-1.22.756-1.4 4.23-1.284 11.278-1.034 15.75 1.62.533.316.707 1.01.392 1.543-.316.534-1.01.708-1.564.385z"/>
+            </svg>
           `;
+          const destMiniBadge = isDestYTM ? `
+            <svg class="w-2 h-2 text-[#FF0000]" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm0-14c-3.309 0-6 2.691-6 6s2.691 6 6 6 6-2.691 6-6-2.691-6-6-6zm-1.5 8.5v-5l4.5 2.5-4.5 2.5z"/>
+            </svg>
+          ` : `
+            <svg class="w-2.5 h-2.5 text-emerald-400" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.494 17.306c-.215.353-.676.466-1.028.252-2.82-1.722-6.368-2.112-10.55-1.156-.402.092-.803-.16-.895-.562-.092-.403.16-.803.562-.896 4.582-1.047 8.508-.598 11.66 1.334.352.214.465.675.251 1.028zm1.467-3.26c-.27.44-.848.58-1.288.31-3.227-1.983-8.146-2.557-11.96-1.398-.498.15-1.024-.132-1.175-.63-.15-.499.132-1.025.63-1.176 4.364-1.324 9.782-.685 13.483 1.596.44.27.58.848.31 1.288zm.126-3.414c-3.87-2.298-10.254-2.51-13.934-1.393-.593.18-1.22-.162-1.4-.755-.18-.593.163-1.22.756-1.4 4.23-1.284 11.278-1.034 15.75 1.62.533.316.707 1.01.392 1.543-.316.534-1.01.708-1.564.385z"/>
+            </svg>
+          `;
+
+          if (destThumb) {
+            spIcon = `
+              <a href="${destUrl}" target="_blank"
+                 onmouseenter="playAudioPreview(this, {video_id: '${t.video_id}', spotify_id: '${t.spotify_id}', title: '${cleanTitleEsc}', artist: '${cleanArtistEsc}', q: '${spSearchQ}'})"
+                 onmouseleave="stopAudioPreview()"
+                 title="${destLabel}: ${escapeHtml(t.result_title || t.title)} (Arahkan kursor untuk dengar cuplikan)"
+                 class="relative w-11 h-11 rounded-lg overflow-hidden bg-bgElevated border border-borderColor/60 flex-shrink-0 shadow-sm flex items-center justify-center mx-auto group/thumb cursor-pointer">
+                <img src="${destThumb}" alt="" loading="lazy" class="w-full h-full object-cover transition-transform duration-300 group-hover/thumb:scale-105" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                <div class="hidden w-full h-full items-center justify-center ${destColorClass}">
+                  ${destSvg}
+                </div>
+                <div class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-black/80 rounded-tl flex items-center justify-center pointer-events-none" title="${destLabel}">
+                  ${destMiniBadge}
+                </div>
+              </a>
+            `;
+          } else {
+            spIcon = `
+              <a href="${destUrl}" target="_blank"
+                 onmouseenter="playAudioPreview(this, {video_id: '${t.video_id}', spotify_id: '${t.spotify_id}', title: '${cleanTitleEsc}', artist: '${cleanArtistEsc}', q: '${spSearchQ}'})"
+                 onmouseleave="stopAudioPreview()"
+                 title="${destLabel}: ${escapeHtml(t.result_title || t.title)} (Arahkan kursor untuk dengar cuplikan)"
+                 class="w-8 h-8 rounded-lg ${destColorClass} flex items-center justify-center mx-auto border nav-transition relative">
+                ${destSvg}
+              </a>
+            `;
+          }
         }
+
+        // Source Track (Spotify or YouTube Music)
+        const isSpotifySource = (t.video_id && t.video_id.length === 22);
+        const sourceUrl = isSpotifySource ? `https://open.spotify.com/track/${encodeURIComponent(t.video_id)}` : `https://music.youtube.com/watch?v=${encodeURIComponent(t.video_id)}`;
+        const sourceLabel = isSpotifySource ? 'Buka di Spotify' : 'Buka di YouTube Music';
+        const sourceImg = (t.thumbnail_url) ? t.thumbnail_url : (isSpotifySource ? '' : (t.video_id && t.video_id.length === 11 ? `https://i.ytimg.com/vi/${encodeURIComponent(t.video_id)}/mqdefault.jpg` : ''));
+        const sourceBadgeSvg = isSpotifySource ? `
+          <svg class="w-2.5 h-2.5 text-emerald-400" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.494 17.306c-.215.353-.676.466-1.028.252-2.82-1.722-6.368-2.112-10.55-1.156-.402.092-.803-.16-.895-.562-.092-.403.16-.803.562-.896 4.582-1.047 8.508-.598 11.66 1.334.352.214.465.675.251 1.028zm1.467-3.26c-.27.44-.848.58-1.288.31-3.227-1.983-8.146-2.557-11.96-1.398-.498.15-1.024-.132-1.175-.63-.15-.499.132-1.025.63-1.176 4.364-1.324 9.782-.685 13.483 1.596.44.27.58.848.31 1.288zm.126-3.414c-3.87-2.298-10.254-2.51-13.934-1.393-.593.18-1.22-.162-1.4-.755-.18-.593.163-1.22.756-1.4 4.23-1.284 11.278-1.034 15.75 1.62.533.316.707 1.01.392 1.543-.316.534-1.01.708-1.564.385z"/>
+          </svg>
+        ` : `
+          <svg class="w-2 h-2 text-[#FF0000]" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm0-14c-3.309 0-6 2.691-6 6s2.691 6 6 6 6-2.691 6-6-2.691-6-6-6zm-1.5 8.5v-5l4.5 2.5-4.5 2.5z"/>
+          </svg>
+        `;
 
         // Score display
         const scoreTxt = t.score != null ? (t.score * 100).toFixed(0) + '%' : '-';
@@ -5395,8 +5671,8 @@
                      onmouseenter="playAudioPreview(this, {video_id: '${t.video_id}', spotify_id: '${t.spotify_id || ''}', title: '${cleanTitleEsc}', artist: '${cleanArtistEsc}', q: '${ytSearchQ}'})"
                      onmouseleave="stopAudioPreview()"
                      title="Arahkan kursor untuk dengar cuplikan lagu (Reff)">
-                  ${t.video_id ? `
-                    <img src="https://i.ytimg.com/vi/${encodeURIComponent(t.video_id)}/mqdefault.jpg" alt="" loading="lazy" class="w-full h-full object-cover transition-transform duration-300 group-hover/thumb:scale-105" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                  ${sourceImg ? `
+                    <img src="${sourceImg}" alt="" loading="lazy" class="w-full h-full object-cover transition-transform duration-300 group-hover/thumb:scale-105" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
                     <div class="hidden w-full h-full items-center justify-center bg-bgElevated text-accent">
                       <i data-lucide="music" class="w-5 h-5"></i>
                     </div>
@@ -5405,10 +5681,8 @@
                       <i data-lucide="music" class="w-5 h-5"></i>
                     </div>
                   `}
-                  <div class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-black/80 rounded-tl flex items-center justify-center pointer-events-none" title="YouTube Music">
-                    <svg class="w-2 h-2 text-[#FF0000]" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm0-14c-3.309 0-6 2.691-6 6s2.691 6 6 6 6-2.691 6-6-2.691-6-6-6zm-1.5 8.5v-5l4.5 2.5-4.5 2.5z"/>
-                    </svg>
+                  <div class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-black/80 rounded-tl flex items-center justify-center pointer-events-none" title="${isSpotifySource ? 'Spotify' : 'YouTube Music'}">
+                    ${sourceBadgeSvg}
                   </div>
                 </div>
                 <div class="min-w-0 flex-1">
@@ -5420,7 +5694,7 @@
                       </span>
                     </div>
                   ` : ''}
-                  <a href="https://music.youtube.com/watch?v=${encodeURIComponent(t.video_id)}" target="_blank" rel="noopener noreferrer" class="font-semibold text-textPrimary hover:text-accent hover:underline cursor-pointer text-xs sm:text-sm inline-flex items-center gap-1 group/title max-w-full" title="Buka di YouTube Music: ${escapeHtml(t.title)}">
+                  <a href="${sourceUrl}" target="_blank" rel="noopener noreferrer" class="font-semibold text-textPrimary hover:text-accent hover:underline cursor-pointer text-xs sm:text-sm inline-flex items-center gap-1 group/title max-w-full" title="${sourceLabel}: ${escapeHtml(t.title)}">
                     <span class="truncate">${escapeHtml(t.title)}</span>
                     <i data-lucide="external-link" class="w-3 h-3 opacity-0 group-hover/title:opacity-100 transition-opacity text-accent flex-shrink-0"></i>
                   </a>
@@ -5911,7 +6185,8 @@ ${cleanTrackList}`;
             }
 
             const genre = (t.genre && t.genre !== 'Uncategorized') ? t.genre : 'Indie Pop';
-            const thumbUrl = t.video_id ? `https://i.ytimg.com/vi/${encodeURIComponent(t.video_id)}/mqdefault.jpg` : '';
+            const isSp = (t.video_id && t.video_id.length === 22);
+            const thumbUrl = t.thumbnail_url || (isSp ? '' : (t.video_id && t.video_id.length === 11 ? `https://i.ytimg.com/vi/${encodeURIComponent(t.video_id)}/mqdefault.jpg` : ''));
 
             return `
               <div class="flex items-center justify-between p-2 rounded-xl hover:bg-white transition group text-xs">
@@ -6692,8 +6967,10 @@ Lagu yang terasa lebih hidup, punya dorongan ritme, atau lebih bikin kepala ikut
       if (!modal || !list) return;
 
       if (thumb) {
-        if (videoId) {
-          thumb.src = `https://i.ytimg.com/vi/${encodeURIComponent(videoId)}/mqdefault.jpg`;
+        const tr = (_tracks || []).find(x => x.video_id === videoId);
+        const modalThumb = (tr && tr.thumbnail_url) ? tr.thumbnail_url : (videoId && videoId.length === 11 ? `https://i.ytimg.com/vi/${encodeURIComponent(videoId)}/mqdefault.jpg` : '');
+        if (modalThumb) {
+          thumb.src = modalThumb;
           thumb.classList.remove('hidden');
         } else {
           thumb.classList.add('hidden');
@@ -6783,8 +7060,10 @@ Lagu yang terasa lebih hidup, punya dorongan ritme, atau lebih bikin kepala ikut
       if (name) name.innerText = `${title}`;
       if (input) input.value = '';
       if (thumb) {
-        if (videoId) {
-          thumb.src = `https://i.ytimg.com/vi/${encodeURIComponent(videoId)}/mqdefault.jpg`;
+        const tr = (_tracks || []).find(x => x.video_id === videoId);
+        const modalThumb = (tr && tr.thumbnail_url) ? tr.thumbnail_url : (videoId && videoId.length === 11 ? `https://i.ytimg.com/vi/${encodeURIComponent(videoId)}/mqdefault.jpg` : '');
+        if (modalThumb) {
+          thumb.src = modalThumb;
           thumb.classList.remove('hidden');
         } else {
           thumb.classList.add('hidden');
@@ -6893,9 +7172,151 @@ Lagu yang terasa lebih hidup, punya dorongan ritme, atau lebih bikin kepala ikut
           return;
         }
         await navigator.clipboard.writeText(chunks[0].text);
-        showToast(`${data.total} lagu tersalin ke clipboard! Buka Spotify Desktop dan tekan Ctrl+V.`);
+        showToast(`${data.total} link lagu tersalin ke clipboard!`);
       } catch (e) {
         console.error(e);
+      }
+    }
+
+    // ── YouTube Music Playlist Exporter ──────────────────────────────────
+    async function exportToYouTubeMusic() {
+      showToast('Menghubungi YouTube Music untuk membuat playlist...', 'info');
+      try {
+        const res = await fetch('/api/export-ytm', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ playlist_id: _activePlaylistId })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          if (res.status === 401) {
+            showToast(data.error || 'Autentikasi YouTube Music diperlukan.', 'error');
+            openYTMAuthModal();
+            return;
+          }
+          showToast(data.error || 'Gagal mengekspor ke YouTube Music.', 'error');
+          return;
+        }
+        showToast(`Sukses! ${data.total_added} lagu berhasil dimasukkan ke playlist YouTube Music!`, 'success');
+        if (data.playlist_url) {
+          setTimeout(() => {
+            window.open(data.playlist_url, '_blank');
+          }, 800);
+        }
+      } catch (err) {
+        showToast('Error mengekspor ke YouTube Music: ' + err.message, 'error');
+      }
+    }
+
+    // ── YouTube Music Auth Handlers ─────────────────────────────────────────
+    function openYTMAuthModal() {
+      const modal = document.getElementById('modal-ytm-auth');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+    }
+
+    function closeYTMAuthModal() {
+      const modal = document.getElementById('modal-ytm-auth');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    async function submitYTMAuth() {
+      const input = document.getElementById('ytm-auth-headers-input');
+      const val = (input?.value || '').trim();
+      if (!val) {
+        showToast('Teks headers/cURL tidak boleh kosong.', 'error');
+        return;
+      }
+      try {
+        const res = await fetch('/api/save-ytm-auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ headers: val })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast('Autentikasi YouTube Music berhasil disimpan!', 'success');
+          closeYTMAuthModal();
+          checkYTMAuthStatus();
+        } else {
+          showToast(data.error || 'Gagal menyimpan autentikasi.', 'error');
+        }
+      } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+      }
+    }
+
+    async function checkYTMAuthStatus() {
+      try {
+        const res = await fetch('/api/ytm-auth-status');
+        const data = await res.json();
+        const badge = document.getElementById('accounts-badge-ytm');
+        if (badge) {
+          if (data.authenticated) {
+            badge.innerHTML = `<span class="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#E8F2EC] text-[#1E5638] border border-emerald-200"><span class="w-1.5 h-1.5 rounded-full bg-[#2B8A57]"></span><span>Terhubung (Siap Ekspor)</span></span>`;
+          } else {
+            badge.innerHTML = `<span class="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200"><span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span><span>Belum Terhubung</span></span>`;
+          }
+        }
+      } catch (e) {}
+    }
+
+    // ── Bidirectional Migration Direction Manager ─────────────────────────
+    let _currentMigrationDirection = localStorage.getItem('mig_direction') || 'yt_to_sp';
+
+    function setMigrationDirection(dir) {
+      _currentMigrationDirection = dir;
+      try { localStorage.setItem('mig_direction', dir); } catch (e) {}
+      updateMigrationDirectionUI();
+    }
+
+    function onPlaylistInputChanged(val) {
+      const s = (val || '').trim();
+      if (!s) return;
+      if (s.includes('open.spotify.com') || s.startsWith('spotify:')) {
+        setMigrationDirection('sp_to_yt');
+      } else if (s.includes('music.youtube.com') || s.includes('youtube.com') || s.includes('youtu.be') || s.startsWith('PL') || s.startsWith('RD') || s.startsWith('OLAK')) {
+        setMigrationDirection('yt_to_sp');
+      }
+    }
+
+    function updateMigrationDirectionUI() {
+      const isSp2Yt = (_currentMigrationDirection === 'sp_to_yt');
+      const pillYt2Sp = document.getElementById('dir-pill-yt2sp');
+      const pillSp2Yt = document.getElementById('dir-pill-sp2yt');
+      const step1Input = document.getElementById('step1-playlist-link');
+      const extractInput = document.getElementById('extract-input-link');
+      const step2Input = document.getElementById('step2-custom-link');
+      const step1Label = document.getElementById('step1-input-label-text');
+      const step1Desc = document.getElementById('step1-provider-desc');
+
+      if (pillYt2Sp && pillSp2Yt) {
+        if (isSp2Yt) {
+          pillSp2Yt.className = 'btn-motion cursor-pointer px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center space-x-1.5 bg-[#183327] text-white shadow-sm';
+          pillYt2Sp.className = 'btn-motion cursor-pointer px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center space-x-1.5 text-textSecondary hover:text-textPrimary';
+        } else {
+          pillYt2Sp.className = 'btn-motion cursor-pointer px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center space-x-1.5 bg-[#183327] text-white shadow-sm';
+          pillSp2Yt.className = 'btn-motion cursor-pointer px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center space-x-1.5 text-textSecondary hover:text-textPrimary';
+        }
+      }
+
+      if (isSp2Yt) {
+        if (step1Input) step1Input.placeholder = 'Paste link playlist Spotify (https://open.spotify.com/playlist/... atau spotify:playlist:...)';
+        if (extractInput) extractInput.placeholder = 'Paste link playlist Spotify...';
+        if (step2Input) step2Input.placeholder = 'Paste link playlist Spotify...';
+        if (step1Label) step1Label.innerText = 'Masukkan Link Playlist Spotify:';
+        if (step1Desc) step1Desc.innerText = 'Hasil pencocokan akan diekspor langsung ke akun YouTube Music Anda.';
+      } else {
+        if (step1Input) step1Input.placeholder = 'Paste link playlist YouTube Music (https://music.youtube.com/playlist?list=...)';
+        if (extractInput) extractInput.placeholder = 'Paste link playlist YouTube Music...';
+        if (step2Input) step2Input.placeholder = 'Paste link playlist YouTube Music...';
+        if (step1Label) step1Label.innerText = 'Masukkan Link Playlist YouTube Music:';
+        if (step1Desc) step1Desc.innerText = 'Hasil pencocokan akan disalin ke clipboard sebagai blok URI resmi Spotify, siap di-paste (Ctrl+V) langsung ke Spotify Desktop.';
       }
     }
 
@@ -6904,26 +7325,28 @@ Lagu yang terasa lebih hidup, punya dorongan ritme, atau lebih bikin kepala ikut
       const input = document.getElementById('extract-input-link');
       const val = (input?.value || '').trim();
       if (!val) {
-        showToast('Masukkan link atau ID playlist YouTube Music.');
+        showToast('Masukkan link atau ID playlist terlebih dahulu.');
         return;
       }
+      onPlaylistInputChanged(val);
       await triggerExtractWithUrl(val);
       input.value = '';
     }
 
     async function triggerExtractWithUrl(url, autoQueue = false) {
       try {
+        onPlaylistInputChanged(url);
         const res = await fetch('/api/extract', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ playlist_id: url })
+          body: JSON.stringify({ playlist_id: url, direction: _currentMigrationDirection })
         });
         const data = await res.json();
         if (data && data.error) {
           showToast(`Gagal: ${data.error}`);
           return;
         }
-        showToast('Sedang menarik playlist dari YouTube Music...');
+        showToast(`Sedang menarik playlist (${_currentMigrationDirection === 'sp_to_yt' ? 'Spotify → YTM' : 'YTM → Spotify'})...`);
         refreshStatus();
 
         // Reactive job polling: monitor extraction progress until completed
@@ -6967,13 +7390,15 @@ Lagu yang terasa lebih hidup, punya dorongan ritme, atau lebih bikin kepala ikut
       const pl = _playlists.find(p => p.id === Number(plId));
       const displayTitle = title || (pl ? pl.title : 'Playlist');
       if (!confirm(`Hapus playlist "${displayTitle}" dari database?`)) return;
+      const deleteRemote = confirm(`Hapus juga playlist "${displayTitle}" dari akun YouTube Music Anda?\n\n(Klik 'OK' untuk hapus dari YTM, atau 'Batal' untuk hapus dari database lokal saja)`);
       try {
-        await fetch('/api/delete-playlist', {
+        const res = await fetch('/api/delete-playlist', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ playlist_id: plId })
+          body: JSON.stringify({ playlist_id: plId, delete_remote: deleteRemote })
         });
-        showToast('Playlist berhasil dihapus.');
+        const data = await res.json();
+        showToast(data.message || `Playlist berhasil dihapus${deleteRemote ? ' (termasuk dari YouTube Music)' : ''}.`);
         loadPlaylists();
         refreshStatus();
       } catch (e) {
@@ -6981,21 +7406,59 @@ Lagu yang terasa lebih hidup, punya dorongan ritme, atau lebih bikin kepala ikut
       }
     }
 
-    async function confirmResetAll() {
-      if (!confirm('PERINGATAN: Ini akan mengosongkan semua playlist dan riwayat lagu. Anda yakin?')) return;
+    function openResetDatabaseModal() {
+      const modal = document.getElementById('modal-reset-db');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        if (window.lucide) lucide.createIcons();
+      }
+    }
+
+    function closeResetDatabaseModal() {
+      const modal = document.getElementById('modal-reset-db');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    async function executeResetDatabase() {
+      const btn = document.getElementById('btn-execute-reset-db');
+      const deleteRemote = document.getElementById('reset-db-remote-chk')?.checked || false;
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span><span>Mengosongkan...</span>';
+      }
       try {
-        await fetch('/api/reset', {
+        const res = await fetch('/api/reset', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ clear_cache: true })
+          body: JSON.stringify({ clear_cache: true, delete_remote: deleteRemote })
         });
-        showToast('Database berhasil direset.');
-        loadPlaylists();
-        loadTracks();
+        const data = await res.json();
+        closeResetDatabaseModal();
+        showToast(data.message || 'Database berhasil dikosongkan!');
+        _selectedTrackIds.clear();
+        _selectedPlaylistIds.clear();
+        await loadPlaylists();
+        await loadTracks();
         refreshStatus();
-      } catch (e) {
-        console.error(e);
+        goToStep(1);
+      } catch (err) {
+        console.error('Reset error:', err);
+        showToast('Gagal mereset database: ' + err.message, 'error');
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '<i data-lucide="trash-2" class="w-3.5 h-3.5"></i><span>Ya, Kosongkan Database</span>';
+          if (window.lucide) lucide.createIcons();
+        }
       }
+    }
+
+    async function confirmResetAll() {
+      openResetDatabaseModal();
     }
 
     // ── Theme Management (Transactify Unified Luxury Theme) ─────────────────
@@ -7321,6 +7784,7 @@ Lagu yang terasa lebih hidup, punya dorongan ritme, atau lebih bikin kepala ikut
         setPerformanceMode(savedPerf, false);
         const savedLang = localStorage.getItem('yt2sp_lang') || 'en';
         changeLanguage(savedLang);
+        updateMigrationDirectionUI();
         initSidebarAutoCollapse();
         // Scroll listener for liquid glass header transition on Overview
         window.addEventListener('scroll', () => {

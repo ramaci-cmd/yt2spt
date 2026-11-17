@@ -110,7 +110,10 @@ def auth_ytm() -> None:
 
         # Simpan headers via ytmusicapi
         try:
-            YTMusic.setup(filepath="ytm_auth.json", headers_raw="\n".join(lines))
+            from ytmusicapi import setup as ytm_setup
+            from yt2sp.destinations.ytm_writer import normalize_browser_headers
+            normalized = normalize_browser_headers("\n".join(lines))
+            ytm_setup(filepath="ytm_auth.json", headers_raw=normalized)
             rprint("[green][OK] ytm_auth.json disimpan.[/green]")
         except Exception as exc:
             rprint(f"[red]Error: {exc}[/red]")
@@ -126,12 +129,73 @@ def auth_ytm() -> None:
 
 @app.command()
 def extract(
-    playlist: str = typer.Option(None, "--playlist", "-p", help="ID playlist YTM"),
-    all_playlists: bool = typer.Option(False, "--all", help="Semua playlist library"),
-    liked: bool = typer.Option(False, "--liked", help="Liked Songs"),
+    playlist: str = typer.Option(None, "--playlist", "-p", help="URL atau ID playlist Spotify (atau YTM)"),
+    all_playlists: bool = typer.Option(False, "--all", help="Semua playlist library YTM"),
+    liked: bool = typer.Option(False, "--liked", help="Liked Songs YTM"),
 ) -> None:
-    """Ekstrak playlist dari YouTube Music ke database."""
+    """Ekstrak playlist dari Spotify (atau YouTube Music) ke database."""
     _ensure_db()
+    from yt2sp.sources.spotify_extract import clean_spotify_playlist_id, extract_spotify_playlist
+
+    if playlist:
+        sp_id = clean_spotify_playlist_id(playlist)
+        if sp_id:
+            rprint(f"\n[bold cyan]Mengekstrak dari Spotify:[/bold cyan] {sp_id}")
+            try:
+                res = extract_spotify_playlist(sp_id)
+            except Exception as exc:
+                rprint(f"[red]Gagal ekstrak dari Spotify: {exc}[/red]")
+                raise typer.Exit(1)
+
+            total_tracks = len(res.tracks)
+            rprint(f"[bold cyan]Playlist:[/bold cyan] {res.title} ({total_tracks} lagu)")
+            if res.unavailable_count > 0:
+                rprint(f"[yellow]⚠️  Audit: {res.unavailable_count} lagu tidak dapat dimuat.[/yellow]")
+
+            sp_pid = getattr(res, "playlist_id", None) or getattr(res, "id", sp_id)
+            cover_img = getattr(res, "cover_image", None) or getattr(res, "thumbnail_url", None)
+            playlist_db_id = database.upsert_playlist(
+                sp_pid,
+                res.title,
+                total_tracks,
+                unavailable_count=res.unavailable_count,
+                source_provider="spotify",
+                destination_provider="ytm",
+                description=getattr(res, "description", "") or "",
+                thumbnail_url=cover_img,
+            )
+
+            saved = 0
+            with Progress(
+                SpinnerColumn(),
+                TextColumn("[progress.description]{task.description}"),
+                BarColumn(),
+                TaskProgressColumn(),
+                console=console,
+            ) as progress:
+                task = progress.add_task("Menyimpan lagu...", total=total_tracks)
+                for pos, tr in enumerate(res.tracks):
+                    database.upsert_track(
+                        tr.track_id,
+                        tr.title,
+                        tr.artists,
+                        tr.album,
+                        tr.duration_ms,
+                        "song",
+                        thumbnail_url=tr.thumbnail_url,
+                        preview_url=tr.preview_url,
+                        isrc=tr.isrc,
+                        source_provider="spotify",
+                    )
+                    database.upsert_playlist_track(playlist_db_id, tr.track_id, pos)
+                    saved += 1
+                    progress.advance(task)
+
+            rprint(f"  [green][OK] {saved} lagu disimpan dari Spotify[/green]")
+            rprint(f"\n[bold green]Total: {saved} lagu tersimpan di database.[/bold green]")
+            rprint("Jalankan [cyan]yt2sp resolve[/cyan] untuk mulai matching ke YouTube Music.")
+            return
+
     from yt2sp.ytm.extract import get_ytm, get_library_playlists, get_playlist_items, parse_track, get_liked_songs
 
     ytm = get_ytm()
@@ -408,12 +472,14 @@ def _extract_spotify_id(raw: str) -> str | None:
 
 @app.command()
 def export(
-    output: Path = typer.Option(Path("output"), "--output", "-o", help="Direktori output"),
+    output: Path = typer.Option(Path("output"), "--output", "-o", help="Direktori output CSV/file"),
     chunk: int = typer.Option(None, "--chunk", "-c", help="URI per blok"),
     dedup: bool = typer.Option(False, "--dedup", help="Hapus duplikat URI"),
     by_genre: bool = typer.Option(False, "--by-genre", "-g", help="Pisahkan export playlist berdasarkan Genre"),
+    ytm: bool = typer.Option(False, "--ytm", help="Buat dan isi playlist langsung di akun YouTube Music"),
+    privacy: str = typer.Option("PRIVATE", "--privacy", help="Privasi playlist YouTube Music (PRIVATE, UNLISTED, PUBLIC)"),
 ) -> None:
-    """Export URI Spotify ke file dan laporan CSV (bisa dipisah per Genre)."""
+    """Export playlist ke YouTube Music langsung atau simpan file laporan CSV."""
     _ensure_db()
     cfg = _cfg()
     chunk_size = chunk or cfg["export"]["chunk_size"]
@@ -432,8 +498,35 @@ def export(
         tracks = database.get_playlist_tracks(pl["id"])
         pl_title = pl["title"] or f"playlist_{pl['yt_playlist_id']}"
 
+        # Export langsung ke YouTube Music jika flag --ytm aktif
+        if ytm:
+            from yt2sp.destinations.ytm_writer import create_and_populate_ytm_playlist, check_ytm_auth
+            auth_ok, auth_err = check_ytm_auth()
+            if not auth_ok:
+                rprint(f"[red]Autentikasi YouTube Music gagal: {auth_err}. Jalankan yt2sp auth-ytm terlebih dahulu.[/red]")
+            else:
+                ytm_vids = []
+                for t in tracks:
+                    if t["status"] in ("accepted", "resolved_auto"):
+                        dest_id = (t.get("dest_id") if "dest_id" in t.keys() else None) or t.get("spotify_id")
+                        if dest_id:
+                            ytm_vids.append(dest_id)
+                if ytm_vids:
+                    rprint(f"\n[bold cyan]Mengekspor ke YouTube Music:[/bold cyan] {pl_title} ({len(ytm_vids)} lagu)")
+                    try:
+                        exp_res = create_and_populate_ytm_playlist(
+                            title=f"{pl_title} (Spotify2YTM)",
+                            track_ids=ytm_vids,
+                            privacy_status=privacy,
+                        )
+                        rprint(f"  [bold green][OK] Playlist dibuat:[/bold green] {exp_res.playlist_url}")
+                        rprint(f"  [green]{exp_res.total_added} lagu berhasil ditambahkan.[/green]")
+                    except Exception as exc:
+                        rprint(f"  [red]Gagal ekspor ke YouTube Music: {exc}[/red]")
+                else:
+                    rprint(f"[yellow]⚠ {pl_title}: Tidak ada lagu yang lolos untuk diekspor ke YouTube Music.[/yellow]")
+
         if by_genre:
-            # Ambil semua genre unik di playlist ini
             genres_summary = database.get_playlist_genres(pl["id"])
             if not genres_summary:
                 rprint(f"[yellow]⚠ {pl_title}: belum ada lagu yang cocok untuk diexport.[/yellow]")
@@ -450,7 +543,6 @@ def export(
                     rprint(f"  [green][OK] {genre_name}:[/green] {len(g_uris)} lagu -> {len(files)} file")
                     total_files += len(files)
         else:
-            # Export standar (semua lagu dalam 1 playlist)
             accepted_uris = []
             for t in tracks:
                 status = t["status"]
@@ -469,11 +561,7 @@ def export(
         csv_path = write_csv_report(pl_title, tracks, out_dir / "reports")
         rprint(f"  [dim]Report CSV: {csv_path}[/dim]")
 
-    rprint(f"\n[bold green][OK] {total_files} file URI tersimpan di {out_dir / 'uris'}[/bold green]")
-    rprint("\n[bold]Langkah di Spotify Desktop:[/bold]")
-    rprint("1. Buat playlist baru untuk tiap file / genre yang diinginkan")
-    rprint("2. Buka file .txt, salin semua baris (Ctrl+A -> Ctrl+C)")
-    rprint("3. Di Spotify Desktop, sorot baris lagu -> tekan Ctrl+V")
+    rprint(f"\n[bold green][OK] Selesai. File tersimpan di {out_dir}[/bold green]")
 
 
 # ── tag-genre ─────────────────────────────────────────────────────────────────
