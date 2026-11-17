@@ -648,7 +648,7 @@
     <header id="main-header" class="h-20 border-b border-white/20 bg-white/15 backdrop-blur-xl sticky top-0 z-40 px-4 md:px-8 flex items-center justify-between transition-all duration-300 shadow-[0_4px_30px_rgba(0,0,0,0.06)]">
       <!-- Left: Mobile Toggle & Brand Logo -->
       <div class="flex items-center space-x-3">
-        <button onclick="toggleMobileSidebar()" class="md:hidden text-white/90 hover:text-white p-1.5 rounded-lg border border-white/20 bg-white/10 backdrop-blur-md shadow-sm">
+        <button id="mobile-sidebar-toggle" onclick="toggleMobileSidebar()" class="md:hidden text-white/90 hover:text-white p-1.5 rounded-lg border border-white/20 bg-white/10 backdrop-blur-md shadow-sm">
           <i data-lucide="menu" class="w-5 h-5"></i>
         </button>
         <div class="flex items-center space-x-2.5 cursor-pointer" onclick="switchView('overview')">
@@ -666,9 +666,9 @@
       </div>
 
       <!-- Center: Floating Pill Navigation Bar (Liquid Glass Capsule) -->
-      <nav id="top-nav-capsule" class="hidden lg:flex items-center p-1 rounded-full bg-white/20 backdrop-blur-xl border border-white/30 shadow-md space-x-1">
+      <nav id="top-nav-capsule" class="hidden md:flex items-center p-1 rounded-full bg-white/20 backdrop-blur-xl border border-white/30 shadow-md space-x-1">
         <button onclick="switchView('overview')" id="top-nav-overview" class="top-nav-btn pill-tab btn-motion px-4 py-1.5 rounded-full text-xs font-semibold bg-[#183327] text-white shadow-sm" data-i18n="nav_overview">Overview</button>
-        <button onclick="startNewTransferFlow()" id="top-nav-transfer" class="top-nav-btn pill-tab btn-motion px-3.5 py-1.5 rounded-full text-xs font-medium text-white/90 hover:text-white hover:bg-white/20 transition-all" data-i18n="nav_transfer">Transfer</button>
+        <button onclick="switchView('transfer')" id="top-nav-transfer" class="top-nav-btn pill-tab btn-motion px-3.5 py-1.5 rounded-full text-xs font-medium text-white/90 hover:text-white hover:bg-white/20 transition-all" data-i18n="nav_transfer">Transfer</button>
         <button onclick="switchView('playlists')" id="top-nav-playlists" class="top-nav-btn pill-tab btn-motion px-3.5 py-1.5 rounded-full text-xs font-medium text-white/90 hover:text-white hover:bg-white/20 transition-all" data-i18n="nav_playlists">Playlists</button>
         <button onclick="switchView('history')" id="top-nav-history" class="top-nav-btn pill-tab btn-motion px-3.5 py-1.5 rounded-full text-xs font-medium text-white/90 hover:text-white hover:bg-white/20 transition-all" data-i18n="nav_history">Review</button>
         <button onclick="switchView('accounts')" id="top-nav-accounts" class="top-nav-btn pill-tab btn-motion px-3.5 py-1.5 rounded-full text-xs font-medium text-white/90 hover:text-white hover:bg-white/20 transition-all" data-i18n="nav_accounts">Accounts</button>
@@ -1320,10 +1320,6 @@
                     <span id="desktop-genres-count" class="text-lg font-bold text-[#121614] font-mono block mt-1">AI Mood Grouping</span>
                     <span class="text-[10px] text-[#84938B] block">Curated collections</span>
                   </div>
-                </div>
-              </div>
-            </div>
-          </div>
                 </div>
               </div>
             </div>
@@ -3638,6 +3634,7 @@
       const brandTitleEl = document.getElementById('header-brand-title');
       const brandSubtitleEl = document.getElementById('header-brand-subtitle');
       const topNavEl = document.getElementById('top-nav-capsule');
+      const mobToggleEl = document.getElementById('mobile-sidebar-toggle');
 
       if (viewName === 'overview') {
         const isPastHero = window.scrollY > (window.innerHeight * 0.7);
@@ -3645,13 +3642,15 @@
           if (headerEl) headerEl.className = "h-20 border-b border-white/20 bg-white/15 backdrop-blur-xl sticky top-0 z-40 px-4 md:px-8 flex items-center justify-between transition-all duration-300 shadow-[0_4px_30px_rgba(0,0,0,0.06)]";
           if (brandTitleEl) brandTitleEl.className = "font-bold tracking-tight text-base sm:text-lg text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.4)] font-sans block leading-none";
           if (brandSubtitleEl) brandSubtitleEl.className = "hidden sm:block text-[10px] text-white/85 font-mono tracking-wider drop-shadow-xs";
-          if (topNavEl) topNavEl.className = "hidden lg:flex items-center p-1 rounded-full bg-white/20 backdrop-blur-xl border border-white/30 shadow-md space-x-1";
+          if (topNavEl) topNavEl.className = "hidden md:flex items-center p-1 rounded-full bg-white/20 backdrop-blur-xl border border-white/30 shadow-md space-x-1";
+          if (mobToggleEl) mobToggleEl.className = "md:hidden text-white/90 hover:text-white p-1.5 rounded-lg border border-white/20 bg-white/10 backdrop-blur-md shadow-sm";
         }
       } else {
         if (headerEl) headerEl.className = "h-20 border-b border-black/[0.08] bg-[#F7F6F2]/95 backdrop-blur-xl sticky top-0 z-40 px-4 md:px-8 flex items-center justify-between transition-all duration-300 shadow-xs";
         if (brandTitleEl) brandTitleEl.className = "font-bold tracking-tight text-base sm:text-lg text-[#121614] font-sans block leading-none";
         if (brandSubtitleEl) brandSubtitleEl.className = "hidden sm:block text-[10px] text-[#84938B] font-mono tracking-wider";
-        if (topNavEl) topNavEl.className = "hidden lg:flex items-center p-1 rounded-full bg-white/90 backdrop-blur-md border border-black/[0.07] shadow-sm space-x-1";
+        if (topNavEl) topNavEl.className = "hidden md:flex items-center p-1 rounded-full bg-white/90 backdrop-blur-md border border-black/[0.07] shadow-sm space-x-1";
+        if (mobToggleEl) mobToggleEl.className = "md:hidden text-[#121614] hover:text-black p-1.5 rounded-lg border border-black/10 bg-black/5 shadow-sm";
       }
 
       // Show/hide view containers with Pose-to-Pose enter animation
@@ -7890,13 +7889,15 @@ Lagu yang terasa lebih hidup, punya dorongan ritme, atau lebih bikin kepala ikut
             const brandTitleEl = document.getElementById('header-brand-title');
             const brandSubtitleEl = document.getElementById('header-brand-subtitle');
             const topNavEl = document.getElementById('top-nav-capsule');
+            const mobToggleEl = document.getElementById('mobile-sidebar-toggle');
             const isPastHero = window.scrollY > (window.innerHeight * 0.75);
 
             if (isPastHero) {
               if (headerEl) headerEl.className = "h-20 border-b border-black/[0.08] bg-[#F7F6F2]/95 backdrop-blur-xl sticky top-0 z-40 px-4 md:px-8 flex items-center justify-between transition-all duration-300 shadow-xs";
               if (brandTitleEl) brandTitleEl.className = "font-bold tracking-tight text-base sm:text-lg text-[#121614] font-sans block leading-none";
               if (brandSubtitleEl) brandSubtitleEl.className = "hidden sm:block text-[10px] text-[#84938B] font-mono tracking-wider";
-              if (topNavEl) topNavEl.className = "hidden lg:flex items-center p-1 rounded-full bg-white/90 backdrop-blur-md border border-black/[0.07] shadow-sm space-x-1";
+              if (topNavEl) topNavEl.className = "hidden md:flex items-center p-1 rounded-full bg-white/90 backdrop-blur-md border border-black/[0.07] shadow-sm space-x-1";
+              if (mobToggleEl) mobToggleEl.className = "md:hidden text-[#121614] hover:text-black p-1.5 rounded-lg border border-black/10 bg-black/5 shadow-sm";
               const navIds = ['overview', 'playlists', 'transfer', 'history', 'accounts', 'guide', 'settings'];
               navIds.forEach(id => {
                 const btn = document.getElementById(`top-nav-${id}`);
@@ -7906,7 +7907,8 @@ Lagu yang terasa lebih hidup, punya dorongan ritme, atau lebih bikin kepala ikut
               if (headerEl) headerEl.className = "h-20 border-b border-white/20 bg-white/15 backdrop-blur-xl sticky top-0 z-40 px-4 md:px-8 flex items-center justify-between transition-all duration-300 shadow-[0_4px_30px_rgba(0,0,0,0.06)]";
               if (brandTitleEl) brandTitleEl.className = "font-bold tracking-tight text-base sm:text-lg text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.4)] font-sans block leading-none";
               if (brandSubtitleEl) brandSubtitleEl.className = "hidden sm:block text-[10px] text-white/85 font-mono tracking-wider drop-shadow-xs";
-              if (topNavEl) topNavEl.className = "hidden lg:flex items-center p-1 rounded-full bg-white/20 backdrop-blur-xl border border-white/30 shadow-md space-x-1";
+              if (topNavEl) topNavEl.className = "hidden md:flex items-center p-1 rounded-full bg-white/20 backdrop-blur-xl border border-white/30 shadow-md space-x-1";
+              if (mobToggleEl) mobToggleEl.className = "md:hidden text-white/90 hover:text-white p-1.5 rounded-lg border border-white/20 bg-white/10 backdrop-blur-md shadow-sm";
               const navIds = ['overview', 'playlists', 'transfer', 'history', 'accounts', 'guide', 'settings'];
               navIds.forEach(id => {
                 const btn = document.getElementById(`top-nav-${id}`);
