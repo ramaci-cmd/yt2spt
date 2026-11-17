@@ -677,7 +677,7 @@
       </nav>
 
       <span id="page-current-title" class="hidden"></span>
-      <!-- Right: Status, Eco Mode & CTA Pill -->
+      <!-- Right: Status & CTA Pill -->
       <div class="flex items-center space-x-1.5 sm:space-x-2.5 flex-shrink-0">
         <!-- Live Task Status Badge with Cancel Button -->
         <div id="header-task-status" class="hidden items-center space-x-1.5 px-2.5 py-1 rounded-full bg-[#E8F2EC] border border-emerald-200 text-xs text-[#1E5638]">
@@ -687,18 +687,6 @@
             <i data-lucide="x" class="w-3 h-3"></i>
           </button>
         </div>
-
-        <!-- Quick Reset Database Header Button -->
-        <button onclick="openResetDatabaseModal()" id="header-reset-db-btn" class="btn-motion flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-full bg-red-500/20 hover:bg-red-500/35 backdrop-blur-md border border-red-300/30 text-white text-xs font-medium shadow-sm transition-all" title="Reset &amp; Kosongkan Database">
-          <i data-lucide="trash-2" class="w-3.5 h-3.5 text-red-200"></i>
-          <span class="hidden md:inline font-medium">Reset DB</span>
-        </button>
-
-        <!-- Eco / Performance Mode Header Button -->
-        <button onclick="togglePerformanceMode()" id="header-perf-btn" class="btn-motion flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/25 text-white text-xs font-medium shadow-sm transition-all" data-i18n-title="hdr_potato_mode" title="Eco Performance Mode">
-          <i data-lucide="zap" id="header-perf-icon" class="w-3.5 h-3.5 text-white/90"></i>
-          <span id="header-perf-text" class="hidden md:inline font-medium" data-i18n="hdr_potato_mode">Eco Mode</span>
-        </button>
 
         <!-- CTA Pill Button (Dribbble Transactify Reference Style) -->
         <button onclick="startNewTransferFlow()" class="btn-motion group flex items-center space-x-1.5 px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-full bg-white hover:bg-white/95 text-[#183327] text-xs font-bold shadow-lg hover:shadow-xl transition-all flex-shrink-0">
@@ -2795,7 +2783,7 @@
                   &bull; <strong>Playlist Lebih dari 100 Lagu?</strong> Spotify Desktop membatasi penempelan maksimal sekitar 100 lagu per satu kali tekan Ctrl+V. Pada playlist besar, klik tombol <strong>"Salin per-Chunk 100 Lagu"</strong> untuk menyalinnya per bagian (Bagian 1, Bagian 2, dst.) lalu tempel bergantian.
                 </p>
                 <p>
-                  &bull; <strong>Mode Optimalisasi Laptop Kentang:</strong> Jika laptop Anda berspesifikasi rendah, aktifkan tombol <strong>"Kentang Mode"</strong> di pojok kanan atas atau sidebar. Fitur ini mematikan seluruh animasi dan efek blur sehingga antarmuka berjalan 100% ringan tanpa lag.
+                  &bull; <strong>Mode Optimalisasi Laptop Kentang:</strong> Jika laptop Anda berspesifikasi rendah, aktifkan tombol <strong>"Mode Kentang"</strong> di menu <strong>Settings</strong>. Fitur ini mematikan seluruh animasi dan efek blur sehingga antarmuka berjalan 100% ringan tanpa lag.
                 </p>
                 <p>
                   &bull; <strong>Penyimpanan Database Lokal:</strong> Data lagu dan playlist Anda tersimpan secara lokal di database SQLite (<code class="px-1.5 py-0.5 rounded bg-bgElevated text-textPrimary">yt2sp.db</code>). Riwayat dapat dibuka kembali kapan saja tanpa perlu mengekstrak ulang dari YouTube.
