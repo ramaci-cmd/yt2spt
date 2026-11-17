@@ -2,7 +2,7 @@
 # Spotify2YTM (`sp2yt` / `yt2sp` v2.0.0) — High-Precision Reverse Migration Platform (Spotify → YouTube Music)
 
 > **Status Proyek:** Production Ready (`v2.0.0`)  
-> **Lisensi:** MIT License  
+> **Lisensi:** The Unlicense (Public Domain - Bebas Tanpa Kewajiban Kredit)  
 > **Klasifikasi:** Single Source of Truth (SSOT) Technical & Product Architecture  
 > **Tanggal Rilis Dokumentasi:** 17 November 2026 (Refactored to Spotify → YouTube Music)  
 

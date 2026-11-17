@@ -6,7 +6,7 @@
 Accurate multi-pass track resolution, instant 30-second audio previews, 2×2 collage playlist artwork, smart genre splitting, and native Spotify Desktop clipboard pasting.
 
 [![Python](https://img.shields.io/badge/Python-3.11+-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![License: Unlicense](https://img.shields.io/badge/License-Unlicense-blue.svg)](LICENSE)
 [![Zero API Cost](https://img.shields.io/badge/API_Cost-%240_%2F_Free-brightgreen.svg)]()
 [![Privacy](https://img.shields.io/badge/Privacy-100%25_Local_SQLite-blueviolet.svg)]()
 [![Tests](https://img.shields.io/badge/Tests-21%20Passed-success.svg)](tests/)
@@ -305,7 +305,11 @@ The web dashboard visual aesthetic and interface direction are inspired by the e
 
 ## 📄 License
 
-Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for more information.
+Proyek ini dirilis di bawah lisensi publik **[The Unlicense](LICENSE)** (Public Domain).
+
+Siapa pun bebas menggunakan, menyalin, memodifikasi, mempublikasikan, mendistribusikan, menjual, atau melakukan apa saja dengan repositori ini untuk keperluan komersial maupun pribadi — **bebas dengan atau tanpa mencantumkan kredit**.
+
+> *This project is free and unencumbered software released into the public domain under **The Unlicense**. You are free to do whatever you want with this project, with or without attribution/credit. See [`LICENSE`](LICENSE) for more details.*
 
 ---
 
