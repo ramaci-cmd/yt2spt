@@ -3615,8 +3615,6 @@
       const brandTitleEl = document.getElementById('header-brand-title');
       const brandSubtitleEl = document.getElementById('header-brand-subtitle');
       const topNavEl = document.getElementById('top-nav-capsule');
-      const perfBtnEl = document.getElementById('header-perf-btn');
-      const perfIconEl = document.getElementById('header-perf-icon');
 
       if (viewName === 'overview') {
         const isPastHero = window.scrollY > (window.innerHeight * 0.7);
@@ -3625,16 +3623,12 @@
           if (brandTitleEl) brandTitleEl.className = "font-bold tracking-tight text-base sm:text-lg text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.4)] font-sans block leading-none";
           if (brandSubtitleEl) brandSubtitleEl.className = "hidden sm:block text-[10px] text-white/85 font-mono tracking-wider drop-shadow-xs";
           if (topNavEl) topNavEl.className = "hidden lg:flex items-center p-1 rounded-full bg-white/20 backdrop-blur-xl border border-white/30 shadow-md space-x-1";
-          if (perfBtnEl) perfBtnEl.className = "btn-motion flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/25 text-white text-xs font-medium shadow-sm transition-all";
-          if (perfIconEl) perfIconEl.className = "w-3.5 h-3.5 text-white/90";
         }
       } else {
         if (headerEl) headerEl.className = "h-20 border-b border-black/[0.08] bg-[#F7F6F2]/95 backdrop-blur-xl sticky top-0 z-40 px-4 md:px-8 flex items-center justify-between transition-all duration-300 shadow-xs";
         if (brandTitleEl) brandTitleEl.className = "font-bold tracking-tight text-base sm:text-lg text-[#121614] font-sans block leading-none";
         if (brandSubtitleEl) brandSubtitleEl.className = "hidden sm:block text-[10px] text-[#84938B] font-mono tracking-wider";
         if (topNavEl) topNavEl.className = "hidden lg:flex items-center p-1 rounded-full bg-white/90 backdrop-blur-md border border-black/[0.07] shadow-sm space-x-1";
-        if (perfBtnEl) perfBtnEl.className = "btn-motion flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-full bg-white hover:bg-[#F5F7F5] border border-borderColor text-[#526058] hover:text-[#121614] text-xs font-medium shadow-sm transition-all";
-        if (perfIconEl) perfIconEl.className = "w-3.5 h-3.5 text-[#84938B]";
       }
 
       // Show/hide view containers with Pose-to-Pose enter animation
@@ -7720,23 +7714,7 @@ Lagu yang terasa lebih hidup, punya dorongan ritme, atau lebih bikin kepala ikut
         sideIcon.className = _isPerfMode ? 'w-3.5 h-3.5 text-statusSuccess' : 'w-3.5 h-3.5 text-textMuted';
       }
 
-      // 2. Header indicators
-      const headBtn = document.getElementById('header-perf-btn');
-      const headIcon = document.getElementById('header-perf-icon');
-      const headText = document.getElementById('header-perf-text');
-      if (headBtn) {
-        if (_isPerfMode) {
-          headBtn.className = 'flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg bg-statusSuccess/15 text-statusSuccess border border-statusSuccess/40 text-xs font-semibold nav-transition shadow-sm';
-          if (headText) headText.innerText = '⚡ Kentang ON';
-          if (headIcon) headIcon.className = 'w-3.5 h-3.5 text-statusSuccess';
-        } else {
-          headBtn.className = 'flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg bg-bgElevated hover:bg-borderColor border border-borderColor text-textSecondary hover:text-textPrimary text-xs font-medium nav-transition shadow-sm';
-          if (headText) headText.innerText = 'Kentang Mode';
-          if (headIcon) headIcon.className = 'w-3.5 h-3.5 text-textMuted';
-        }
-      }
-
-      // 3. Settings card indicators
+      // 2. Settings card indicators
       const setBadge = document.getElementById('settings-perf-badge');
       const setText = document.getElementById('settings-perf-toggle-text');
       const setSwitch = document.getElementById('settings-perf-switch');
@@ -7781,8 +7759,6 @@ Lagu yang terasa lebih hidup, punya dorongan ritme, atau lebih bikin kepala ikut
             const brandTitleEl = document.getElementById('header-brand-title');
             const brandSubtitleEl = document.getElementById('header-brand-subtitle');
             const topNavEl = document.getElementById('top-nav-capsule');
-            const perfBtnEl = document.getElementById('header-perf-btn');
-            const perfIconEl = document.getElementById('header-perf-icon');
             const isPastHero = window.scrollY > (window.innerHeight * 0.75);
 
             if (isPastHero) {
@@ -7790,8 +7766,6 @@ Lagu yang terasa lebih hidup, punya dorongan ritme, atau lebih bikin kepala ikut
               if (brandTitleEl) brandTitleEl.className = "font-bold tracking-tight text-base sm:text-lg text-[#121614] font-sans block leading-none";
               if (brandSubtitleEl) brandSubtitleEl.className = "hidden sm:block text-[10px] text-[#84938B] font-mono tracking-wider";
               if (topNavEl) topNavEl.className = "hidden lg:flex items-center p-1 rounded-full bg-white/90 backdrop-blur-md border border-black/[0.07] shadow-sm space-x-1";
-              if (perfBtnEl) perfBtnEl.className = "btn-motion flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-full bg-white hover:bg-[#F5F7F5] border border-borderColor text-[#526058] hover:text-[#121614] text-xs font-medium shadow-sm transition-all";
-              if (perfIconEl) perfIconEl.className = "w-3.5 h-3.5 text-[#84938B]";
               const navIds = ['overview', 'playlists', 'transfer', 'history', 'accounts', 'guide', 'settings'];
               navIds.forEach(id => {
                 const btn = document.getElementById(`top-nav-${id}`);
@@ -7802,8 +7776,6 @@ Lagu yang terasa lebih hidup, punya dorongan ritme, atau lebih bikin kepala ikut
               if (brandTitleEl) brandTitleEl.className = "font-bold tracking-tight text-base sm:text-lg text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.4)] font-sans block leading-none";
               if (brandSubtitleEl) brandSubtitleEl.className = "hidden sm:block text-[10px] text-white/85 font-mono tracking-wider drop-shadow-xs";
               if (topNavEl) topNavEl.className = "hidden lg:flex items-center p-1 rounded-full bg-white/20 backdrop-blur-xl border border-white/30 shadow-md space-x-1";
-              if (perfBtnEl) perfBtnEl.className = "btn-motion flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/25 text-white text-xs font-medium shadow-sm transition-all";
-              if (perfIconEl) perfIconEl.className = "w-3.5 h-3.5 text-white/90";
               const navIds = ['overview', 'playlists', 'transfer', 'history', 'accounts', 'guide', 'settings'];
               navIds.forEach(id => {
                 const btn = document.getElementById(`top-nav-${id}`);
